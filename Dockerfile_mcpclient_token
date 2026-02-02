@@ -2,13 +2,13 @@ FROM python:3.13-slim
 
 RUN apt-get -y update; apt-get -y install curl
 
-# Install system dependencies if required by your application (example: curl for specific tools)
-#RUN apt-get update && apt-get install -y curl ca-certificates --no-install-recommends && rm -rf /var/lib/apt/lists/*
-#RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-
-
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
+
+ENV SAMBANOVA_BASE_URL=https://tejas.tacc.utexas.edu/v1/<modelid>
+ENV SAMBANOVA_API_KEY=xyz
+ENV OPENAI_API_KEY=apikey
+ENV TAPIS_MCP_SERVER_BASE_URL=http://127.0.0.1:8000/mcp
 
 
 # Set the working directory inside the container
@@ -17,14 +17,11 @@ COPY pyproject.toml ./
 RUN uv sync 
 ENV PATH="/app/.venv/bin:$PATH"
 
-# # Copy the requirements file and install dependencies first (for better Docker caching)
-# COPY requirements.txt .
-# RUN uv pip install --system -r requirements.txt
 
 # Copy the rest of your project's source code into the container
 COPY tapis_mcp_client_header.py tapis_mcp_client_header.py
+COPY app_config.py app_config.py
 
-#RUN source .venv/bin/activate
 
 # Expose the port your server listens on (adjust if needed, default might be 8000)
 EXPOSE 8001

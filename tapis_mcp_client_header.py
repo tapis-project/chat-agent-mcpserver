@@ -1,8 +1,11 @@
+from app_config import config
 from langchain_openai import ChatOpenAI
+from langchain_sambanova import ChatSambaNovaCloud
+from langchain_ollama import ChatOllama
 from langchain.agents import create_agent
 from langchain_classic.agents import AgentExecutor
 from langchain.tools import tool
-from langchain.agents.middleware import wrap_model_call, wrap_tool_call,ModelRequest, ModelResponse,dynamic_prompt
+from langchain.agents.middleware import ModelRequest, dynamic_prompt #wrap_model_call, wrap_tool_call, ModelResponse
 from typing import TypedDict
 from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
 
@@ -13,7 +16,7 @@ from langchain_core.tools import StructuredTool
 from langchain_mcp_adapters.callbacks import Callbacks, CallbackContext
 from mcp.types import LoggingMessageNotificationParams
 from langchain_mcp_adapters.interceptors import MCPToolCallRequest
-from tapipy.tapis import Tapis, TapisResult
+#from tapipy.tapis import Tapis, TapisResult
 import os
 from dotenv import load_dotenv
 
@@ -32,7 +35,8 @@ if os.path.exists(env_path):
 else:
     print(f"'{env_path}' does not exist. Look for environment variables")
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+
 class Context(TypedDict):
     user_role: str
 
@@ -54,18 +58,37 @@ async def logging_interceptor(
     logger.info(f"[Tool Call Response] Tool: {request.name}, Response: {response}")
     print("\n --------")
     return response
-# async def logging_interceptor(
-#     request: MCPToolCallRequest,
-#     handler,
-# ):
-#     """Log tool calls before and after execution."""
-#     print(f"Calling tool: {request.name} with args: {request.args}")
-#     result = await handler(request)
-#     print(f"Tool {request.name} returned: {result}")
-#     return result
 
+### Models
+provider = config["llm_provider"]
+if  provider == "openai":
+    basic_model = ChatOpenAI(
+            model=config["llm_name"],
+            temperature=0,
+            max_tokens=None,
+            timeout=None,
+            max_retries=2,
+        )
+elif provider == "samba_nova":
+        api_key = config["samba_nova_api_key"]
+        print(f"Using SambaNova with api key {api_key[:5]}...{api_key[-5:]}")
+        llm = ChatSambaNovaCloud(
+            model=config["llm_name"],
+            sambanova_url=config["llm_base_url"],
+            temperature=0,
+            sambanova_api_key=api_key,
+        )
+else:
+        api_key = config["ollama_api_key"]
+        llm = ChatOllama(
+            model=config["llm_name"],
+            base_url=config["llm_base_url"],
+            temperature=0,
+            ollama_api_key= api_key,
+        )    
 basic_model = ChatOpenAI(model="gpt-4o-mini")
-advanced_model = ChatOpenAI(model="gpt-4o")
+
+#advanced_model = ChatOpenAI(model="gpt-4o")
 
 
 
@@ -73,7 +96,7 @@ advanced_model = ChatOpenAI(model="gpt-4o")
 def user_role_prompt(request: ModelRequest) -> str:
     """Generate system prompt based on user role."""
     if request.runtime.context is not None:
-	    user_role = request.runtime.context.get("user_role", "user")
+        user_role = request.runtime.context.get("user_role", "user")
     else:
     	user_role = "user" # Default value if context is missing
     # Log a warning or handle the error as appropriate
@@ -97,50 +120,29 @@ def user_role_prompt(request: ModelRequest) -> str:
 
     return base_prompt
 
-# def get_token_for_tool(name):
-#     print("getting token for tool : " + name)
-#     t = Tapis(base_url=os.getenv("TAPIS_BASE_URL"), username=os.getenv("USERNAME"), password=os.getenv("PASSWORD"))
-#     t.get_tokens()
-#     return t.access_token.access_token
-
-# async def auth_header_interceptor(
-#     request: MCPToolCallRequest,
-#     handler,
-# ):
-#     """Add authentication headers based on the tool being called."""
-#     token = get_token_for_tool(request.name)
-#     modified_request = request.override(
-#         headers={"x-tapis-token": f"{token}"}  
-#     )
-#     return await handler(modified_request)
 
 async def get_client(tapis_token):
-    logger.info("---token ---")
-    logger.info(print(tapis_token))
+    logger.debug("---token ---")
+    logger.debug(print(tapis_token))
     client = MultiServerMCPClient(
         {
             "tapis": {
             "transport": "streamable_http",  # HTTP-based remote server
             # Ensure you start your tapis server on port 8000
             #"url": "http://127.0.0.1:8000/mcp",
-            "url": "http://host.docker.internal:8000/mcp",
+            "url": config["tapis_mcp_base_url"], #"http://host.docker.internal:8000/mcp",
             "headers":{"x-tapis-token":f"{tapis_token}"}
             #"url":"http://0.0.0.0:8000/mcp"
         }
     },
     callbacks=Callbacks(on_logging_message=on_logging_message),
-    tool_interceptors=[logging_interceptor]
+    #tool_interceptors=[logging_interceptor]
    )
     return client
     
 
 def printAImessage(result):
     for msg in result["messages"]:
-        # if isinstance(msg, ToolMessage):
-        #     #print(msg.content)
-        #     print("\n ----")
-        #     print(json.loads(msg.content[0]['text']))
-        #     print("\n\n")
         if isinstance(msg,AIMessage):
             if msg.content=="":
                 print(msg.tool_calls)
@@ -165,12 +167,12 @@ async def create_tapis_agent(client):
     agent = create_agent(
     model= basic_model,  # Default model
     tools = tools,
-    middleware=[user_role_prompt], #dynamic_model_selection, handle_tool_errors
-    #system_prompt="You are a helpful assistant. Be concise and accurate."
+    middleware=[user_role_prompt], 
     context_schema = Context
     )
     return agent
-    
+
+##### FAST API app    
 app = FastAPI()
 
 class ChatRequest(BaseModel):
@@ -185,10 +187,10 @@ def root(request: Request):
 
 @app.post("/chat")
 async def chat(request: Request, chatrequest: ChatRequest):
-    logger.info(f"request:{request} \n")
+    logger.debug(f"request:{request} \n")
     logger.info(f"request:{chatrequest} \n")
     tapis_token= request.headers.get('x-tapis-token')
-    logger.info(f"Tapis token: {tapis_token}")
+    logger.debug(f"Tapis token: {tapis_token}")
     client = await get_client(tapis_token)
     agent = await create_tapis_agent(client);
     result = await agent.ainvoke({"messages":[{"role":"user","content":chatrequest.message}]})
@@ -197,10 +199,6 @@ async def chat(request: Request, chatrequest: ChatRequest):
 def main():
     port = int(os.getenv("PORT", 8001))
     uvicorn.run(app, host="0.0.0.0", port=port)
-
-# if __name__ == "__main__":
-#     #logging.basicConfig(level=logging.INFO, format="%(levelname)s\t%(message)s")
-#     asyncio.run(main())
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s\t%(message)s")

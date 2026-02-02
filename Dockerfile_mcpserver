@@ -11,7 +11,8 @@ RUN apt-get -y update; apt-get -y install curl
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
-
+ENV TAPIS_BASE_URL=https://dev.develop.tapis.io
+ENV TAPIS_TACC_SPADHY_TOKEN=xyz
 # Set the working directory inside the container
 WORKDIR /app
 COPY pyproject.toml ./
@@ -19,14 +20,9 @@ COPY pyproject.toml ./
 RUN uv sync 
 ENV PATH="/app/.venv/bin:$PATH"
 
-# # Copy the requirements file and install dependencies first (for better Docker caching)
-# COPY requirements.txt .
-# RUN uv pip install --system -r requirements.txt
-
 # Copy the rest of your project's source code into the container
 COPY tapis_mcp_server.py tapis_mcp_server.py
 
-#RUN source .venv/bin/activate
 
 # Expose the port your server listens on (adjust if needed, default might be 8000)
 EXPOSE 9001
