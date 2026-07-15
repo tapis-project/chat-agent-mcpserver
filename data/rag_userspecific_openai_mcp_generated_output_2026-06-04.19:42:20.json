@@ -1,0 +1,72 @@
+[
+    {
+        "type": "User-specific",
+        "question": "How many private systems do I own?",
+        "reference": "16",
+        "service": "systems",
+        "answer": "You own 16 private systems.\n\nHow this was determined:\n- Tool used: `functions.get_systems_list`\n- Arguments: `{\"listType\": \"OWNED\", \"computeTotal\": true}`\n- The service returned metadata with `\"totalCount\": 16`, indicating the total number of systems you own (i.e., your private systems)."
+    },
+    {
+        "type": "user-specific",
+        "question": "Get system information for system lccfuser-testvm-spadhy20 ",
+        "reference": "It is a LINUX systemType. Host is 129.114.35.53. effectiveUserId is lccfuser, rootDir is /home/lccfuser, runtime is Docker,It is a private system. It is an execution system and deafult authentication method is PKI_KEYS. Job working dir is HOST_EVAL($HOME)/sharetest/workdir ",
+        "service": "systems",
+        "answer": "Here is the system information for `lccfuser-testvm-spadhy20`:\n\n- **System ID:** `lccfuser-testvm-spadhy20`  \n- **Description:** System for running jobs on a VM for LCCF tutorial  \n- **Tenant:** `tacc`  \n- **Owner:** `spadhy`  \n- **Public:** `false`  \n- **System type:** `LINUX`  \n- **Host:** `129.114.35.53`  \n- **Port:** `-1` (default SSH/implicit)  \n- **Enabled:** `true`  \n- **Can execute jobs:** `true`  \n- **Can run batch jobs:** `false`  \n- **Root directory:** `/home/lccfuser`  \n- **Effective user ID:** `lccfuser`  \n- **Default authn method:** `PKI_KEYS`  \n- **Use proxy:** `false`  \n- **Job runtime(s):**  \n  - `DOCKER`  \n- **Job working directory:** `HOST_EVAL($HOME)/sharetest/workdir`  \n- **Job max jobs (system):** `2147483647`  \n- **Job max jobs per user:** `2147483647`  \n- **UUID:** `c8c8243e-56d2-448c-902b-f1dd14521502`  \n- **Allow children:** `false`  \n- **Deleted:** `false`  \n- **Created:** `2025-07-16T21:29:31.036372Z`  \n- **Updated:** `2025-07-16T21:29:55.058187Z`  \n\nTool usage summary:\n- **Tool called:** `functions.get_system`  \n- **Arguments:** `{ \"systemId\": \"lccfuser-testvm-spadhy20\" }`  \n- **Steps to extract info:** Read the `result` object from the tool\u2019s JSON output and report its primary fields (e.g., `id`, `host`, `systemType`, `rootDir`, `canExec`, `jobRuntimes`, timestamps, etc.). All values above come from `result.<field>`."
+    },
+    {
+        "type": "user-specific",
+        "question": "How many systems have system type LINUX ?",
+        "reference": "20",
+        "service": "systems",
+        "answer": "There are 20 systems with systemType LINUX.\n\nTool used: `functions.get_systems_list`  \nArguments:\n- `listType`: `\"ALL\"`\n- `computeTotal`: `true`\n- `systemType`: `\"LINUX\"`\n\nSteps to reach the total count:\n1. Queried all systems the requester is authorized to view (`listType=\"ALL\"`).\n2. Filtered by `systemType=\"LINUX\"`.\n3. Requested the service to compute the total (`computeTotal=true`).\n4. Read the total from the response metadata field:\n   - `metadata.totalCount = 20`\n\nRelevant field in the data structure:\n- `metadata.totalCount` \u2192 `20`"
+    },
+    {
+        "type": "user-specific",
+        "question": "How many systems are shared with the public in the same tenant?",
+        "reference": "6",
+        "service": "systems",
+        "answer": "There are 6 systems shared with the public in this tenant.\n\nHow this was determined:\n- Tool used: `get_systems_list`\n- Arguments: `{\"listType\": \"SHARED_PUBLIC\", \"computeTotal\": true}`\n- Relevant field: `metadata.totalCount` in the returned data structure\n- Value of `metadata.totalCount`: `6`"
+    },
+    {
+        "type": "user-specific",
+        "question": "How many applications have I registered?",
+        "reference": "6",
+        "service": "apps",
+        "answer": "You have registered 6 applications.\n\nDetails of how this was determined:\n- Tool used: `get_apps_list`\n- Arguments: `{\"listType\": \"OWNED\", \"computeTotal\": true}`\n- The total count comes from: `metadata.totalCount = 6` and is also confirmed in `message: \"Apps found: 6 applications\"`."
+    },
+    {
+        "type": "user-specific",
+        "question": "Are there any publicly shared apps?",
+        "reference": "yes. one.",
+        "service": "apps",
+        "answer": "Yes. There is 1 publicly shared app.\n\nFrom the tool `get_apps_list` with arguments:\n- `listType: \"SHARED_PUBLIC\"`\n- `computeTotal: true`\n\nSteps and where the total comes from:\n1. Called `get_apps_list` to list publicly shared apps.\n2. The response `metadata.totalCount` field shows `1`, meaning there is 1 app matching the criteria.\n\nDetails of the publicly shared app:\n- `id`: `tap_jupyter-notebook-hpc-wmobley`\n- `version`: `0.78`\n- `owner`: `wmobley`"
+    },
+    {
+        "type": "user-specific",
+        "question": "Get details of application lccfuser-sentiment-analysis-spadhy20.",
+        "reference": "It is an application utilizing the sentiment analyssis model from Hugging face. container image is tapis/sentiment-analysis:1.0.2. Version is 0.1. JobType is Fork.",
+        "service": "apps",
+        "answer": "Here are the details for application `lccfuser-sentiment-analysis-spadhy20`:\n\n**Basic Info**\n- `id`: `lccfuser-sentiment-analysis-spadhy20`\n- `version`: `0.1`\n- `description`: Application utilizing the sentiment analysis model from Hugging Face.\n- `owner`: `spadhy`\n- `tenant`: `tacc`\n- `uuid`: `1fcb1e27-9fe5-4a1b-b6b5-0da6fcfd4605`\n- `isPublic`: `false`\n- `enabled`: `true`\n- `versionEnabled`: `true`\n- `locked`: `false`\n- `deleted`: `false`\n- `created`: `2025-07-16T21:33:10.848229Z`\n- `updated`: `2025-07-16T21:33:10.848229Z`\n\n**Runtime / Container**\n- `runtime`: `DOCKER`\n- `containerImage`: `tapis/sentiment-analysis:1.0.2`\n- `jobType`: `FORK`\n- `runtimeVersion`: `null`\n- `runtimeOptions`: `null`\n\n**Job Limits and Behavior**\n- `maxJobs`: `2147483647`\n- `maxJobsPerUser`: `2147483647`\n- `strictFileInputs`: `false`\n\n**Job Attributes**\n- `dynamicExecSystem`: `false`\n- `execSystemId`: `null` (must be supplied when submitting the job, or set via constraints)\n- `execSystemConstraints`: `null`\n- `execSystemExecDir`: `null`\n- `execSystemInputDir`: `null`\n- `execSystemOutputDir`: `null`\n- `dtnSystemInputDir`: `!tapis_not_set`\n- `dtnSystemOutputDir`: `!tapis_not_set`\n- `execSystemLogicalQueue`: `null`\n- `archiveSystemId`: `null`\n- `archiveSystemDir`: `null`\n- `archiveOnAppError`: `false`\n- `archiveMode`: `SKIP_ON_FAIL`\n- `isMpi`: `false`\n- `mpiCmd`: `null`\n- `cmdPrefix`: `null`\n\n**Resources**\n- `nodeCount`: `1`\n- `coresPerNode`: `1`\n- `memoryMB`: `1`\n- `maxMinutes`: `10`\n\n**Parameters & I/O**\n- `parameterSet.appArgs`: `[]`\n- `parameterSet.containerArgs`: `[]`\n- `parameterSet.schedulerOptions`: `[]`\n- `parameterSet.envVariables`: `[]`\n- `parameterSet.archiveFilter.includes`: `[]`\n- `parameterSet.archiveFilter.excludes`: `[]`\n- `parameterSet.archiveFilter.includeLaunchFiles`: `false`\n- `parameterSet.logConfig.stdoutFilename`: `\"\"`\n- `parameterSet.logConfig.stderrFilename`: `\"\"`\n- `fileInputs`: `[]`\n- `fileInputArrays`: `[]`\n\n**Sharing / Tags / Notes**\n- `sharedWithUsers`: `[]`\n- `sharedAppCtx`: `null`\n- `tags`: `[]`\n- `jobAttributes.tags`: `[]`\n- `notes`: `{}`\n\n**How I obtained this & total count info**\n\n- Tool called: `functions.get_apps_list`\n- Arguments:\n  - `listType`: `\"ALL\"`\n  - `computeTotal`: `false`\n  - `appId`: `\"lccfuser-sentiment-analysis-spadhy20\"`\n- Steps:\n  1. Queried apps list filtered by `appId`.\n  2. Read the single app object in `result[0]` for details.\n  3. Verified from `metadata.recordCount = 1` and the message field (`\"TAPIS_FOUND Apps found: 1 applications\"`) that exactly one application matched."
+    },
+    {
+        "type": "user-specific",
+        "question": "What is the version of app lccfuser-sentiment-analysis-spadhy20 and the container image?",
+        "reference": "app version is 0.1. Container image is 1.0.2",
+        "service": "apps",
+        "answer": "- **App ID:** `lccfuser-sentiment-analysis-spadhy20`  \n- **Version:** `0.1`  \n- **Container image:** `tapis/sentiment-analysis:1.0.2`"
+    },
+    {
+        "type": "user-specific",
+        "question": "What apps are directly shared with me?",
+        "reference": "0",
+        "service": "apps",
+        "answer": "Here\u2019s what I found:\n\n- Tool used: `get_apps_list`\n- Arguments: `{\"listType\": \"SHARED_DIRECT\", \"computeTotal\": true}`\n- Steps to get the total:\n  1. Queried the Apps service for applications with `listType = SHARED_DIRECT` (apps directly shared with you).\n  2. Enabled `computeTotal = true` so the service would compute how many such apps exist.\n  3. Read the total from the `metadata.totalCount` field in the response.\n\nResult details extracted:\n- `metadata.totalCount`: `0`\n- `metadata.recordCount`: `0`\n- Service message: `\"TAPIS_FOUND Apps found: 0 applications\"`\n\nAnswer: There are 0 applications directly shared with you."
+    },
+    {
+        "type": "user-specific",
+        "question": "What apps do I have read-perms?",
+        "reference": "0",
+        "service": "apps",
+        "answer": "Tool call: `functions.get_apps_list`  \nArguments: `{\"listType\": \"READ_PERM\", \"computeTotal\": true}`\n\nSteps to get the total count:\n1. Called `get_apps_list` with `listType=\"READ_PERM\"` to restrict results to apps you have READ or MODIFY permission on.\n2. Set `computeTotal=true` so the service calculated the total number of matching apps.\n3. Read `metadata.totalCount` from the returned data structure, which holds the total number of applications.\n\nResult details:\n- `metadata.totalCount`: `0`\n- `message`: `\"TAPIS_FOUND Apps found: 0 applications\"`\n- `result`: an empty list (`[]`), meaning there are no individual app records to display.\n\nAnswer:\nYou currently have read permissions on 0 applications."
+    }
+]

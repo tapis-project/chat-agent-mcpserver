@@ -1,0 +1,730 @@
+[
+    {
+        "type": "Conceptual",
+        "question": "What is the primary purpose of the Tapis Systems service?",
+        "answer": "The primary purpose of the Tapis Systems service is to define and manage \u201csystems\u201d (compute and storage resources) in a standardized way so that other Tapis services\u2014like Jobs and Files\u2014can use them without needing to know their low\u2011level details.\n\nIn practice, this means the Systems service lets you:\n\n- Register systems (HPC clusters, cloud VMs, storage servers, etc.) with properties such as ID, host, credentials method, and capabilities (execution, storage, data transfer).\n- Provide a uniform, API-based representation of these diverse resources.\n- Enable other Tapis services to execute jobs, store data, and transfer files on those systems using this standardized description, instead of dealing with each system\u2019s native interfaces directly.",
+        "reference": "Primary purpose of Tapis Systems service is storing and retrieving files and data, and running jobs ",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "In Tapis, what does a system represent?",
+        "answer": "In Tapis, a **system** is a named description of a computing or storage resource that Tapis can access and manage for you. It\u2019s a configuration object, not a machine itself.\n\nA system typically represents things like:\n\n- **HPC cluster or compute server** \u2013 for running jobs (exec systems)\n- **Cloud VM or container host**\n- **Storage system** \u2013 e.g., an S3 bucket, POSIX filesystem, NFS share (storage systems)\n\nEach system definition includes, for example:\n\n- Hostname or endpoint (where it lives)\n- Type (EXEC or STORAGE, plus more specific `systemType` like LINUX, S3, IRODS, etc.)\n- Access and authentication details (authn method, port, protocol)\n- Path mappings (root directory, work directory)\n- Capability flags (e.g., `canExec` for job execution)\n- Ownership/sharing metadata (who owns it, who can use it)\n\nApplications and jobs in Tapis refer to systems by their **systemId**, so \u201ca system\u201d is the standardized way Tapis knows how to connect to and use an external compute or storage resource.",
+        "reference": "A Tapis System is an abstraction of a host or cluster identified by name or IP address.",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can a Tapis system be used for both storage and execution?",
+        "answer": "Yes. In Tapis a single system can be used for both storage and execution.\n\nThis is controlled by the `canExec` attribute on the system:\n\n- `canExec = false` \u2192 storage-only system  \n- `canExec = true` \u2192 system can be used for execution and also serves as a storage system\n\nSo you do *not* need separate systems; one system definition can handle both roles as long as `canExec` is set to `true`.",
+        "reference": "Yes, a Tapis system can be used for both storage and execution",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What are the four system types supported by Tapis?",
+        "answer": "Tapis supports four system types:\n\n1. LINUX  \n2. S3  \n3. IRODS  \n4. Globus",
+        "reference": "LINUX, S3, IRODS or GLOBUS",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Is the system ID required to be unique within a tenant?",
+        "answer": "Yes. In Tapis, the **system ID must be unique within a tenant**.\n\nEach system is identified by its `id`, and that identifier is scoped to (and must be unique within) a single tenant. This is analogous to applications, where `id + version` must be unique; for systems, the `id` alone serves as the unique key in that tenant\u2019s namespace.",
+        "reference": "Yes, system ID must be unique within the tenant.",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What attribute determines if a system can execute jobs?",
+        "answer": "The attribute is `canExec`.\n\n`canExec` is a boolean flag on a system:\n- `canExec = true` \u2192 the system can be used to execute jobs (execution system).\n- `canExec = false` \u2192 the system is storage-only and cannot run jobs.",
+        "reference": " `canExec` Indicates if the system can be used to execute jobs.",
+        "service": "systems"
+    },
+    {
+        "type": "Code Generation",
+        "question": "How do you create a new system using the Tapis Python SDK?",
+        "answer": "Here\u2019s a concrete, minimal example of creating a new system with the Tapis v3 Python SDK, plus the key fields you usually need to set.\n\n### 1. Install and import the SDK\n\n```bash\npip install tapispy\n```\n\n```python\nfrom tapis3.auth import Tapis\n```\n\n### 2. Initialize the Tapis client\n\nYou typically authenticate with an access token or with username/password (depending on how your tenant is set up). A common pattern:\n\n```python\nt = Tapis(\n    base_url=\"https://tacc.tapis.io\",   # or your tenant URL\n    username=\"YOUR_USERNAME\",\n    password=\"YOUR_PASSWORD\"\n)\nt.get_tokens()  # obtain and cache tokens\n```\n\nIf you already have an access token, you can instead do:\n\n```python\nt = Tapis(\n    base_url=\"https://tacc.tapis.io\",\n    access_token=\"YOUR_JWT_ACCESS_TOKEN\"\n)\n```\n\n### 3. Define the system definition (body)\n\nYou send a JSON-like dict that describes the system. Here\u2019s a typical POSIX execution+storage system using SSH:\n\n```python\nsystem_def = {\n    \"id\": \"my-new-system-id\",\n    \"description\": \"Example Tapis system created via Python SDK\",\n    \"systemType\": \"LINUX\",          # or \"S3\", \"IRODS\", etc., depending on your use case\n    \"host\": \"hostname.example.org\",\n    \"defaultAuthnMethod\": \"PKI_KEYS\",   # or \"PASSWORD\", \"ACCESS_KEY\", etc.\n    \"effectiveUserId\": \"${apiUserId}\",  # run jobs as the calling Tapis user\n    \"canExec\": True,                    # True if this system can run jobs\n    \"canRunBatch\": False,               # or True with scheduler config\n    \"rootDir\": \"/home/${apiUserId}\",    # base directory for this system\n    \"port\": 22,\n    \"useProxy\": False,\n    \"jobRuntimes\": [\n        {\n            \"runtimeType\": \"SINGULARITY\",  # or DOCKER/OTHER\n            \"version\": \"3\"\n        }\n    ],\n    \"jobWorkingDir\": \"tapis-jobs\",\n    \"jobEnvVariables\": [\n        {\"key\": \"TAPIS_ENV\", \"value\": \"demo\"}\n    ],\n    \"enabled\": True,\n}\n```\n\nThe exact schema depends on your Tapis deployment and system type, but at minimum you always need:\n\n- `id`\n- `systemType`\n- `host`\n- `defaultAuthnMethod`\n- `effectiveUserId`\n- `rootDir`\n\n### 4. Call `create` on the Systems service\n\n```python\nnew_system = t.systems.createSystem(**system_def)\nprint(new_system)\n```\n\nDepending on SDK version, the method may be named slightly differently, commonly:\n\n- `t.systems.createSystem(**system_def)`  \nor\n- `t.systems.create(**system_def)`\n\nIf one raises `AttributeError`, try the other, or inspect:\n\n```python\nprint(dir(t.systems))\n```\n\nto see the available methods (`createSystem`, `getSystem`, `listSystems`, etc.).\n\n### 5. (Optional) Add user credentials\n\nCreating the system does not by itself install SSH keys or passwords. For a PKI key\u2013based system:\n\n```python\nt.systems.createUserCredential(\n    systemId=\"my-new-system-id\",\n    userName=\"remote_unix_user\",       # often same as ${apiUserId} mapping\n    privateKey=\"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\",\n    publicKey=\"ssh-rsa AAAA...\",\n    password=None,                     # only if using PASSWORD authn\n)\n```\n\n### 6. Verify the system\n\n```python\nsys_obj = t.systems.getSystem(systemId=\"my-new-system-id\")\nprint(sys_obj.id, sys_obj.host, sys_obj.enabled)\n```\n\n---\n\nIf you tell me:\n- the Tapis tenant URL you\u2019re using, and  \n- what kind of system (SSH to a Linux host, S3, etc.)  \n\nI can give you a tailored `system_def` you can paste in and run directly.",
+        "reference": "t.systems.createSystem(**my_storage_system)",
+        "service": "systems"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Write a curl command to create a system.",
+        "answer": "Here\u2019s a generic `curl` example to create a Tapis system via the Systems API (v3-style). You\u2019ll need to substitute your own values.\n\n```bash\ncurl -X POST \"https://tacc.tapis.io/v3/systems\" \\\n  -H \"Content-Type: application/json\" \\\n  -H \"X-Tapis-Token: ${TAPIS_TOKEN}\" \\\n  -d '{\n    \"id\": \"my-system-id\",\n    \"description\": \"Example Tapis system\",\n    \"systemType\": \"LINUX\",\n    \"owner\": \"my-username\",\n    \"host\": \"my.cluster.example.org\",\n    \"defaultAuthnMethod\": \"PASSWORD\",\n    \"canExec\": true,\n    \"tags\": [\"example\", \"demo\"],\n    \"enabled\": true,\n    \"effectiveUserId\": \"my-username\",\n\n    \"jobRuntimes\": [\n      {\n        \"runtimeType\": \"SINGULARITY\",\n        \"version\": \"3\"\n      }\n    ],\n    \"jobWorkingDir\": \"/home/${JobOwner}/tapis_jobs\",\n    \"jobEnvVariables\": [\n      {\n        \"key\": \"MY_VAR\",\n        \"value\": \"my_value\"\n      }\n    ],\n\n    \"authnCredential\": {\n      \"password\": \"MY_SSH_PASSWORD\",\n      \"username\": \"my-ssh-username\"\n    },\n\n    \"port\": 22,\n    \"useProxy\": false,\n\n    \"defaultFileSystem\": {\n      \"rootDir\": \"/home/my-username\",\n      \"homeDir\": \"/home/my-username\"\n    }\n  }'\n```\n\nKey things you must customize:\n\n- `https://tacc.tapis.io/v3/systems` \u2013 base URL for your Tapis deployment (could be different in your environment).\n- `X-Tapis-Token` \u2013 set `TAPIS_TOKEN` to a valid access token.\n- Minimum required JSON fields typically include:\n  - `id`\n  - `systemType`\n  - `host`\n  - `defaultAuthnMethod`\n  - `canExec`\n  - `effectiveUserId`\n  - plus a valid auth section (e.g., `authnCredential` or a credential already stored).\n\nIf you tell me:\n- Which Tapis version (2 vs 3),\n- What auth method you want (SSH key, password, etc.),\n- Whether it\u2019s exec-only or storage-only,\n\nI can tailor this to a minimal, valid payload for your exact use case.",
+        "reference": "$ curl -X POST -H \"content-type: application/json\" -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/systems -d @system_example.json",
+        "service": "systems"
+    },
+    {
+        "type": "Code Correction",
+        "question": "Fix the following incorrect endpoint for retrieving a system: `GET /v2/system/<id>`",
+        "answer": "Use the correct Tapis systems endpoint and path structure:\n\n```http\nGET /v3/systems/{systemId}\n```\n\nWhere `{systemId}` is replaced with the actual system ID, for example:\n\n```http\nGET /v3/systems/my-system\n```",
+        "reference": "correct endpoint to get systems is `GET /v3/systems/<system_id>` with X-Tapis-token header",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is `effectiveUserId` used for in a Tapis system?",
+        "answer": "`effectiveUserId` in a Tapis system definition controls *what OS account is actually used on the remote system when Tapis runs operations* (jobs, file transfers, etc.).\n\nIn more detail:\n\n- A Tapis **System** represents some remote resource (e.g., an HPC cluster login node, a storage server).\n- Each system has a `host` (the machine) and one or more **credentials** (SSH keys, passwords, etc.).\n- `effectiveUserId` specifies the *Unix/Linux account name* that Tapis will act as on that host when it uses those credentials.\n\nTypical patterns:\n\n1. **End-user account model**  \n   - `effectiveUserId` is the actual username of the human user on the cluster (e.g., `jdoe`).\n   - Tapis uses a shared or per-user credential and then acts as `jdoe` on the remote system.\n   - This lets Tapis-enforced jobs and file operations obey that user\u2019s Unix permissions and quotas.\n\n2. **Service or community account model**  \n   - `effectiveUserId` is a shared account (e.g., `tapis_svc` or `community`).\n   - Multiple Tapis users share that system, but all remote activity appears as the same Unix account.\n   - Permissions are then managed via project directories, ACLs, etc., rather than per-OS-user isolation.\n\n3. **Dynamic or templated effective user** (v3-specific features)  \n   - Some deployments use patterns/variables (e.g., `${tapis.username}`) so that `effectiveUserId` is resolved per caller.\n   - That allows a single system definition to \u201cfan out\u201d to many different OS accounts, 1:1 with Tapis users.\n\nWhy it matters:\n\n- **Authorization & isolation**: The remote OS enforces file permissions and resource limits based on `effectiveUserId`.\n- **Auditing**: Cluster logs and accounting reflect that username for job history and usage tracking.\n- **Consistency**: All jobs and file ops for that Tapis system will run as that same OS user (or according to the dynamic rule you specify).\n\nIf you show me the specific system JSON you\u2019re working with, I can point out exactly how `effectiveUserId` will affect its behavior.",
+        "reference": "The attribute effectiveUserId determines the host login user, the user used to access the underlying host or service. ",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Does a system's `effectiveUserId` dynamically resolve when set to `${apiUserId}`?",
+        "answer": "Yes. When a system\u2019s `effectiveUserId` is set to `${apiUserId}`, Tapis resolves it dynamically at request time.\n\n- `${apiUserId}` is a placeholder, not a literal username.\n- On each request, Tapis substitutes `${apiUserId}` with the username from the caller\u2019s token (the Tapis user making that specific API call).\n- So the same system definition can run as different underlying users, depending on who is calling it.\n\nFrom the help result:  \n> \u201cIf system is defined with a dynamic user, i.e. `effectiveUserId = ${apiUserId}`, this is filled in based on the identity of the user making a request.\u201d",
+        "reference": "Yes, it does resolves the variable by extracting the identity from the request to the service (i.e. the JWT)",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is required in a system definition for a LINUX type system?",
+        "answer": "For a LINUX-type system in Tapis, you must provide the core system identity, type, connection, and access configuration. The exact JSON can vary a bit by Tapis version, but the required concepts are consistent.\n\nBelow is what is required for a typical LINUX system definition:\n\n1. **Basic identity**\n   - `id` \u2013 Unique identifier for the system.\n   - `description` \u2013 Human\u2011readable description (sometimes optional but strongly expected).\n   - `systemType` \u2013 Must be `\"LINUX\"`.\n\n2. **Owner / tenancy**\n   - `tenant` \u2013 Tapis tenant name (in some versions this is inferred; in others it must be supplied).\n   - `owner` \u2013 Username of the system owner in Tapis.\n\n3. **Host and connection**\n   - `host` \u2013 Hostname or IP of the Linux system.\n   - `port` \u2013 SSH port (usually `22`; required even if you use the default).\n   - `canExec` \u2013 Boolean; whether this system can be used to run jobs.\n   - `rootDir` \u2013 Filesystem path that is the root of Tapis-visible operations on that host.\n\n4. **Default access / auth**\n   Depending on API version and schema, you\u2019ll see one of these patterns:\n\n   - `defaultAccessMethod` or `defaultAuthnMethod` (naming may differ) \u2013 How Tapis connects:\n     - Common values: `\"PASSWORD\"`, `\"PKI_KEYS\"` / `\"SSHKEYS\"`, or similar.\n   - For each login method, you separately manage credentials (user, password, or keys) via the tokens/credentials APIs, but the system definition must specify:\n     - `defaultUser` (or a similar field) \u2013 The username on the target Linux host Tapis will use by default.\n   \n   The *credentials themselves* (e.g., password, private key) are usually **not** embedded in the system JSON; they\u2019re stored via separate secrets/credential endpoints. What is required in the definition is the *method* and often the *logical authn context*.\n\n5. **Filesystem semantics**\n   - `defaultAuthnMethod` plus `rootDir` together tell Tapis how to construct paths and authenticate.\n   - Optionally required in some schemas:\n     - `canExec` + `canRunBatch`/`canRunInteractive`, etc., to define allowed operations.\n\nBecause the exact field names and which ones are \u201chard required\u201d can vary between Tapis v2 and v3 and between deployments, when you implement this you should:\n\n- Check the OpenAPI schema or \u201cCreate System\u201d section in the Tapis docs you\u2019re using; it will explicitly label `required` fields for `systemType = LINUX`.\n- Validate your JSON against that schema or issue a `POST /systems` with `dryRun=true` (if supported) to see any missing required fields.\n\nIf you tell me which Tapis version (v2 vs v3) or show your current JSON, I can list the *exact* required keys and a minimal working example.",
+        "reference": "When creating a system the required attributes are: id, systemType, host, defaultAuthnMethod, rootDir and canExec. ",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can the `rootDir` be updated after a system is created?",
+        "answer": "No. In Tapis Systems, `rootDir` is effectively treated as a fundamental, fixed attribute of the system definition and is not intended to be changed after creation.\n\nIf you need a different `rootDir`, the practical/expected approach is:\n\n1. Create a new system definition with the desired `rootDir`.\n2. Migrate any jobs/workflows/clients to use the new system ID.\n3. Optionally deprecate or delete the old system once nothing depends on it.\n\nChanging `rootDir` on an existing system could break assumptions about file locations, paths stored in metadata, and running or historical jobs, which is why it\u2019s not supported in normal workflows.",
+        "reference": "No the rootDir cannot be updated once the system is created",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the effect of setting `allowChildren` to true?",
+        "answer": "`allowChildren` isn\u2019t a universal setting; its effect depends on the specific technology or framework you\u2019re using. Different systems use that flag for different things, for example:\n\n- In some **UI/tree components**:  \n  `allowChildren: true` means the node can have child nodes (e.g., you can expand it, drop other items into it, or render nested elements under it).\n\n- In some **content/page builders or CMSs**:  \n  `allowChildren: true` lets that component/page contain nested components or sub-pages.\n\n- In some **permission/config systems**:  \n  It might mean this item can have child configurations, roles, or sub-resources.\n\nWithout the specific context (library, framework, or file where you see `allowChildren`), I can\u2019t say exactly what it does in your case.\n\nIf you paste:\n- the relevant code snippet, or  \n- tell me which tool/framework (e.g., React library, CMS, design system, etc.),  \n\nI can give a precise, context-specific explanation.",
+        "reference": "Indicates if the system supports creating child systems using this system as the parent. ",
+        "service": "systems"
+    },
+    {
+        "type": "Code Generation",
+        "question": "How do you create a child system using the Python SDK?",
+        "answer": "You create a child system in tapipy by calling the Systems service\u2019s `createChildSystem` endpoint through the Python client and passing the parent system ID plus the new system\u2019s definition.\n\nBelow is a minimal, end\u2011to\u2011end example.\n\n```python\nfrom tapipy.tapis import Tapis\n\n# 1. Initialize the Tapis client\nt = Tapis(\n    base_url=\"https://tacc.tapis.io\",     # or your Tapis base URL\n    username=\"your_username\",\n    password=\"your_password\",\n    # Or use client_id/client_secret, tokens, etc., depending on your setup\n)\n\n# Authenticate and get a token\nt.get_tokens()\n\n# 2. Define the child system body\nchild_system_def = {\n    \"id\": \"my-child-system\",\n    \"description\": \"Child system of parent-system-1\",\n    # Any fields you want to override from the parent:\n    \"host\": \"child.host.example.org\",\n    \"systemType\": \"LINUX\",\n    \"defaultAuthnMethod\": \"PASSWORD\",\n    \"canExec\": True,\n    # ... other Systems API fields as needed ...\n}\n\nparent_system_id = \"parent-system-1\"\n\n# 3. Call createChildSystem\nchild_system = t.systems.createChildSystem(\n    systemId=parent_system_id,\n    **child_system_def\n)\n\nprint(\"Created child system ID:\", child_system.id)\nprint(\"Parent system ID:\", child_system.parent_system_id if hasattr(child_system, \"parent_system_id\") else \"N/A\")\n```\n\nKey points:\n\n- `systemId` in the call is the **parent** system\u2019s ID.\n- The rest of the arguments are the body fields for the **new child system** (ID, description, host, auth, etc.).\n- Any fields not explicitly set in `child_system_def` will typically inherit from the parent (subject to the Systems service rules).\n- Ensure your Tapis client is configured with credentials that have permission to create systems and to reference the parent system.\n\nIf you share your parent system definition or what you want to change in the child, I can sketch the exact `child_system_def` payload for your case.",
+        "reference": " t.systems.createChildSystem(parentId=\"parent-system\", **child_system)",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can a child system be unlinked from its parent?",
+        "answer": "Yes. A child system can be unlinked from its parent, but only by the **owner of the child system**.\n\nTwo ways to do it:\n\n1. **Using the PySDK (Python)**:\n   ```python\n   from tapipy.tapis import Tapis\n\n   t = Tapis(base_url='https://tacc.tapis.io',\n            username='<userid>',\n            password='************')\n\n   t.systems.unlinkFromParent(childSystemId=\"<child-system-id>\")\n   ```\n\n2. **Using the REST API directly** (HTTP):\n   - Method: `POST`\n   - URL:  \n     `https://tacc.tapis.io/v3/systems/<child-system-id>/unlinkFromParent`  \n     (replace `<child-system-id>` with the actual child system ID)\n\nNo additional payload is typically required; authentication must identify the child system\u2019s owner.",
+        "reference": "Yes, using unlinkFromParent endpoint a child system be unlinked from its parent",
+        "service": "systems"
+    },
+    {
+        "type": "Code Correction",
+        "question": "You are trying to create a new share using `tapipy` with the method `t.shares.create(share_definition)`. Based on the API documentation, what is a more likely method name for creating a share?",
+        "answer": "In the Tapis v3 APIs, the Shares service uses a REST `POST` on the `/shares` (or `/shares/permissions`) endpoint, and in Tapipy those usually map to method names like:\n\n```python\nt.shares.create_share(share_definition)\n```\n\nSo `create_share` (not just `create`) is the more likely/correct Tapipy method name for creating a share.",
+        "reference": "Different APIs have different share resource endpoints. For example, ```python\n client.systems.shareSystemPublic(systemId=<system id>)\n. Please tell us what resource you would like to share. ",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What does enabling `canRunBatch` on a system indicate?",
+        "answer": "Enabling `canRunBatch` on a system indicates that the system is capable of running **batch jobs** (as opposed to only interactive or file-management operations).\n\nConcretely, it means:\n\n- The system is configured to submit jobs to a **batch scheduler/queue** (e.g., Slurm, PBS, etc.).\n- Applications and jobs can be run on that system in a **queued, non-interactive** fashion.\n- The platform will treat the system as an **execution-capable** batch system: you can submit jobs with resource requests (cores, memory, walltime), and they will be scheduled and run by the batch system rather than immediately in an interactive session.\n\nIf `canRunBatch` is false/disabled, the system is generally not used for queued batch execution, even if you can still access files or run simple commands.",
+        "reference": "It indicates if the system supports running jobs using a batch scheduler. ",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Is the `batchScheduler` field required when `canRunBatch` is true?",
+        "answer": "Yes. In Tapis system definitions, if `canRunBatch` is `true`, then `batchScheduler` is required.\n\nReason: a system that \u201ccan run batch\u201d must declare which scheduler (e.g., `SLURM`, `PBS`, etc.) it uses so Tapis can construct and submit batch jobs correctly. Without `batchScheduler`, a `canRunBatch: true` system definition is considered incomplete/invalid.",
+        "reference": "Yes, it must be specified if  `canRunBatch` is true",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What does the `host` attribute represent in a system?",
+        "answer": "The `host` attribute of a system is the network address of the machine or service that Tapis (or your client) connects to.\n\nConcretely, `host` is typically:\n\n- A fully qualified domain name (FQDN), e.g. `cluster.univ.edu`\n- Or an IP address, e.g. `192.0.2.10`\n\nIt does **not** include the protocol (`ssh://`, `https://`) or the port (those are handled separately\u2014e.g., `port` for SSH systems, or other fields for HTTP-based systems).\n\nIn short: `host` = \u201cwhat hostname or IP do we connect to when using this system?\u201d",
+        "reference": "It represents Host name, IP address or Globus ID",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the `defaultAuthnMethod` in a system definition?",
+        "answer": "In a Tapis system definition, `defaultAuthnMethod` tells Tapis *how* to authenticate to that system by default.\n\nIt can take these values:\n- `PASSWORD` \u2013 authenticate with a username/password credential.\n- `ACCESS_KEY` \u2013 authenticate using an access key/secret pair (similar to API keys).\n\nWhen you list or get systems, the `defaultAuthnMethod` field on each system shows which of these is used by default for that system.",
+        "reference": "It defines how access authentication is handled by default. Supported methods: PASSWORD, PKI_KEYS, ACCESS_KEY, TOKEN, TMS_KEYS.",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Does a system automatically include credentials when created?",
+        "answer": "No. When you create a system, Tapis does **not** automatically include or generate credentials for it.\n\nYou must explicitly configure credentials (authn methods, tokens, passwords, keys, etc.) either:\n\n- **During system setup** by including the appropriate authn configuration in the system definition, and/or  \n- **After system creation** by calling a credential endpoint such as `t.systems.createUserCredential(...)` to store user-specific access keys, passwords, or tokens.\n\nSo system creation and credential creation are separate steps; you should plan to add credentials yourself.",
+        "reference": "No, credentials must be registered separately.",
+        "service": "systems"
+    },
+    {
+        "type": "Code Generation",
+        "question": "How do you list all systems using the Python SDK?",
+        "answer": "You can list systems with the Tapis Python SDK (`tapipy`) using the `getSystems` method on the `systems` service.\n\nBasic example:\n\n```python\nfrom tapipy.tapis import Tapis\n\n# Initialize Tapis client\nt = Tapis(\n    base_url='https://tacc.tapis.io',  # or your Tapis base URL\n    access_token='YOUR_ACCESS_TOKEN'\n)\n\n# List systems (defaults to systems you own)\nsystems = t.systems.getSystems()\n\n# Inspect results\nfor s in systems:\n    print(s.id, s.systemType, s.owner)\n```\n\nTo list *all* systems you\u2019re authorized to see (not just ones you own), pass the appropriate listType:\n\n```python\nsystems = t.systems.getSystems(listType=\"ALL\")\n```\n\nOther useful options:\n\n- `listType=\"OWNED\"` \u2013 only systems you own (default)\n- `listType=\"SHARED_PUBLIC\"` \u2013 only publicly shared systems\n\nAnd to get the total count in the metadata:\n\n```python\nresp = t.systems.getSystems(listType=\"ALL\", computeTotal=True)\nfor s in resp.result:\n    print(s.id)\n\nprint(\"Total systems:\", resp.metadata.totalCount)\n```",
+        "reference": "t.systems.getSystems()",
+        "service": "systems"
+    },
+    {
+        "type": "Code Generation",
+        "question": "How do you get details of a specific system via curl?",
+        "answer": "You can get details of a specific system by calling the Tapis Systems API `GET /v3/systems/{systemId}` endpoint with curl.\n\nBelow is a common pattern.\n\n### 1. With an access token in an environment variable\n\nAssuming:\n- Your Tapis base URL is `https://tacc.tapis.io`\n- Your system ID is `my-system-id`\n- You have an access token stored in `$JWT` (or `$ACCESS_TOKEN`)\n\n```bash\nexport BASE_URL=\"https://tacc.tapis.io\"\nexport SYSTEM_ID=\"my-system-id\"\n# export JWT=\"...\"   # if not already set\n\ncurl -sS -X GET \"${BASE_URL}/v3/systems/${SYSTEM_ID}\" \\\n  -H \"Authorization: Bearer ${JWT}\" \\\n  -H \"Content-Type: application/json\"\n```\n\nThis returns a JSON payload with system details (e.g., `id`, `owner`, `systemType`, `host`, `defaultAuthnMethod`, `canExec`, etc.).\n\n### 2. Inline token example\n\nIf you just want to see the format:\n\n```bash\ncurl -X GET \"https://tacc.tapis.io/v3/systems/my-system-id\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN_HERE\" \\\n  -H \"Content-Type: application/json\"\n```\n\n### 3. Pretty-print the JSON (optional)\n\nIf you have `jq` installed:\n\n```bash\ncurl -sS -X GET \"${BASE_URL}/v3/systems/${SYSTEM_ID}\" \\\n  -H \"Authorization: Bearer ${JWT}\" \\\n  -H \"Content-Type: application/json\" | jq .\n```\n\nIf you tell me your base URL and whether you already have a token, I can tailor an exact command for your setup.",
+        "reference": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/systems/<systemId>",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What does the `enabled` attribute control?",
+        "answer": "I don\u2019t have enough context yet to answer precisely, because `enabled` is a very common attribute name and its meaning depends on where you\u2019re seeing it.\n\nCommon possibilities:\n\n- In many APIs/config files:  \n  `enabled: true/false` usually turns a feature, plugin, or integration on or off.\n- In UI components (buttons, fields):  \n  `enabled` often controls whether the element is interactive (clickable/editable) vs. disabled/greyed out.\n- In security/permissions:  \n  It may control whether a user/account/role is active or suspended.\n- In job schedulers/services:  \n  It might decide whether a scheduled task or service should run.\n\nIf you can tell me:\n- Which product / language / framework / file you\u2019re looking at (for example: \u201cTapis app JSON,\u201d \u201cKubernetes manifest,\u201d \u201cDjango settings,\u201d \u201cReact component prop,\u201d etc.), and\n- Maybe paste the surrounding snippet,\n\nI can give a precise, context-specific explanation of exactly what that `enabled` controls and how it behaves.",
+        "reference": "Indicates if system is currently considered active and available for use.",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Is sharing a system with others possible?",
+        "answer": "Yes, it\u2019s possible, but there\u2019s an important nuance:\n\n- You don\u2019t directly \u201cshare a system\u201d as a whole with others via a single systems\u2011API call.\n- Instead, you share *access to data (files/directories) on a system* using the Files API.\n\nHow sharing works in practice:\n\n1. Identify the system and path you want to share  \n   - `systemId`: the Tapis system ID (e.g., `aturing-storage`)  \n   - `path`: the file or directory on that system (e.g., `/experiment1`)\n\n2. Make a POST request to the Files permissions endpoint:  \n   - Endpoint:  \n     `POST /v3/files/perms/{systemId}/{path}`  \n     Example:  \n     `POST https://tacc.tapis.io/v3/files/perms/aturing-storage/experiment1`\n\n3. In the JSON body, specify:\n   - The username(s) to share with  \n   - The permissions (e.g., READ, MODIFY, EXECUTE depending on your needs)\n\nThis grants the specified user access to that path on that system, effectively \u201csharing\u201d that portion of the system\u2019s storage.\n\nIf you tell me what role or level of access you want others to have (read-only, read/write, etc.), I can show you an exact example of the JSON body to send.",
+        "reference": "Yes, systems can be shared publicly in a tenant or shared with specific users belonging to the tenant",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What permissions can be granted on a system?",
+        "answer": "On a system, the following permissions can be granted:\n\n- **READ** \u2013 view system details and use it where read access is required.  \n- **WRITE** \u2013 modify/update the system\u2019s configuration or metadata.  \n- **CREATE** \u2013 create new systems (applies at tenant scope, e.g., \u201cany system in the tenant\u201d).  \n- **DELETE** \u2013 remove existing systems.\n\nThese are enforced by the Tapis Systems service via RBAC, typically in combinations such as \u201cread/write on a specific system\u201d or \u201ccreate/read/write/delete on any system in a tenant.\u201d",
+        "reference": "`READ`,`MODIFY`,`EXECUTE` or ` * ` (all) can be granted on a system",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "Why might you use the search endpoint for systems?",
+        "answer": "You\u2019d use the systems **search/list endpoint** (e.g., `get_systems_list`) when you want to *discover or filter* systems rather than retrieve just one by ID. Typical reasons:\n\n1. **See what systems you have access to**\n   - Use `listType`:\n     - `OWNED`: systems you own\n     - `SHARED_PUBLIC`: systems shared publicly\n     - `SHARED_DIRECT` / `MINE` / `ALL`: various combinations of owned + shared\n   - This is useful for browsing what compute/storage resources are available to you.\n\n2. **Filter by capabilities or properties**\n   - Example filters:\n     - `systemType`: only certain kinds of systems (e.g., executor vs storage, if supported)\n     - `defaultAuthnMethod`: systems using a particular authentication method\n     - `canExec`: only systems that can run jobs\n   - Helps answer questions like: \u201cWhich systems can execute jobs and use password-based auth?\u201d\n\n3. **Get a count of systems for reporting or UI**\n   - By setting `computeTotal=True`, you can:\n     - Show \u201cYou have X systems\u201d in a dashboard.\n     - Page through results while knowing the total (`metadata.totalCount`).\n\n4. **Support UI features: search, browse, pagination**\n   - A frontend can use the search/list endpoint to:\n     - Display a paginated grid of systems\n     - Allow users to filter by type/capabilities\n     - Update counts and filters dynamically\n\n5. **Automation and policy checks**\n   - Scripts or services can:\n     - Regularly list systems matching certain criteria (e.g., all public systems)\n     - Enforce rules (e.g., \u201cno public systems with this auth method\u201d)\n     - Generate inventories of systems for audits.\n\nIn contrast, you\u2019d use the **single system endpoint** (`get_system`) when you already know the `systemId` and need its full details or to operate on that specific system.",
+        "reference": "Search provides a way for users to search for systems based on a list of search conditions provided either as query parameters for a GET call or a list of conditions in a request body for a POST call to a dedicated search endpoint.",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What does `isPublic` indicate for a system?",
+        "answer": "`isPublic` indicates whether the system is available for public use in Tapis\u2014that is, whether other users (beyond the owner and explicitly authorized users) can use that system to execute jobs.",
+        "reference": "Indicates if the system has been shared publicly. ",
+        "service": "systems"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can you limit list results with query parameters like `limit` and `skip`?",
+        "answer": "Yes. Both systems and apps list endpoints support cursor-like pagination using `limit` and `skip`-style parameters, though the exact names can vary slightly by implementation. In typical Tapis-style list APIs:\n\n- `limit` \u2014 maximum number of records to return in this call (page size).  \n- `skip` (sometimes `offset` or `page`) \u2014 how many records to skip before starting to return results.\n\nA common usage pattern is:\n\n- First call: `limit=50&skip=0` \u2192 first 50 items  \n- Next call: `limit=50&skip=50` \u2192 items 51\u2013100  \n- Next: `limit=50&skip=100`, and so on.\n\nThese are passed as query parameters alongside things like `listType`, filters, etc. They only affect how many items you see per request; they do not change the underlying dataset.\n\nIf you tell me which specific endpoint or SDK method you\u2019re using (e.g., \u201c/systems\u201d vs \u201c/apps\u201d or a particular client library), I can give the exact parameter names and a concrete example.",
+        "reference": "Yes, skip and limit can be used as query parameters to limit test results",
+        "service": "systems"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the primary purpose of the Tapis Apps service?",
+        "answer": "The primary purpose of the Tapis Apps service is to register, manage, and expose applications (apps) as reusable, executable services on Tapis systems.\n\nIn practice, the Apps service lets you:\n\n- Define application metadata (name, version, description, owner, etc.).\n- Specify how the app is executed (command, Docker image or module, inputs/outputs, parameters).\n- Version and publish apps so others can discover and run them.\n- Control access and sharing (who can see/use a given app).\n\nIt doesn\u2019t run jobs itself\u2014that\u2019s done by the Tapis Jobs service\u2014but it provides the standardized \u201capp definitions\u201d that the Jobs service uses to launch work on computing systems.",
+        "reference": "The Tapis Applications service provides for management of Tapis applications including permissions.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is a Tapis application?",
+        "answer": "A Tapis application (\u201capp\u201d) is a reusable, executable piece of software that\u2019s been registered in the Tapis platform so users can run it on remote systems in a consistent, controlled way.\n\nConcretely, a Tapis app definition includes:\n\n- **What to run**\n  - The executable (script, container image, or binary)\n  - Its version\n  - How to invoke it (command, arguments, environment variables)\n\n- **Where it runs**\n  - The Tapis *system* where the app is installed (e.g., an HPC cluster, cloud VM, or container platform)\n  - Any runtime requirements (modules, containers, resources)\n\n- **How to interact with it**\n  - Input parameters (names, types, defaults, validation)\n  - Input/output files and directories\n  - What outputs to expect and where they will be written\n\n- **Who can use it**\n  - Ownership and sharing/permissions (public, shared, private)\n\nOnce an app is registered:\n\n- Users don\u2019t have to know low-level system details (paths, module loads, etc.).\n- They submit **jobs** that reference the app ID and version, plus input parameters/data.\n- Tapis handles staging data, launching the job on the remote system, and tracking status and outputs.\n\nIn short: a Tapis application is a *metadata and configuration wrapper* around some executable software that makes it easy to run that software as a service via Tapis APIs.",
+        "reference": "A Tapis application represents all the information required to run a Tapis job on a Tapis system and produce useful results. Each application is versioned and is associated with a specific tenant and owned by a specific user who has special privileges for the application.",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Does the Apps service execute applications directly?",
+        "answer": "No. The Apps service does *not* execute applications directly.\n\n- The Apps service stores and manages **application definitions** (metadata, container images, inputs/outputs, parameters, etc.).\n- Actual execution is handled by the **Jobs service**, which takes an app definition from the Apps service and runs it on a designated execution system (e.g., an HPC cluster or container host).\n\nSo: Apps = definitions/configuration; Jobs = scheduling and execution.",
+        "reference": "No, the Apps service provides for management of application definitions, including who has access to an application. The Jobs service is responsible for executing an application. The Jobs service uses the Systems, Apps and Files services to launch, monitor and manage execution of an application.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the role of an application version in Tapis?",
+        "answer": "In Tapis, an application version is metadata that uniquely identifies a specific release of an app, and it has several key roles:\n\n1. **Uniquely identifying a release**  \n   - An app in Tapis is addressed as `(appId, appVersion)`.  \n   - The version distinguishes one release of an app from another (e.g., bug\u2011fixed vs. original, CPU vs. GPU variant, etc.).\n\n2. **Change and release management**  \n   - Each time you change the app definition (e.g., container image, command, inputs, parameters, required systems), you typically create a new version.  \n   - This keeps a clear history of how the app evolved over time.\n\n3. **Reproducibility**  \n   - Jobs and workflows reference a specific `appId` + `appVersion`.  \n   - Because the exact version is recorded, another user (or a future you) can rerun the same computation with the same app definition to reproduce results.\n\n4. **Dependency/compatibility handling**  \n   - Different versions may have different software stacks, container images, resource requirements, or input schemas.  \n   - By pinning to a version, Tapis and your workflows can ensure they use a compatible environment and interface.\n\n5. **Runtime/reference inside workflows**  \n   - The app version can be surfaced as metadata or environment variables (e.g., `_tapisAppVersion`) and used in logic for workflows, triggers, or configuration.\n\nIn practice:  \n- You submit jobs specifying both `appId` and `appVersion`.  \n- App owners publish new versions rather than mutating existing ones, so existing jobs and workflows continue to work against the versions they were written for.",
+        "reference": "App versioning allows application authors to create and develop new app definitions while previous definitions are in use. Versioning is at the discretion of the application author. A version of an app may be locked by the app owner in order prevent updates by other users.",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can two app versions have different execution systems?",
+        "answer": "Yes. Two versions of the same app can be configured to use different execution systems.\n\nIn typical Tapis-style app definitions, the `executionSystem` (or similarly named field) is part of the app\u2019s versioned definition. That means:\n\n- App `my-app` v1.0 might point to execution system `sys-cluster-a`.\n- App `my-app` v2.0 might point to execution system `sys-cluster-b`.\n\nThis is often done when:\n- Migrating to new hardware or a new cluster.\n- Testing a new environment with a newer app version.\n- Running CPU vs GPU variants on different systems.\n\nSo as long as each version\u2019s definition specifies the desired execution system, they can differ.",
+        "reference": "Yes, two app versions may use different execution systems. Also, a single app version may use different execution systems since the job submission request can override the execution system to be used.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the execution system in an app definition?",
+        "answer": "In a Tapis app definition, the **execution system** is the computing system where the app\u2019s jobs actually run.\n\nMore precisely:\n\n- It is a **Tapis system** (of type `EXECUTION`) referenced in the app\u2019s JSON, usually by:\n  - `execSystemId` (or similar field, depending on version)\n- It defines **where and how** the job is executed, including:\n  - Hostname / endpoint\n  - Scheduler/queue (e.g., Slurm, PBS, Docker, Kubernetes, etc.)\n  - Available modules, runtimes, or containers\n  - Execution directories and file system paths\n  - Authentication method and execution user context\n- The app definition itself just describes:\n  - Inputs\n  - Parameters\n  - Command template\n  - Output expectations  \n\nWhen you submit a job using that app, Tapis uses the **execution system specified in the app** to:\n\n1. Stage input data to that system.\n2. Create the job script/command there (based on the app definition and your job inputs).\n3. Submit/run the job on that system\u2019s scheduler or runtime.\n4. Collect logs and outputs back from that system.\n\nIf you show me a specific app JSON you\u2019re working with, I can point out exactly which field is the execution system and how it\u2019s configured.",
+        "reference": "The attribute execSystemId in an application definition specifies the system on which the application is to be run. It may be left undefined, in which case the execution system must be provided as part of the job submission request.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the purpose of the app runtime section?",
+        "answer": "The \u201capp runtime\u201d section (often called `runtime`, `jobAttributes`, or similar in Tapis app definitions) describes **how and where your application actually runs** when a job is submitted.\n\nIn most Tapis-style app definitions, this section is used to specify things like:\n\n- **Execution environment**\n  - Docker/Singularity image or module to load  \n  - Runtime type (e.g., `DOCKER`, `SINGULARITY`, `BARE_METAL`)\n\n- **Command to run**\n  - The main executable or entrypoint\n  - Default arguments or wrapper scripts\n\n- **Resources**\n  - Number of nodes/cores\n  - Memory, runtime limits\n  - Queue/partition on an HPC system\n\n- **I/O locations**\n  - Where input files will be staged\n  - Where output should be written\n\nEffectively, the app runtime section tells the job service:  \n\u201cGiven the inputs and parameters, launch this program in this environment with these resources and this command.\u201d\n\nIf you share the specific JSON/YAML snippet you\u2019re looking at, I can point out field\u2011by\u2011field what each part of the runtime section does.",
+        "reference": "The runtime section specifies the runtime to be used for execution. Allowed values are DOCKER, SINGULARITY and ZIP.",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can Tapis apps be containerized?",
+        "answer": "Yes. Tapis apps are explicitly designed to support containerization.\n\nKey points:\n\n1. **Container images as apps**  \n   - A Tapis app definition can point to a container image (e.g., Docker/Singularity/Apptainer image) instead of a plain executable on a file system.  \n   - In the app JSON, you typically specify:\n     - The container image name and tag\n     - The container runtime (e.g., Singularity/Apptainer, Docker where supported)\n     - The command and arguments to run inside the container\n\n2. **Why containers are common in Tapis**  \n   - Reproducible environments across HPC, cloud, and other Tapis systems  \n   - Easier dependency management (all libraries and tools bundled)  \n   - Isolation from the host environment, reducing conflicts\n\n3. **Typical workflow**  \n   - You (or a team) build and publish a container image (e.g., to Docker Hub, GitHub Container Registry, or a private registry).  \n   - You create a Tapis app definition that references this image and describes:\n     - Inputs/outputs\n     - Parameters\n     - Execution system (an HPC or other compute system registered in Tapis)  \n   - Jobs submitted to that app will run inside the specified container on the target system.\n\nIf you want, I can sketch an example Tapis app JSON snippet that uses a container image and explain each field.",
+        "reference": "Yes, typically apps are containerized as a Docker or Apptainer/Singularity image. If it is not possible to containerize the application, the ZIP runtime may be used as an alternative.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What are app inputs in Tapis?",
+        "answer": "In Tapis, **app inputs** are the data or files that your application needs in order to run. They are declared in the app\u2019s JSON definition under an `inputs` array.\n\nAt a high level:\n\n- Each input is an object in `inputs`.\n- Tapis uses this to:\n  - Validate what a user supplies when submitting a job.\n  - Stage (copy/link) those inputs onto the execution system before the app runs.\n\n### How inputs are defined\n\nIn an application definition JSON, you include something like:\n\n```json\n{\n  \"inputs\": [\n    {\n      \"id\": \"input1\",\n      \"description\": \"Primary input file\",\n      \"type\": \"File\",\n      \"semantics\": {\n        \"required\": true\n      }\n    },\n    {\n      \"id\": \"optional_config\",\n      \"description\": \"Optional configuration file\",\n      \"type\": \"File\",\n      \"semantics\": {\n        \"required\": false\n      }\n    }\n  ]\n}\n```\n\nKey fields for each input:\n\n- `id`:  \n  A unique name for the input (used later in job submissions).\n\n- `description`:  \n  Human-readable explanation of what this input is for.\n\n- `type`:  \n  Typically something like `\"File\"` or `\"Directory\"` (what kind of object Tapis should expect and stage).\n\n- `semantics`:  \n  Holds metadata such as:\n  - `required: true|false` \u2013 whether the job must provide this input.\n  - Other possible semantic hints depending on the app and conventions.\n\n- `details` (not shown above, but often present):  \n  Can contain implementation-specific details (e.g., how and where the file should be staged, default values, patterns, etc.).\n\n### How they are used when running a job\n\n1. **Job submission**:  \n   You submit a job referencing the app\u2019s `id` and `version` and supply values for the inputs (e.g., URIs or paths to files in Tapis Files, URLs, etc.).\n\n2. **Validation**:  \n   Tapis checks against the app\u2019s `inputs`:\n   - Are all `required` inputs present?\n   - Are the types and formats correct?\n\n3. **Staging**:  \n   Tapis stages the specified input data onto the app\u2019s execution system (e.g., copies from storage to the compute system).\n\n4. **Execution**:  \n   The application runs, using those staged files/directories at the expected paths.\n\nIf you\u2019d like, I can show a complete example of an app definition plus a matching job submission that uses its `inputs`.",
+        "reference": "The term inputs can be used to describe various information required to execute an application, such as file inputs, app arguments, container arguments, scheduler options and environment variables.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What are app parameters?",
+        "answer": "In this context, \u201capp parameters\u201d are the inputs you pass to an application when you run it, so the app knows:\n\n- **What data to use**\n- **What options or settings to apply**\n- **What outputs to produce and where**\n\nThey are usually defined in the app\u2019s JSON definition and then filled in at run time by the user (for example, via a form or API call).\n\nTypical kinds of app parameters:\n\n1. **Input parameters**\n   - Paths to input files or directories  \n   - Example: `\"input_file\": \"/home/user/data.csv\"`\n\n2. **Configuration / option parameters**\n   - Choices that change how the app behaves  \n   - Example: `\"method\": \"fast\"`, `\"threshold\": 0.05`, `\"max_iterations\": 1000`\n\n3. **Output parameters**\n   - Where to write results or what to name them  \n   - Example: `\"output_dir\": \"/home/user/results\"`\n\n4. **Resource / runtime parameters** (if exposed by the app)\n   - Number of cores, memory, wall time, etc.  \n   - Example: `\"num_cores\": 8`\n\nEach parameter usually has:\n- a **name** (the key)\n- a **type** (string, number, boolean, file, etc.)\n- an optional **default value**\n- optional **validation rules** (required / optional, allowed range, allowed values)\n- a **description/label** for users\n\nIf you tell me what platform or system you\u2019re using (e.g., Tapis, a specific workflow engine, or something else), I can show you an example of exactly how app parameters are defined and how you\u2019d fill them in when running an app.",
+        "reference": "App parameters are values to be passed to an application to either provide data to the application or control application behavior. They may be required or optional. They are defined in the appArgs field of the parameterSet attribute in the app definition. ",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can app parameters have default values?",
+        "answer": "Yes. In Tapis apps you can give parameters default values.\n\nThey are typically expressed as environment variables in the app definition, under `envVariables`. Each entry is a JSON object, and the `value` field is the default:\n\n```json\n\"envVariables\": [\n  {\n    \"key\": \"MY_PARAM\",\n    \"value\": \"default_value\",\n    \"description\": \"Some parameter with a default\"\n  },\n  {\n    \"key\": \"_tapisAppId\",\n    \"value\": \"my-app\",\n    \"description\": \"Default app id\"\n  },\n  {\n    \"key\": \"_tapisAppVersion\",\n    \"value\": \"0.0.1\",\n    \"description\": \"Default app version\"\n  }\n]\n```\n\nAt runtime, if the user/job doesn\u2019t override `MY_PARAM`, the app sees `default_value` as the value of that parameter.",
+        "reference": "Yes, in general, many but not all parameters can include default values as part of the app definition.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What does the app permissions model control?",
+        "answer": "The app permissions model controls fine\u2011grained access to Tapis applications, specifically:\n\n- **Who can see an app** (e.g., list or view its definition/metadata).\n- **Who can run an app** (submit jobs using that application).\n- **Who can modify an app** (update its definition, versions, configs).\n- **Who can manage sharing** of the app with other users or groups.\n\nIn short, it governs visibility, execution, modification, and sharing rights for each Tapis application.",
+        "reference": "The permissions model allows for fine grained access control of Tapis applications. Permissions allow for granting READ, MODIFY or EXEC access. In addition to fine grained permissions support, Tapis also supports a higher level approach to granting access referred to as sharing.",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Are app definitions immutable once published?",
+        "answer": "No. Once an app definition is published in Tapis, it is effectively immutable: you cannot modify that same appId+version in place.\n\nTo change anything meaningful about an app, you are expected to:\n\n1. **Create a new version**  \n   - Copy or update your app definition.\n   - Change the `version` field (e.g., from `0.0.1` to `0.0.2`).\n   - Use the API to create a new app version (e.g., `createAppVersion`).\n\n2. **Keep old versions intact**  \n   - Existing app versions remain available and unchanged.\n   - Jobs that used the old version remain reproducible.\n\nIn practice: treat `appId` + `version` as immutable. Versioning changes via the `version` field and creating a new app version is the recommended workflow.",
+        "reference": "No, in general app versions are not immutable. The attribute locked may be set to true to disallow updates by users; however, the app owner may update the locked attribute.",
+        "service": "apps"
+    },
+    {
+        "type": "Code Generation",
+        "question": "How do you list all applications using the Tapis Python SDK?",
+        "answer": "To list all applications using the Tapis Python SDK, you use the `apps.getApps()` (or `listApps()` in some older clients) method on the `t.apps` client.\n\nHere\u2019s a minimal example:\n\n```python\nfrom tapipy.tapis import Tapis\n\n# Initialize the Tapis client\nt = Tapis(\n    base_url=\"https://tacc.tapis.io\",  # or your tenant base URL\n    username=\"your_username\",\n    password=\"your_password\"\n)\nt.get_tokens()  # authenticate\n\n# List all apps you are authorized to see\napps = t.apps.getApps(listType=\"ALL\")  # or omit listType to use the default \"OWNED\"\n\n# Print app IDs and versions\nfor app in apps:\n    print(f\"{app.id} (version {app.version})\")\n```\n\nCommon `listType` values:\n\n- `\"OWNED\"` \u2013 only apps you own (default)\n- `\"SHARED_PUBLIC\"` \u2013 only publicly shared apps\n- `\"SHARED_DIRECT\"` \u2013 apps shared directly with you\n- `\"MINE\"` \u2013 owned + directly shared with you\n- `\"ALL\"` \u2013 everything you are authorized to view\n\nIf you also want the total count from the service (when supported by your SDK version / deployment), you can include:\n\n```python\napps = t.apps.getApps(listType=\"ALL\", computeTotal=True)\nprint(\"Total apps:\", apps.metadata.totalCount)\n```\n\nIf you tell me your tenant URL and SDK version, I can tailor the example to exactly match your environment.",
+        "reference": "import json\n from tapipy.tapis import Tapis\n t = Tapis(base_url='https://tacc.tapis.io', username='<userid>', password='************')\nt.apps.getApps()",
+        "service": "apps"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Write a Python SDK call to retrieve a specific app version.",
+        "answer": "Here\u2019s a minimal Python example using the Tapis v3 Python SDK to retrieve a specific app version:\n\n```python\nfrom tapipy.tapis import Tapis\n\n# Initialize Tapis client\nt = Tapis(\n    base_url='https://tacc.tapis.io',  # replace with your Tapis base URL\n    username='your_username',\n    password='your_password'\n)\nt.get_tokens()  # authenticate\n\n# Retrieve specific app version\napp_id = 'your_app_id'\napp_version = '1.0.0'   # the specific version you want\n\napp = t.apps.getApp(appId=app_id, appVersion=app_version)\n\nprint(app)\n```\n\nKey call:\n\n```python\nt.apps.getApp(appId='<APP_ID>', appVersion='<APP_VERSION>')\n```",
+        "reference": "import json\n from tapipy.tapis import Tapis\n t = Tapis(base_url='https://tacc.tapis.io', username='<userid>', password='************')\nt.apps.getApp(appId=\"my-app\", appVersion=\"1.0\")",
+        "service": "apps"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Write a curl command to list all registered apps.",
+        "answer": "Use the Tapis `apps` service `list` endpoint. A basic curl example:\n\n```bash\ncurl -s -X GET \\\n  \"https://tacc.tapis.io/v3/apps\" \\\n  -H \"X-Tapis-Token: $TAPIS_TOKEN\"\n```\n\nIf you need all apps you\u2019re authorized to see (not just owned ones), specify `listType=ALL`:\n\n```bash\ncurl -s -X GET \\\n  \"https://tacc.tapis.io/v3/apps?listType=ALL\" \\\n  -H \"X-Tapis-Token: $TAPIS_TOKEN\"\n```\n\nTo also have the API compute the total number of apps:\n\n```bash\ncurl -s -X GET \\\n  \"https://tacc.tapis.io/v3/apps?listType=ALL&computeTotal=true\" \\\n  -H \"X-Tapis-Token: $TAPIS_TOKEN\"\n```\n\nReplace the base URL and token header as appropriate for your Tapis deployment.",
+        "reference": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/apps",
+        "service": "apps"
+    },
+    {
+        "type": "Code Correction",
+        "question": "Fix this incorrect Python SDK call: `t.apps.getApp('my-app')`",
+        "answer": "Use the `getApp` method with keyword arguments for `appId` and `appVersion` (or include the version in the ID):\n\n```python\n# Option 1: provide appId and appVersion separately\nt.apps.getApp(appId='my-app', appVersion='0.1')\n\n# Option 2: if your Tapis deployment encodes version in the ID\nt.apps.getApp(appId='my-app-0.1')\n```\n\nIf you\u2019re not sure of the version, first list apps and inspect:\n\n```python\nt.apps.getApps()\n```",
+        "reference": "The version of the application must be given: t.apps.getApp(appId='my-app', appVersion=\u20191.0\u2019)",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can an app definition reference files on a different system?",
+        "answer": "Yes. An app definition can reference files that live on a different system than the one defined for the app\u2019s execution.\n\nHow it works (conceptually):\n- In the app (and jobs that use the app), file inputs are specified via URLs in:\n  - `AppFileInput`\n  - `JobFileInput`\n- The `sourceUrls` you specify there can point to:\n  - Another Tapis Posix system\n  - An S3 bucket\n  - Other Tapis\u2011recognized storage endpoints  \n- The Tapis Files service uses those URLs to copy data from the source system into the execution system\u2019s working directory before the job runs (and similarly for some outputs, depending on configuration).\n\nSpecial case:\n- `tapislocal://` URLs indicate \u201cthis file is already on the execution system; don\u2019t transfer it.\u201d  \n  These can only be used in `sourceUrl` fields and only refer to the execution system itself.\n\nSo: yes, you can keep data on one system and run the app on another\u2014just reference the data via the appropriate file URLs in the app/job file\u2011input definitions.",
+        "reference": "Yes, file inputs in an app definition often do reference files on other systems.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the jobType field in an app definition?",
+        "answer": "In a Tapis app definition, the `jobType` field tells Tapis *how* to run the job on the execution system.\n\nIt can be:\n\n1. `BATCH`  \n   - Used when the execution system has a batch scheduler (e.g., SLURM, PBS, Torque).  \n   - Tapis submits the job to the scheduler as a batch job (using a job script, queue, walltime, etc.).\n\n2. `FORK`  \n   - Used when you want Tapis to run the command directly on the execution host, without going through a batch scheduler.  \n   - Tapis just \u201cforks\u201d and executes the process on the system.\n\nAdditional behavior:\n\n- If you don\u2019t set `jobType`, Tapis infers it from the execution system\u2019s configuration:\n  - If the system has a batch scheduler, Tapis will treat the job as `BATCH`.\n- `jobType` therefore controls whether the job is:\n  - Submitted and managed by a batch scheduler (`BATCH`), or\n  - Run directly on the host as a normal process (`FORK`).",
+        "reference": "The attribute jobType indicates how, by default, the job will be run on the execution system, either as a FORK or a BATCH job. It may be overridden in the job submit request.",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Is it possible to disable an app without deleting it?",
+        "answer": "The provided Tapis help context does **not** explicitly document a \u201cdisable app\u201d feature (e.g., a flag to make an app unusable while keeping it registered).\n\nIn many systems this is done via an `enabled`/`active` flag on the app definition, but that specific capability is **not confirmed** by the available Tapis docs I can see here. So from the strictly provided information:\n\n- There is **no documented, guaranteed way** (in this context) to mark an app as disabled while keeping it.\n- You can, of course, keep the app and restrict its use by:\n  - Removing or tightening its sharing/permissions (so no one can run it), or\n  - Using a new version and only allowing the new one to be used.\n\nIf you tell me which Tapis version you\u2019re on (e.g., Tapisv3) and how you\u2019re managing apps (API vs CLI vs portal), I can outline concrete steps to approximate \u201cdisabling\u201d via permissions or versioning.",
+        "reference": "Yes, all versions may be disabled by setting enabled=false or a specific version may be disabled by setting versionEnabled=false.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the role of the execSystemId field?",
+        "answer": "`execSystemId` identifies **which execution system** will run a job.\n\nIn Tapis (and similar platforms), there are usually two key concepts:\n\n- **Execution systems** \u2013 HPC clusters, cloud VMs, or other compute resources where jobs actually run.\n- **Storage systems** \u2013 where data and files live.\n\nThe `execSystemId` field on a job points to the **ID of an execution system** defined in the Systems service. Its role is to:\n\n1. **Select the compute resource**  \n   It tells the job service, \u201cRun this job on system X,\u201d where X is a configured execution system (e.g., an HPC cluster with a scheduler, a Docker host, etc.).\n\n2. **Determine how to run the job**  \n   From that system\u2019s definition, Tapis learns:\n   - what scheduler or execution method to use (e.g., SLURM, PBS, fork, Docker),\n   - what login/authentication method applies,\n   - what default queues/limits/constraints may apply.\n\n3. **Control data staging context**  \n   Input/output paths in the job (like `execSystemInputDir`, `execSystemOutputDir`) are interpreted relative to that system. Changing `execSystemId` changes where those paths live.\n\nSo, in short: `execSystemId` is the **foreign key** linking a job to the specific execution system configuration that controls where and how the job runs.",
+        "reference": "It identifies where, by default, the application will run. It may be overridden in the job submit request.",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can multiple apps use the same execution system?",
+        "answer": "Yes. Multiple applications can use the same execution system.\n\nHow it typically works:\n- A **system** represents a compute resource (e.g., an HPC cluster, VM, or container host) with configuration like hostname, auth method, scheduler, etc.\n- An **application** defines how to run a specific piece of software (command, arguments, inputs/outputs).\n- Each app\u2019s definition **references** an execution system by its system ID.\n- Many different apps can point to that same system ID, so they all run on the same underlying compute resource.\n\nSo there\u2019s no 1:1 restriction\u2014it's common and expected that a shared execution system backs many apps.",
+        "reference": "Yes, multiple apps can use the same execution system",
+        "service": "apps"
+    },
+    {
+        "type": "Code Correction",
+        "question": "Fix this incorrect curl command missing authentication: `curl https://tacc.tapis.io/v3/apps`",
+        "answer": "Use the Tapis JWT in an Authorization header and include the correct base path. A minimal fixed example:\n\n```bash\ncurl -s \\\n  -H \"Authorization: Bearer ${TAPIS_TOKEN}\" \\\n  \"https://tacc.tapis.io/v3/apps\"\n```\n\nWhere:\n\n- `TAPIS_TOKEN` is your Tapis access token (JWT), e.g. from:\n  ```bash\n  export TAPIS_TOKEN=$(curl -s \\\n    -H \"Content-Type: application/json\" \\\n    -d '{\"username\":\"<user>\",\"password\":\"<pass>\",\"tenant\":\"<tenant>\",\"grant_type\":\"password\"}' \\\n    https://tacc.tapis.io/v3/oauth2/tokens \\\n    | jq -r '.access_token')\n  ```\n- The Authorization header must be exactly `Authorization: Bearer <token>`.",
+        "reference": "Add the missing token header: `curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/apps`",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "Why are apps separated from jobs in Tapis?",
+        "answer": "In Tapis, \u201capps\u201d and \u201cjobs\u201d are separated because they represent two very different concepts:\n\n- **Apps = reusable definitions of how to run something**\n- **Jobs = specific executions of an app**\n\nHere\u2019s the breakdown:\n\n1. **Apps are templates / configurations**\n   - An app defines:\n     - What software to run (e.g., a container image, executable)\n     - What inputs, parameters, and outputs it expects\n     - What system it can run on\n     - Resource needs (CPU, memory, nodes, etc.)\n   - Apps are versioned and reusable: you can register them once and then launch many jobs from the same app definition.\n   - Think of an app as a *recipe*.\n\n2. **Jobs are actual runs of an app**\n   - A job:\n     - References a specific app (by appId + version)\n     - Supplies concrete values for that app\u2019s inputs and parameters\n     - Has a lifecycle: PENDING \u2192 RUNNING \u2192 FINISHED/FAILED, etc.\n     - Has job-specific metadata: status, logs, start/end times, etc.\n   - Think of a job as *baking a particular cake using the recipe*.\n\n3. **Why Tapis keeps them separate**\n\n   - **Reusability and maintenance**\n     - You define an app once and reuse it across many jobs, users, and projects.\n     - If you update or version an app, you don\u2019t touch historical jobs; they still reference the version they used.\n   \n   - **Clear separation of concerns**\n     - App authors (e.g., tool developers) focus on:\n       - Packaging software\n       - Defining parameters and resources\n     - App users (e.g., scientists) focus on:\n       - Providing input data and parameter values\n       - Submitting and monitoring jobs\n     - This supports different roles and permissions (who can register apps vs. who can run jobs).\n\n   - **Better management and discoverability**\n     - Apps can be:\n       - Listed, shared, documented, and discovered as catalog entries.\n     - Jobs are transient or historical execution records tied to a user and a timeframe.\n     - Keeping them separate allows better filtering, searching, and sharing:\n       - \u201cWhat apps are available?\u201d vs. \u201cWhat jobs have I run?\u201d\n\n   - **Versioning and reproducibility**\n     - An app has a version (e.g., `myApp-1.0.0` vs `myApp-1.1.0`).\n     - Jobs store which app version they used, enabling reproducible runs later.\n     - You can retire or revise apps without invalidating existing job records.\n\n   - **Scalability and optimization**\n     - Scheduling, queuing, and execution (jobs) can be optimized and scaled independently from app registration and metadata.\n     - Jobs can be huge in number; apps are relatively few and stable.\n\nIf you\u2019d like, I can walk through an example: define a simple app (e.g., a containerized script) and then show what a corresponding job definition looks like and how they relate in Tapis.",
+        "reference": "Having apps as a separate resource type from jobs allows for reusable, versioned application definitions. A job may be thought of as a specific instantiation of an app version.",
+        "service": "apps"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can an app be shared across tenants?",
+        "answer": "No. In Tapis, apps, systems, files, and jobs are tenant\u2011scoped. An app defined in one tenant is not directly shareable or visible in another tenant.\n\nIf you need effectively \u201cthe same app\u201d in multiple tenants, you have to register it separately in each tenant (usually by logging into each tenant and creating the app there, often reusing the same app definition JSON).",
+        "reference": "No, apps cannot be shared across tenants. Tenancy provides the important feature of isolating resources for different projects.",
+        "service": "apps"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is a Tapis JWT and what is its primary function in the Tapis ecosystem?",
+        "answer": "A Tapis JWT is a JSON Web Token issued by the Tapis authentication service that represents a user\u2019s authenticated identity and permissions within the Tapis platform.\n\nIts primary function in the Tapis ecosystem is to act as the bearer access token you send with API requests so that:\n\n1. **Tapis services can verify who you are** (your identity and tenant).\n2. **They can enforce authorization** based on the roles, permissions, and tenant information encoded in the token\u2019s claims.\n3. **You can securely call other Tapis microservices** without repeatedly sending passwords or re-authenticating, as long as the JWT is valid and not expired.\n\nIn practice, you obtain a Tapis JWT after successfully authenticating (e.g., with username/password, client credentials, etc.), then include it in the `Authorization: Bearer <token>` header on subsequent Tapis API calls.",
+        "reference": "Tapis uses OAuth2-based authentication, issuing a short-lived JWT (JSON Web Token) for authenticated users. This token must be included in all API requests to authorize access to Tapis services.",
+        "service": "authenticator"
+    },
+    {
+        "type": "Code Generation",
+        "question": "After initializing a `Tapis` client object in Python using the `tapipy` library, how would you typically retrieve your access token?",
+        "answer": "In `tapipy`, once you\u2019ve initialized and authenticated a `Tapis` client, the access token is available on the client object itself.\n\nTypical pattern:\n\n```python\nfrom tapipy.tapis import Tapis\n\nt = Tapis(\n    base_url='https://tacc.tapis.io',\n    username='your_username',\n    password='your_password'\n)\nt.get_tokens()  # or t.get_tokens() / t.get_tokens_jwt() depending on setup\n\n# Access token string\naccess_token = t.access_token\n\n# Or, if using the v3 tokens structure:\naccess_token = t.token['access_token']['access_token']\n```\n\nSo in practice, you either use `t.access_token` (convenience attribute) or read it from the `t.token` dict after calling `get_tokens()`.",
+        "reference": "In the PySDK, the access token is a first-class Python object stored on the Tapis object t , we can access it using `t.access_token`.",
+        "service": "authenticator"
+    },
+    {
+        "type": "Code Correction",
+        "question": "The following Python code using `tapipy` is intended to print the expiration time of your access token, but it's not working. `print(t.token_expires)`. What is the correct attribute to access the expiration time of the token?",
+        "answer": "Use the `expires_at` attribute instead. For a `Tapis` client object `t`, you want:\n\n```python\nprint(t.access_token.expires_at)\n```\n\n`token_expires` isn\u2019t a valid attribute; the expiration time is stored on `t.access_token.expires_at`.",
+        "reference": "The expiry associated with the token can be decoded from JWT claim `exp` or using tapipy `t.expires_at`",
+        "service": "authenticator"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What standard protocol is used by Tapis for authentication?",
+        "answer": "Tapis uses the OAuth protocol for authentication, specifically a simplified version of the OAuth2 password grant flow (using Tapis OAuth tokens).",
+        "reference": "The default authenticator provided by the Tapis project is based on OAuth2",
+        "service": "authenticator"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Are Tapis access tokens time-limited?",
+        "answer": "Yes. Tapis access tokens are time\u2011limited.\n\n- Tapis issues **OAuth2-style access tokens** (JWTs).  \n- Each token has an **`exp` (expiration)** claim embedded in it and becomes invalid after that time.  \n- Typical lifetimes are on the order of **tens of minutes to a few hours**, depending on how your Tapis deployment is configured.\n- Once an access token expires, you must:\n  - either **re\u2011authenticate** (e.g., username/password, SSH key, etc.), or  \n  - use a **refresh or JWT token** (if your deployment provides one) to obtain a new access token.\n\nIf you tell me which Tapis platform/version (e.g., Tapis v3 on a specific site) you\u2019re using, I can describe the usual default lifetimes and how to check/renew them in that environment.",
+        "reference": "Yes, access tokens expire after every four hours.",
+        "service": "authenticator"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What information is typically included in a Tapis access token?",
+        "answer": "A Tapis access token is a JSON Web Token (JWT). The exact content can vary a bit by deployment and Tapis version (mostly Tapis v3 now), but typically it includes:\n\n1. **Standard JWT fields (registered claims)**  \n   - `iss` \u2013 Issuer (the Tapis tenant\u2019s tokens service URL or identifier)  \n   - `sub` \u2013 Subject (the username or user identifier)  \n   - `aud` \u2013 Audience (who the token is intended for; often \u201ctapis\u201d, specific services, or tenants)  \n   - `iat` \u2013 Issued-at timestamp (UNIX epoch seconds)  \n   - `exp` \u2013 Expiration time (UNIX epoch seconds)  \n   - `nbf` \u2013 Not-before time (optional)\n\n2. **Tapis-specific identity fields**  \n   - `tapis/tenant` \u2013 The Tapis tenant id (e.g., `dev`, `admin`, etc.)  \n   - `tapis/user` \u2013 The Tapis username  \n   - `tapis/token_type` \u2013 e.g., `access` (vs. refresh or other token types)  \n   - `tapis/jti` \u2013 Token id (unique identifier for this token instance)  \n   - `tapis/delegation` or `tapis/act_as` \u2013 If applicable, indicates delegated identity or \u201con\u2011behalf\u2011of\u201d use\n\n3. **Authorization / scope information**  \n   - `scope` \u2013 A space-separated list of scopes that describe what the token can do (e.g., `files`, `systems`, `apps`, `jobs`, `meta`, `streams`, or more granular scopes depending on the deployment).  \n   - Service-specific scopes or claims that control access to particular APIs or resources.\n\n4. **Tenant and site context**  \n   - `tapis/tenant_id` or similar \u2013 Tenant identification (may be the same as `tapis/tenant`)  \n   - `tapis/site_id` \u2013 The Tapis site or installation this token is valid for (in multi-site deployments)\n\n5. **Optional user / security attributes**  \n   These are optional and depend on configuration:  \n   - `tapis/roles` \u2013 Roles assigned to this user within the tenant  \n   - `tapis/account_type` \u2013 e.g., `service`, `human`, etc.  \n   - Any additional custom claims configured by the site (group memberships, project ids, etc.)\n\n6. **Signature (outside the JSON body)**  \n   - The token is signed by the Tapis tokens service\u2019s private key; clients verify it using the corresponding public key or JWKS endpoint.  \n   - The header typically includes:\n     - `alg` \u2013 Signing algorithm (e.g., `RS256`)  \n     - `kid` \u2013 Key id (to select the proper verification key)  \n     - `typ` \u2013 Usually `JWT`\n\nIf you paste a (sanitized) decoded token or describe the deployment (e.g., \u201cTACC Tapis v3 on tenant X\u201d), I can map its actual fields to this structure and explain each one.",
+        "reference": "Tapis access token includes tenant_id, username, token_type, account_type,delegation, delegation_sub, client_id, grant_type and additional claims not listed here.",
+        "service": "authenticator"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is a tenant in the context of Tapis authentication?",
+        "answer": "In Tapis, a **tenant** is essentially a logical \u201cslice\u201d or partition of the overall Tapis platform that represents an organization or community of users.\n\nMore concretely:\n\n- Each tenant has its **own base URL** (e.g., `https://dev.tapis.io`, `https://tacc.tapis.io`) and associated configuration.\n- Tenants usually correspond to a specific **institution, project, or deployment** that uses Tapis.\n- **User identities and authentication** are scoped by tenant:  \n  - When you log in, you authenticate *to a specific tenant*.  \n  - Your tokens (JWTs) include the tenant ID and are valid in that tenant\u2019s context.\n- Tenants may have their own:\n  - Identity provider / authentication backend\n  - Policies, quotas, and resource configurations\n  - Set of systems, apps, and data collections visible to their users\n\nSo when you see references to `tenant` in Tapis auth (e.g., `tenant_id` in a token, or specifying a tenant in a login request), it is identifying which Tapis environment/organization you belong to and where your authentication and authorization should be evaluated.",
+        "reference": "A tenant represents a logically isolated view of Tapis objects ( i.e., the systems, files, actors, etc.) created by users of the project.",
+        "service": "authenticator"
+    },
+    {
+        "type": "Code Generation",
+        "question": "How do you include a Tapis access token in a curl request?",
+        "answer": "Include the Tapis access token as a Bearer token in the `Authorization` header.\n\nBasic pattern:\n\n```bash\ncurl -H \"Authorization: Bearer $TAPIS_TOKEN\" \\\n     https://tacc.tapis.io/v3/systems\n```\n\nWhere:\n\n- `TAPIS_TOKEN` is an environment variable containing your Tapis access token string.\n- You can also paste the token directly (less secure):\n\n```bash\ncurl -H \"Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9....\" \\\n     https://tacc.tapis.io/v3/systems\n```\n\nIf you also need JSON content headers (for POST/PUT):\n\n```bash\ncurl -X POST https://tacc.tapis.io/v3/systems \\\n  -H \"Authorization: Bearer $TAPIS_TOKEN\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"my-system\", \"description\": \"example\"}'\n```",
+        "reference": "A Tapis access token is included as a header X-Tapis-Token in the API request for example: curl -H \"X-Tapis-Token: $TOKEN\" https://tacc.tapis.io/v3/",
+        "service": "authenticator"
+    },
+    {
+        "type": "Code Correction",
+        "question": "Fix the following header to properly authenticate a Tapis API request: Authorization: Bearer TOKEN",
+        "answer": "Use the Tapis-specific scheme rather than the generic `Bearer` scheme. It should look like:\n\n```http\nAuthorization: X-Tapis-Token TOKEN\n```\n\nReplace `TOKEN` with your actual Tapis access token string.",
+        "reference": "The correct way to include Tapis token is to use the header: \"X-Tapis-Token: $TOKEN \"in the Tapis API request.",
+        "service": "authenticator"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Does Tapis support authentication using Kerberos tickets for API access?",
+        "answer": "Yes. Tapis does support using Kerberos tickets for API access, but indirectly, via its **\u201coauth2_kerberos\u201d** authentication flow.\n\nHigh-level picture:\n\n- Tapis APIs themselves are protected with **OAuth2 access tokens**, not raw Kerberos tickets.\n- However, Tapis can be configured so that a client presents a **Kerberos service ticket** to the Tapis Auth service, and in exchange receives a **Tapis OAuth2 access token**.\n- After that, all normal Tapis API calls use that access token in the `Authorization: Bearer <token>` header.\n\nTypical flow:\n\n1. User obtains a Kerberos TGT and then a service ticket for the Tapis auth service (e.g., via `kinit` and a client library).\n2. Client calls the Tapis Auth endpoint using the `oauth2_kerberos` grant type, passing the Kerberos ticket.\n3. Tapis validates the ticket with the KDC.\n4. If valid, Tapis issues an OAuth2 access token (and possibly refresh token).\n5. Client uses that OAuth2 token to call any Tapis API.\n\nKey implications:\n\n- You do not send Kerberos tickets directly to Tapis resource APIs (e.g., Systems, Files, Jobs).  \n- You integrate Kerberos at the **authentication** step, and then rely on OAuth2 like any other Tapis client.\n- Kerberos support requires:\n  - The Tapis deployment to be configured with a Kerberos realm and service principal.\n  - A client that can obtain and pass Kerberos tickets correctly.\n\nIf you tell me which Tapis deployment you\u2019re using (e.g., a particular site or institutional instance), I can outline the exact endpoint format and a minimal example request to exchange a Kerberos ticket for a Tapis access token.",
+        "reference": "No, Tapis does not support authentication using Kerberos at the moment.",
+        "service": "authenticator"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Does Tapis authentication support programmatic access via SDKs?",
+        "answer": "Yes. Tapis is explicitly designed for programmatic access, and its authentication integrates with multiple official SDKs.\n\nIn practice:\n\n- You obtain an access token (typically an OAuth2/JWT token) using your Tapis credentials or service account.\n- The SDK then sends that token in the Authorization header with each API call.\n\nOfficial Tapis SDKs (vary slightly by deployment, but commonly):\n\n- Python SDK (`tapis-py` or `tapis-client`)\n- Java SDK\n- JavaScript/TypeScript/Node SDK\n- Often language-agnostic REST clients can also be generated via OpenAPI/Swagger.\n\nAll of these use the same Tapis authentication services; you don\u2019t need to handle raw HTTP auth if you use the SDK\u2019s built-in login/token helpers.\n\nIf you tell me your language (Python, JS, Java, etc.) and which Tapis deployment you\u2019re on, I can show a concrete code snippet for authenticating via the SDK.",
+        "reference": "Yes",
+        "service": "authenticator"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can Tapis APIs be accessed without authentication?",
+        "answer": "No. All Tapis APIs require some form of authentication; you cannot use them anonymously.\n\nIn practice:\n\n- You must obtain a token (e.g., from the Tapis Tokens service or via OAuth2/OIDC with the Tapis Auth service).\n- That token is then sent with each request, typically in the `X-Tapis-Token` or `Authorization: Bearer <token>` header, depending on the deployment/version.\n- Even \u201cpublic\u201d systems, apps, or data in Tapis are accessed under an authenticated identity; the platform uses that identity to check permissions and audit actions.\n\nSome deployments offer:\n- **Service tokens** for internal services.\n- **User tokens** for end users, often obtained via a login workflow or CLI.\n\nIf you tell me which Tapis version (e.g., Tapis v3) and what language or client you\u2019re using (Python, curl, web app), I can show the exact steps and headers you\u2019d need.",
+        "reference": "No, almost all the Tapis APIs require authentication via a valid OAuth2 token",
+        "service": "authenticator"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What happens when a Tapis access token expires?",
+        "answer": "When a Tapis access token expires:\n\n- The token is no longer accepted by Tapis services, and API calls using it will start failing with authentication/authorization errors (e.g., 401/403).\n- You cannot \u201crevive\u201d that access token; you must obtain a new one.\n\nHow clients should handle it:\n\n1. Use the refresh token:\n   - When you first authenticate, Tapis issues both:\n     - an access token (short\u2011lived) and  \n     - a refresh token (longer\u2011lived).\n   - When the access token expires, the client should call the Tapis token endpoint with the refresh token to get a new access token (and often a new refresh token).\n\n2. Automate the refresh:\n   - Client code should detect expiration (either by:\n     - tracking the token lifetime/expiration time, or  \n     - catching a 401/403 from the API and then attempting a refresh).\n   - Then transparently request a new access token using the refresh token and retry the original API request.\n\n3. Tapipy specifics:\n   - The Tapipy Python client can automatically refresh tokens, but only if it was initialized with a `client_id` and `client_key`.\n   - With proper configuration, Tapipy handles refreshing in the background so your code keeps working after the original token expires.\n\nIf you tell me what language or client library you\u2019re using, I can sketch the exact refresh flow or sample code.",
+        "reference": "When the token expires, the user can use a refresh token to obtain the new token",
+        "service": "authenticator"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Is authentication in Tapis tenant-specific?",
+        "answer": "Yes. In Tapis, authentication is tenant-specific.\n\nKey points:\n\n1. **Tokens are issued by a specific tenant**  \n   - When you authenticate (e.g., via the Tokens service or OAuth flow), you do so against a particular tenant (like `tacc`, `iplant`, etc.).  \n   - The resulting access token is scoped to that tenant.\n\n2. **Tenant determines:**\n   - Which **Identity Provider (IdP)** is used (local accounts, campus SSO, OAuth, etc.).\n   - The **user namespace** (your username in one tenant is distinct from any same-named user in another tenant).\n   - The **base URL** for API calls (e.g., `https://tacc.tapis.io` vs another tenant\u2019s URL).\n\n3. **No cross-tenant authentication by default**  \n   - A token from tenant A is not automatically valid for tenant B.  \n   - Cross-tenant access, if needed, has to be explicitly configured (e.g., via service accounts, sharing, or multi-tenant aware services).\n\n4. **Multi-tenant design**  \n   - Tapis is designed as a multi-tenant platform where each tenant can have its own policies, IdPs, and user base.  \n   - This is why clients typically specify the tenant (or use a tenant-specific base URL) when requesting tokens.\n\nIf you describe your setup (which tenant, which auth flow you\u2019re using), I can outline the exact steps for tenant-aware authentication in your case.",
+        "reference": "Yes, a Tapis token for one tenant can only be used for that tenant.",
+        "service": "authenticator"
+    },
+    {
+        "type": "Conceptual",
+        "question": "How to include a Tapis token in an API request?",
+        "answer": "Include the Tapis token as a Bearer token in the HTTP `Authorization` header.\n\n### General pattern\n\n```http\nGET https://tacc.tapis.io/v3/systems HTTP/1.1\nAuthorization: Bearer <your_tapis_access_token>\nContent-Type: application/json\n```\n\nReplace `<your_tapis_access_token>` with the actual token string you obtained from Tapis.\n\n### Example with curl\n\n```bash\nTOKEN=\"your_tapis_access_token_here\"\n\ncurl -X GET \"https://tacc.tapis.io/v3/systems\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H \"Content-Type: application/json\"\n```\n\n### Example with Python (requests)\n\n```python\nimport requests\n\ntoken = \"your_tapis_access_token_here\"\nurl = \"https://tacc.tapis.io/v3/systems\"\n\nheaders = {\n    \"Authorization\": f\"Bearer {token}\",\n    \"Content-Type\": \"application/json\"\n}\n\nr = requests.get(url, headers=headers)\nprint(r.status_code, r.json())\n```\n\nIf you tell me:\n- which Tapis tenant (e.g., `tacc`, `dev`, etc.), and  \n- which language or tool (curl, Python, JS, etc.) you\u2019re using,\n\nI can give you a tailored snippet for that case.",
+        "reference": "To include a Tapis token in an API request, the user must add an authorization header in the request along with user token Authorization: Bearer <YOUR_TAPIS_TOKEN>",
+        "service": "authenticator"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Using the `tapipy` library, write a Python command to list the files and directories within the path `/mydata` on the Tapis system with the ID `mysystem`.",
+        "answer": "```python\ntapipy_client.files.listFiles(systemId=\"mysystem\", path=\"/mydata\")\n```",
+        "reference": "```python\nresults = t.files.listFiles(systemId='mysystem', path='/mydata')\n```",
+        "service": "files"
+    },
+    {
+        "type": "Code Correction",
+        "question": "The following `curl` command attempts to create a new directory named `new_folder` in the root directory of the system with ID `my_system`, but it's failing. `curl -X POST -H \"Content-Type: application/json\" -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/files/ops/my_system -d '{\"path\": \"new_folder\"}'`. What is the correct endpoint path for creating a directory?",
+        "answer": "Use the `/mkdir` operation.\n\nThe correct endpoint path for creating a directory is:\n\n```bash\ncurl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"X-Tapis-Token: $JWT\" \\\n  https://tacc.tapis.io/v3/files/ops/my_system/mkdir \\\n  -d '{\"path\": \"new_folder\"}'\n```",
+        "reference": " Your code seems right ```curl -X POST -H \"X-Tapis-Token:$JWT\" \"Content-Type: application/json\" https://tacc.tapis.io/v3/files/ops/my_system -d {\"path\": \"new_folder\"}\n```. Can you provide more details about error?",
+        "service": "files"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Does Tapis offer a feature for automatically synchronizing files between local storage and Tapis systems?",
+        "answer": "No, Tapis itself does not currently provide a native, always-on \u201csync client\u201d like Dropbox or OneDrive that automatically mirrors a local directory to a Tapis system.\n\nHowever:\n\n- You *can* achieve automatic or semi-automatic synchronization using **external tools** plus Tapis APIs.\n- A commonly recommended option is **Globus**:\n  - Register your local storage as a **Globus endpoint**.\n  - Use a **Globus endpoint** that has access to a Tapis system (or a gateway/cluster that mounts a Tapis-managed filesystem).\n  - Use Globus\u2019s **transfer and sync** capabilities to keep data in sync between those endpoints.\n- Alternatively, users sometimes script their own sync workflows using:\n  - The **Tapis Files API** (list, upload, download, delete).\n  - Command-line tools (e.g., `tapis files ...`) plus cron jobs or workflow engines.\n  - Local tools like `rsync` combined with a mounted filesystem that corresponds to a Tapis system.\n\nSo: there is **no built-in Tapis \u201cauto-sync\u201d feature**, but Tapis is often used together with **Globus** or custom scripts to implement synchronization.",
+        "reference": "No, Tapis does not offer a feature for automatically synchronizing files between local storage and Tapis systems",
+        "service": "files"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can PostIt URLs be redeemed without authentication?",
+        "answer": "Yes. PostIt URLs are designed so they can be redeemed without Tapis authentication.\n\nWhen you create a PostIt, Tapis embeds the access information in the PostIt token itself (in the URL). Anyone who has that URL can redeem it (subject to the PostIt\u2019s limits like expiry time, allowed uses, and the specific operation permitted) without logging in or presenting their own Tapis token.\n\nBecause of this, PostIts should be treated like bearer tokens: anyone who can see the URL can use it until it expires or is revoked.",
+        "reference": "Yes, the PostIts service is a URL service that allows you to create pre-authenticated, disposable URLs to files, directories, buckets, etc in the Tapis Platform\u2019s Files service, and it does not require authentication to redeem the files",
+        "service": "files"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What are file transfers in Tapis?",
+        "answer": "In Tapis, **file transfers** are operations where data is copied from one location to another using the **Files service**.\n\nKey points:\n\n- A transfer is defined by:\n  - One or more **source URLs** (`sourceUrls`): where the data currently lives.\n  - A **target directory** (`targetDir`): where the data will be copied to.\n\n- The Files service understands multiple URL schemes, for example:\n  - `tapis://` \u2014 transfer between Tapis-managed systems.\n  - Other supported URL types (e.g., external storage), as defined in the Files API.\n  - Note: `tapislocal` is *not* recognized by the Files service.\n\n- Conceptually:  \n  For each entry in `sourceUrls`, the Files service copies that data into `targetDir`. This is how you move or replicate data between:\n  - Two Tapis systems\n  - A Tapis system and an external system (depending on supported schemes)\n  - Different directories on the same system\n\nIf you tell me what you want to do (e.g., \u201ccopy results from system A to system B\u201d), I can outline the exact request payload and API call format.",
+        "reference": "File transfers are used to move data between Tapis systems. They should be used for bulk data operations that are too large for the REST api to perform",
+        "service": "files"
+    },
+    {
+        "type": "Conceptual",
+        "question": "How are permissions inherited within the Tapis Files service?",
+        "answer": "Within the Tapis Files service, permissions are not inherited along the directory tree the way, for example, UNIX group permissions might appear to \u201cflow down\u201d automatically. Instead, inheritance in Tapis is handled via **roles and the Security Kernel (SK)**, which then drive what you can do in Files.\n\nHere\u2019s how it works:\n\n1. **Permissions come from SK roles, not from filesystem hierarchy**  \n   - Access to files and directories is controlled by **roles** defined in the Security Kernel.  \n   - Each role can include one or more **permission strings** (e.g., things like \u201ccan read on system X\u201d, \u201ccan write on system Y\u201d, etc.).  \n   - The Files service checks these permissions when you perform operations like listing, reading, writing, deleting, etc.\n\n2. **Role hierarchy = permission inheritance**  \n   - Roles can be **organized in a hierarchy**: parent roles and child roles.  \n   - If you are assigned a role **R**, you are implicitly assigned **all its child roles** as well.  \n   - That means all permissions defined in a child role are effectively granted to you through the parent.  \n   - Conversely, when SK checks whether you \u201chave\u201d a given role, it also considers **parent roles** of that role: if you have a parent role, you are treated as having the child role for permission checks.\n\n3. **What is actually inherited?**  \n   - What is inherited are the **permission strings** attached to the role hierarchy.  \n   - Those permission strings are what Tapis Files interprets to decide:  \n     - Can you list this path?  \n     - Can you read this file?  \n     - Can you write/update/delete here?  \n   - The inheritance is at the **role level**, not at the **directory level**.\n\n4. **What is *not* inherited automatically**  \n   - Setting permissions on a parent directory in the underlying system does not automatically cause Tapis to propagate new SK roles or permission strings down every subdirectory.  \n   - There is no \u201cTapis Files\u2013specific ACL cascade\u201d mechanism; any apparent inheritance is due to how the **roles are defined and assigned** in SK.\n\nSummary:  \n- Permissions used by Tapis Files are defined in the Security Kernel as permission strings on roles.  \n- Users inherit permissions by being assigned roles that may have **child roles**; all permissions of child roles are implicitly granted via the parent role.  \n- Files itself doesn\u2019t implement its own tree-based inheritance; it relies on the SK role/permission hierarchy.",
+        "reference": "Tapis Files uses an ACL-based permission model. When a user is granted a permission on a folder, it is recursively applied to the contents unless overridden.",
+        "service": "files"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is a Tapis 'Post-Its' and how does it relate to the Files service?",
+        "answer": "\u201cPost-Its\u201d in Tapis is a lightweight, short-lived authorization and sharing mechanism; it is not a storage system itself.\n\nHere\u2019s what that means and how it relates to the Files service:\n\n1. **What a Tapis Post-It is**\n   - A Post-It is a small, generated token (often represented as part of a URL) that grants limited access to some Tapis resource without requiring the recipient to have Tapis credentials.\n   - It is:\n     - **Time-limited** (expires after a configured TTL).\n     - Often **single-use or few-use** (can be configured for a max number of uses).\n     - **Scope-limited** (restricted to a specific API call or path).\n   - Typical use: \u201cShare this particular file (or download link) with someone outside Tapis for a short period.\u201d\n\n2. **How it relates to the Files service**\n   - Most commonly, Post-Its are used with the **Files service** to share files or directories.\n   - You:\n     1. Identify a file (via Files service path, e.g., a file on a registered Tapis system).\n     2. Create a Post-It that encapsulates a specific Files service request, such as:\n        - `GET` on a file path (download).\n        - Possibly listing a directory or accessing a small subset of files.\n     3. Get back a URL containing the Post-It key.\n     4. Share that URL; when someone calls it, Tapis internally uses the Post-It to authorize that **one specific Files operation** without them needing OAuth tokens or a Tapis account.\n\n3. **Key relationship points**\n   - The **Files service** is where the data lives and is accessed (upload, download, list, manage files).\n   - **Post-Its** are a *mechanism* for delegating and simplifying access to some of those Files operations for external users:\n     - They wrap a Files API call + constraints (TTL, uses allowed).\n     - They do not change file ownership or permissions; they\u2019re a temporary \u201cticket\u201d that Tapis honors when calling the Files service.\n   - When the Post-It expires or its max-uses is reached, calls using its URL no longer work, and the underlying Files service is no longer accessible via that ticket.\n\nIn short: Post-Its are temporary access tickets; the Files service is the file management system. Post-Its are frequently used to share Files service resources safely and simply.",
+        "reference": "Post-Its allow users to create shareable links to files stored on Tapis systems. These links have a configurable expiration and can be used by anyone with the URL.",
+        "service": "files"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What are the three core permissions available in the Tapis Files Access Control List (ACL)?",
+        "answer": "The three core permissions in the Tapis Files Access Control List (ACL) are:\n\n1. **READ** \u2013 allows viewing/reading a file or listing a directory\u2019s contents.  \n2. **WRITE** \u2013 allows modifying file contents or creating/updating items in a directory.  \n3. **EXECUTE** \u2013 allows executing a file (if executable) or traversing/entering a directory.",
+        "reference": "The Files service manages access via ACLs. READ allows downloading/viewing, WRITE allows uploading/editing, and MODIFY allows the user to change permissions for others.",
+        "service": "files"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Give curl command to get the actual contents of file using Tapis Files service",
+        "answer": "Here\u2019s a basic `curl` example to get the **contents of a file** from the Tapis Files service, assuming you already have a valid Tapis access token.\n\n### Prerequisites\n- `BASE_URL` \u2013 Your Tapis base URL, e.g. `https://tacc.tapis.io`\n- `TOKEN` \u2013 A valid Tapis JWT access token\n- `SYSTEM_ID` \u2013 The Tapis system ID where the file lives\n- `PATH` \u2013 The path to the file on that system (URL-encoded if it has spaces/special chars)\n\n### 1. Get raw file contents (download)\n\n```bash\ncurl -X GET \\\n  -H \"X-Tapis-Token: $TOKEN\" \\\n  \"$BASE_URL/v3/files/content/$SYSTEM_ID/$PATH\"\n```\n\nExample:\n\n```bash\nexport BASE_URL=\"https://tacc.tapis.io\"\nexport TOKEN=\"YOUR_TAPIS_JWT\"\nexport SYSTEM_ID=\"my-posix-system\"\nexport PATH=\"data/input.txt\"\n\ncurl -X GET \\\n  -H \"X-Tapis-Token: $TOKEN\" \\\n  \"$BASE_URL/v3/files/content/$SYSTEM_ID/$PATH\"\n```\n\nThis will print the file contents to stdout. To save to a local file:\n\n```bash\ncurl -X GET \\\n  -H \"X-Tapis-Token: $TOKEN\" \\\n  -o local_copy.txt \\\n  \"$BASE_URL/v3/files/content/$SYSTEM_ID/$PATH\"\n```\n\n### 2. If the path needs URL encoding\n\nIf the path contains spaces or special characters, encode it, e.g.:\n\n```bash\nPATH=\"my dir/file with spaces.txt\"\nENCODED_PATH=$(python - <<'PY'\nimport urllib.parse, os\nprint(urllib.parse.quote(os.environ[\"PATH\"]))\nPY\n)\n\ncurl -X GET \\\n  -H \"X-Tapis-Token: $TOKEN\" \\\n  \"$BASE_URL/v3/files/content/$SYSTEM_ID/$ENCODED_PATH\"\n```\n\nIf you share your actual systemId and example path (sanitized), I can give you the exact command ready to paste.",
+        "reference": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/files/content/my-system/image.jpg > image.jpg",
+        "service": "files"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is the difference between a Tapis File and a Tapis System in the context of the Files service?",
+        "answer": "In the context of the Tapis Files service:\n\n**Tapis System**  \n- A *System* is a logical description of a storage or compute resource.  \n- It defines *where* and *how* files are stored or accessed.  \n- A System includes things like:\n  - Hostname or base storage location\n  - Protocol (e.g., S3, POSIX, iRODS)\n  - Credentials / auth method\n  - Root directory or bucket\n  - Permissions and ownership\n- Examples:\n  - A POSIX system describing `/home/user` on a cluster\n  - An S3 system describing an S3 bucket\n- You interact with Systems via the **Systems service** (to create, configure, and manage them), and the Files service uses those definitions to perform file operations.\n\n**Tapis File**  \n- A *File* is an individual path (file or directory) *within* a Tapis System.  \n- It represents *what* you are working with inside a given System.  \n- A File is always referenced using a System ID plus a path, for example:\n  - `systemId: my-posix-system`, `path: /data/project1/input.txt`\n- The Files service lets you:\n  - List, upload, download, copy, move, delete files\n  - Get metadata like size, last modified time, type (file/dir), etc.\n- The Files service does not define where storage lives; it operates on whatever Systems have already been defined in the Systems service.\n\n**In short**  \n- **System = storage endpoint definition** (where & how to access storage).  \n- **File = specific item within a System** (actual data path operated on by Files service).",
+        "reference": "The Files service allows users to interact with data on Tapis systems. Every file operation requires a systemId to identify the host and credentials used for the transaction.",
+        "service": "files"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Write a Python SDK call to create a directory '/data/newdir' on a Tapis system.",
+        "answer": "Here\u2019s an example using the Tapis v3 Python SDK to create `/data/newdir` on a system with ID `my-tapis-system`:\n\n```python\nfrom tapipy.tapis import Tapis\n\n# Initialize Tapis client (fill in with your tenant URL and token or password)\nt = Tapis(\n    base_url=\"https://tacc.tapis.io\",  # or your tenant URL\n    username=\"your_username\",\n    password=\"your_password\",\n    tenants_base_url=\"https://tacc.tapis.io\"\n)\n\n# Authenticate (if using username/password)\nt.get_tokens()\n\n# Create the directory '/data/newdir' on system 'my-tapis-system'\nt.files.createFolder(\n    systemId=\"my-tapis-system\",\n    path=\"/data/newdir\"\n)\n```\n\nKey points:\n- `systemId` is the Tapis system where you want the directory created.\n- `path` is the full path of the directory to create on that system.",
+        "reference": "t.files.mkdir(systemId=\"my-system\", path=\"/data/newdir\")",
+        "service": "files"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can you share files with users using Tapis files service?",
+        "answer": "Yes. Tapis lets you share files (and entire systems) with other users through its **sharing API** in the Files/Systems layer.\n\nHigh\u2011level concept:\n\n- You don\u2019t directly change Unix permissions on the underlying storage.\n- Instead, you **\u201cshare\u201d**:\n  - a specific **file or directory path**, or\n  - an entire **system** (storage system definition)\n- You share it **with:**\n  - one or more specific users, or  \n  - \u201cpublic\u201d (all users in the tenant).\n\nAccess semantics:\n\n- Sharing always grants at least **READ** access through the Tapis Files API.\n- If the underlying system uses a **dynamic `effectiveUserId`** (i.e., Tapis operates as the logged-in user on that system), then sharing a system can effectively allow **MODIFY** (write) operations on all paths when accessed via the Files service.\n\nConceptually how it\u2019s done:\n\n1. An owner (or someone with rights) calls the **sharing API** with:\n   - The target (system or file path).\n   - The user(s) or public.\n   - The type of share (e.g., READ).\n2. Tapis records this in its **sharing/permissions layer**.\n3. When the other user makes Files API calls, Tapis checks these share records and permits access accordingly.\n\nIf you\u2019d like, I can outline example API calls or a minimal workflow for sharing a specific directory with another user.",
+        "reference": "Yes, the files sharing API allows you to share a file path with a set of users as well as share publicly with all users in a tenant. ",
+        "service": "files"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can you unshare files with users using Tapis files service?",
+        "answer": "Yes. The Tapis Files service lets you unshare files and directories.\n\nAt a high level, you have two options:\n\n1. **Unshare specific permissions for a user/path**  \n   Use the Files service \u201cunshare\u201d API for a given path and user.  \n   Conceptually, this removes the sharing/ACL entry that granted that user access to the file or directory.\n\n2. **Unshare all permissions for a path**  \n   There is also an endpoint to remove *all* sharing for a given path. For example (from the docs):\n\n   ```bash\n   curl -H \"X-Tapis-Token: $JWT\" \\\n        -X POST \\\n        https://tacc.tapis.io/v3/files/unshare_all/aturing-\n   ```\n\n   Replace the base URL, system/path, and token with your own values. The important parts are:\n   - `X-Tapis-Token`: your valid JWT access token\n   - `POST` request to a Files service `unshare` / `unshare_all` endpoint\n   - Path that identifies the file or directory being unshared\n\nIf you tell me:\n- Which Tapis Files deployment you use (URL), and  \n- Whether you want to unshare from one user or from everyone,  \n\nI can sketch the exact curl or Python/CLI command you\u2019d use.",
+        "reference": "Yes, the files unsharing API allows you to unshare a file path with a set of users as well as share publicly with all users in a tenant. ",
+        "service": "files"
+    },
+    {
+        "type": "Code-Correction",
+        "question": "The following Python snippet fails to download the contents of a file and instead returns a 401 error. Identify the missing component in the request headers.\"import requests\n\nurl = 'https://tacc.tapis.io/v3/files/content/ls6/home/jdoe/experiment.dat'\n# Missing header configuration\nresponse = requests.get(url)\nprint(response.content)",
+        "answer": "You need to include the `Authorization` header with a valid Tapis access token. For example:\n\n```python\nimport requests\n\nurl = 'https://tacc.tapis.io/v3/files/content/ls6/home/jdoe/experiment.dat'\n\nheaders = {\n    'Authorization': 'Bearer <your_access_token_here>'\n}\n\nresponse = requests.get(url, headers=headers)\nprint(response.content)\n```\n\nMissing component in headers: `Authorization: Bearer <token>`.",
+        "correction": "headers = {'Authorization': 'Bearer <YOUR_TAPIS_TOKEN>'}\nresponse = requests.get(url, headers=headers)",
+        "service": "files"
+    },
+    {
+        "type": "Conceptual",
+        "question": "How does Tapis handle file operations on a system that requires Multi-Factor Authentication (MFA)?",
+        "answer": "Tapis supports MFA\u2011protected systems mainly through the Systems `authn` flow; once MFA is satisfied, normal Files and Systems calls work without extra changes.\n\nHere\u2019s how it fits together:\n\n---\n\n## 1. Configuring a system to require MFA\n\nWhen registering or updating a Tapis system (via the Systems API), the system owner:\n\n- Chooses an MFA provider and configures it on the system.\n- Marks the system as requiring MFA in its configuration (e.g., via MFA\u2011related fields on the system object: provider, policy/requirement flags, etc.).\n\nOnce this is done, any access to that system\u2019s credentials (for job execution or file operations) will be gated by MFA.\n\nYou don\u2019t enable MFA in the Files service directly; you configure it on the **system**. Files uses the system definition when it connects.\n\n---\n\n## 2. How MFA is performed (Systems `authn` endpoint)\n\nWhen a user needs to use an MFA\u2011protected system for the first time (or after their MFA expires), they must complete an MFA authentication flow using the Systems API:\n\n1. **User initiates authn**  \n   - Client calls the Systems API `authn` endpoint for that system.\n   - Tapis detects that the system requires MFA and responds with a redirect URL or challenge information to the configured MFA provider.\n\n2. **User completes MFA with the provider**  \n   - User is redirected to the MFA provider\u2019s page (for example: OTP, push approval, etc.).\n   - After successful MFA, the provider returns an **authorization code** (or similar artifact) to the client or redirect URL.\n\n3. **Client exchanges code for Tapis MFA token**  \n   - Client calls the Systems `authn` endpoint again, now including the authorization code.\n   - Tapis verifies the code with the MFA provider and, if valid, issues or records an **MFA token** for that user/system pair.\n\nTapis then associates that MFA token with the user\u2019s credentials for that system.\n\n---\n\n## 3. MFA token reuse and lifetime\n\n- The MFA token\u2019s **lifetime** is determined by:\n  - The MFA provider\u2019s configuration.\n  - Any MFA\u2011related settings in the system configuration (if exposed).\n- While the MFA token is valid, **the user can repeatedly perform file operations on that same system** without re\u2011doing MFA.\n- When the token expires:\n  - The next operation that requires access to that system\u2019s credentials will fail with an MFA\u2011related error or trigger the need for MFA again.\n  - The client must redo the Systems `authn` flow (steps 1\u20133 above).\n\nTapis stores and manages the MFA token internally; the client usually does not need to present it explicitly on every Files call.\n\n---\n\n## 4. How this affects Files API calls (listing, upload, download)\n\nOnce MFA has been completed via Systems `authn` and a valid MFA token exists:\n\n- Calls to the **Files API** for that system (e.g., list, upload, download, move, delete) work as they normally do, using:\n  - The user\u2019s standard Tapis access token (JWT).\n  - System credentials that Tapis can now safely use because MFA is satisfied.\n\nBehavior you should expect:\n\n- **If user has a valid MFA token for the system**:  \n  - Files operations succeed normally; no extra steps are needed in Files requests.\n- **If user does not have a valid MFA token** (never authenticated or token expired):  \n  - Files operations that require access to that system\u2019s credentials will fail with an MFA\u2011related error / unauthorized condition.\n  - The client must then:\n    - Trigger the Systems `authn` flow.\n    - After completion, retry the Files operation.\n\nIn other words, Files doesn\u2019t expose a separate MFA parameter; it simply relies on whether the system authn (including MFA) is satisfied.\n\n---\n\n## 5. Changes needed in client code\n\n### 5.1. If your client already uses Files & Systems without MFA\n\nYou typically need to add logic in two places:\n\n1. **Initial MFA flow with Systems API**  \n   - Call `POST /v3/systems/{id}/authn` (or equivalent) to:\n     - Get the MFA provider\u2019s auth URL / challenge.\n     - Redirect the user to the provider or present the challenge.\n   - After the provider returns an authorization code, call `authn` again with that code to finalize MFA for that system.\n\n2. **Error handling & re\u2011authn**  \n   - Detect MFA\u2011related failures from Files or Systems calls (e.g., an error indicating MFA is required or token invalid/expired).\n   - On such errors:\n     - Re\u2011run the Systems `authn` MFA flow.\n     - Retry the original file or system operation.\n\n### 5.2. What does NOT change\n\n- **Files API request format**: No new headers or parameters are added for MFA; you still just send your normal Tapis access token.\n- **Basic Systems usage (non\u2011MFA parts)**: Listing systems, reading system definitions, etc., are unchanged.\n- For a non\u2011interactive service (e.g., backend daemon) you still need a way to satisfy MFA out\u2011of\u2011band if the system policy requires it (often MFA is reserved for interactive human\u2011operated workflows, not service accounts).\n\n---\n\n## 6. Summary\n\n- MFA is configured on the **system** (via Systems API) by specifying an MFA provider and enabling MFA requirements.\n- Users obtain MFA tokens by:\n  1. Calling Systems `authn` to start MFA.\n  2. Authenticating with the MFA provider.\n  3. Calling `authn` again with the returned authorization code.\n- Tapis stores the MFA token and uses it for subsequent access to that system until it expires.\n- Files operations (list/upload/download) **do not change** in structure; they just succeed or fail based on whether a valid MFA token is already established for that user/system.\n- Client code must:\n  - Implement the MFA `authn` flow with Systems.\n  - Handle MFA\u2011related errors and retry after re\u2011authn.",
+        "reference": "For systems with MFA, users typically must configure a system with a long-lived credential or use a Tapis-supported authentication proxy to ensure non-interactive access.",
+        "service": "files"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What are the minimum pieces of information that must be provided when submitting a job for execution using the Tapis Jobs service?",
+        "answer": "According to the Tapis Jobs API specification, a minimal job submission must include at least:\n\n1. **`tenantId`** \u2013 The Tapis tenant where the job is being submitted.  \n2. **`id`** \u2013 A job name/identifier (string).  \n3. **`appId`** \u2013 The Tapis application to run.  \n4. **`appVersion`** \u2013 The specific version of that application.  \n5. **`execSystemId`** \u2013 The execution system where the job will run.  \n6. **`archiveSystemId`** \u2013 The system where outputs will be archived.  \n7. **`archiveSystemDir`** \u2013 The directory/path on the archive system where results will be stored.\n\nEverything else (description, parameters, tags, etc.) is optional for basic submission, as long as the app itself does not define additional required inputs.",
+        "reference": "Required parameters for job submission are **name**, **appId**, and **appVersion**.",
+        "service": "jobs"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Assuming you have a Python dictionary named `job_submission` that defines a Tapis job, write a `tapipy` command to submit this job.",
+        "answer": "```python\nfrom tapipy.tapis import Tapis\n\n# Assuming you already have a Tapis client `t` authenticated, e.g.:\n# t = Tapis(base_url='https://tacc.tapis.io', username='your_username',\n#           password='your_password', tenants_path='https://tacc.tapis.io/tenants')\n# t.get_tokens()\n\n# And you have a Python dict defining the job:\n# job_submission = {\n#     \"name\": \"example_job\",\n#     \"appId\": \"your-app-id\",\n#     \"appVersion\": \"1.0\",\n#     ...\n# }\n\n# Submit the job\njob = t.jobs.submitJob(**job_submission)\n\n# Optionally print job UUID or full response\nprint(job)\n# or:\n# print(job.uuid)\n```",
+        "reference": "```python\nsubmitted_job = t.jobs.submitJob(**job_submission)\n``` ",
+        "service": "jobs"
+    },
+    {
+        "type": "Code Correction",
+        "question": "You have submitted a Tapis job using `tapipy` and received a response object named `job_info`. You are trying to access the job's unique identifier using `job_info['uuid']`, but this key does not exist. Based on the documentation, what is the correct key to access the job's UUID in the response?",
+        "answer": "Use the `id` field, not `uuid`. In other words, access the job\u2019s UUID with:\n\n```python\njob_info['id']\n```",
+        "reference": "The correct key to access job's uuid as per the live docs is `uuid`",
+        "service": "jobs"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Does the Tapis Jobs service offer a feature to checkpoint and restart long-running jobs from a specific point of failure?",
+        "answer": "No. The Tapis Jobs service does not provide a built\u2011in, generic \u201ccheckpoint and restart from point of failure\u201d mechanism for arbitrary jobs.\n\nHow it typically works instead:\n\n- **Application-/workflow-level responsibility**  \n  Checkpointing is usually implemented inside the application or workflow you run under Tapis (e.g., scientific codes writing restart files, workflow engines tracking state).  \n  - Your code periodically writes checkpoints (files, database state, etc.) to a Tapis system (e.g., an HPC filesystem or object store).  \n  - On failure or requeue, you submit a *new* Tapis job pointing to the saved state and instruct your application (via arguments or env vars) to restart from that checkpoint.\n\n- **What Tapis does handle**  \n  - Queueing, scheduling, retries (to some extent via job resubmission), and log capture.  \n  - Access to persistent storage systems where you can write/read checkpoints.  \n  - You can design your app definition so that it accepts a \u201crestart from checkpoint\u201d flag or input parameter; Tapis will pass that through but does not interpret it.\n\n- **What Tapis does *not* do natively**  \n  - No automatic application-level checkpointing.  \n  - No API to say \u201crestart this same job from internal step N.\u201d Any such semantics must be handled by your application or workflow engine on top of Tapis.\n\nIf you describe your use case (HPC code, workflow engine, container app, etc.), I can outline a concrete pattern for integrating checkpoints and restarts using Tapis Jobs plus your storage system.",
+        "reference": "No, Tapis Jobs service do not provide a checkpoint and restart of a long-running jobs from a specific point of failure.",
+        "service": "jobs"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Write a Python SDK call to cancel a job.",
+        "answer": "Here\u2019s a minimal example using the Tapis Python SDK to cancel a job by its ID:\n\n```python\nfrom tapipy.tapis import Tapis\n\n# Initialize Tapis client\nt = Tapis(\n    base_url=\"https://tacc.tapis.io\",  # replace with your Tapis base URL\n    username=\"your_username\",\n    password=\"your_password\"\n)\n\n# Authenticate\nt.get_tokens()\n\n# Cancel a job\njob_id = \"your-job-id\"  # replace with the ID of the job you want to cancel\nresp = t.jobs.cancelJob(job_id=job_id)\n\nprint(resp)\n```\n\nIf your environment already has an authenticated `Tapis` client (`t`), you only need:\n\n```python\nt.jobs.cancelJob(job_id=\"your-job-id\")\n```",
+        "reference": "t.jobs.cancelJob(jobUuid=\"my_job_id\") The caller must be the job owner, creator or a tenant administrator.",
+        "service": "jobs"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can jobs be shared with other users?",
+        "answer": "Yes. Jobs can be shared with other users in the same tenant.\n\nKey points:\n- Shareable job resources:  \n  - `JOB_HISTORY`  \n  - `JOB_RESUBMIT_REQUEST`  \n  - `JOB_OUTPUT`  \n- Permission type: currently only `READ` is supported on these shared job resources.\n- How it works (conceptually):\n  - You (the job owner) issue a `POST` to the job\u2019s `/permissions` endpoint to grant another user `READ` access.\n  - You can retrieve/share info via `GET` on the same `/permissions` endpoint.\n- What the other user can do once it\u2019s shared:\n  - List job output\n  - Download job output\n  - View job history / resubmit info  \n  All of this using *their* own JWT, even though they do not own the job.\n\nIf you tell me what language or client (curl, Python, etc.) you\u2019re using, I can show an example `POST /permissions` call.",
+        "reference": "Yes, A previously submitted job can be shared with a user in the same tenant.",
+        "service": "jobs"
+    },
+    {
+        "type": "Code Correction",
+        "question": "Fix this incorrect Python SDK call: `t.jobs.get('job123')`",
+        "answer": "Use the `getJob` method instead of `get`:\n\n```python\nt.jobs.getJob(jobId='job123')\n```\n\nIf you have a `Jobs` client instance directly (e.g., `jobs = Jobs(tapis_client)`), it would be:\n\n```python\njobs.getJob(jobId='job123')\n```",
+        "reference": "The correct method to get the job details is `t.jobs.getJob(jobUuid='job123')`",
+        "service": "jobs"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Write a curl command to retrieve all jobs.",
+        "answer": "Use the Jobs service `GET /v3/jobs` endpoint. A basic `curl` command to retrieve all jobs you\u2019re authorized to view looks like this:\n\n```bash\ncurl -X GET \"https://tacc.tapis.io/v3/jobs\" \\\n  -H \"X-Tapis-Token: $TAPIS_TOKEN\" \\\n  -H \"Content-Type: application/json\"\n```\n\nIf your Tapis base URL is different, replace `https://tacc.tapis.io` with your tenant\u2019s base URL.\n\nTo include query options (e.g., limit, order, or to get *all* pages), you typically paginate:\n\n```bash\ncurl -X GET \"https://tacc.tapis.io/v3/jobs?limit=100&offset=0\" \\\n  -H \"X-Tapis-Token: $TAPIS_TOKEN\" \\\n  -H \"Content-Type: application/json\"\n```\n\nAdjust `limit` and `offset` as needed to iterate through all jobs.",
+        "reference": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/jobs/list",
+        "service": "jobs"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can a job be canceled after it has started running?",
+        "answer": "Yes, a job can usually be canceled after it has started running, but with some important details:\n\n1. **Allowed states**  \n   Most schedulers / job systems only allow cancellation when the job is in:\n   - `QUEUED` / `PENDING`\n   - `RUNNING`  \n   Once it\u2019s in a final state (`COMPLETED`, `FAILED`, `CANCELLED`), it can\u2019t be canceled anymore.\n\n2. **What \u201ccanceled\u201d means in practice**  \n   - The system sends a termination signal to the running process (e.g., `SIGTERM`, then possibly `SIGKILL`).\n   - The job\u2019s state becomes something like `CANCELLED` or `KILLED`.\n   - Any partial outputs already written to disk usually remain, but the job won\u2019t continue.\n\n3. **Possible limitations**  \n   - Some backends may delay or ignore cancellation if the job is in a non-interruptible phase (e.g., certain MPI jobs, GPU kernels, or system calls).\n   - If the job is already finishing (very close to completion), the cancel request may arrive too late and the job may end as `COMPLETED` instead.\n\n4. **How you typically do it**  \n   Common patterns (your exact command/UI will depend on the platform):\n   - Command-line: something like `cancel <job_id>`, `scancel <job_id>`, `qdel <job_id>`, or an API call `DELETE /jobs/{id}`.\n   - Web UI: select the job \u2192 click \u201cCancel\u201d or \u201cTerminate\u201d.\n\nIf you tell me what system or platform you\u2019re using (e.g., Slurm, Kubernetes, a specific cloud/HPC portal, or Tapis), I can give the exact command or API call and what status to look for.",
+        "reference": "Yes, users can request the cancelation of a running job, unless it's not in the terminal state such as FINISHED, BLOCKED, or FAILED",
+        "service": "jobs"
+    },
+    {
+        "type": "Conceptual",
+        "question": "Name terminal job states in Tapis.",
+        "answer": "The terminal job states in the Tapis Jobs service are:\n\n1. **FINISHED**  \n2. **CANCELLED**  \n3. **FAILED**  \n\nThese are the states from which a job will not transition to any further state.",
+        "reference": "Terminal states are FINISHED, CANCELLED and FAILED. ",
+        "service": "jobs"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What does the job status represent?",
+        "answer": "The job status is a label that tells you what stage your job is currently in within the Tapis system. As a job moves through its lifecycle, Tapis updates this status to reflect progress or completion.\n\nTypical statuses (in roughly chronological order) include:\n\n- **PENDING** \u2013 The job has been created and accepted by Tapis, but processing hasn\u2019t really started yet.\n- **PROCESSING_INPUTS** \u2013 Tapis is validating and preparing your input parameters and files.\n- **STAGING_INPUTS** \u2013 Input data is being copied from their source locations to the execution system.\n- **STAGING_JOB** \u2013 The job environment (scripts, wrapper files, etc.) is being set up on the execution system.\n- **SUBMITTING_JOB** \u2013 Tapis is submitting the job to the underlying scheduler/queue (e.g., SLURM, PBS).\n- **QUEUED** \u2013 The job has been handed off to the scheduler and is waiting in the queue to start.\n- **RUNNING** \u2013 The job is actively executing on the compute system.\n- **ARCHIVING** \u2013 The job has finished running; output data is being copied to the designated archive location.\n- **FINISHED** \u2013 The job completed successfully and all post-processing (including archiving) is done.\n- **CANCELLED** \u2013 The job was intentionally stopped before completion (by a user or system action).\n- **FAILED** \u2013 The job did not complete successfully due to an error (in inputs, environment, system, or application).\n\nThe last three (**FINISHED**, **CANCELLED**, **FAILED**) are **terminal** statuses, meaning the job has reached an end state and will not transition further.",
+        "reference": "It represents the current state of the job in its lifecycle from the list of possible states, such as QUEUED, STAGING, RUNNING, FINISHED, etc.",
+        "service": "jobs"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What information does a job submission specify?",
+        "answer": "A typical job submission (for an HPC/Cloud job scheduler or workflow system) specifies information in four main categories:\n\n1. **What to run**\n   - Application or executable name/path  \n   - Application version (if using an app catalog)  \n   - Command-line arguments  \n   - Input files / datasets and where to find them  \n   - Environment variables or modules to load  \n\n2. **Where to run**\n   - Target system/queue/partition (cluster name, queue name)  \n   - Required operating system or architecture (e.g., linux, GPU nodes)  \n   - Account/project under which to charge compute time  \n\n3. **Resources to use**\n   - Number of nodes  \n   - Number of cores/CPUs per node  \n   - Amount of memory (per node or total)  \n   - GPUs (count, type)  \n   - Maximum walltime (job time limit)  \n   - Parallelism model (MPI, OpenMP, hybrid, single-core)  \n\n4. **How to handle input/output and job control**\n   - Working directory (where the job runs)  \n   - Standard output and error file paths  \n   - File staging: what to copy in before and out after the job  \n   - Job name  \n   - Priority or QoS (if applicable)  \n   - Job dependencies (run after job X finishes)  \n   - Notifications (email on start/end/fail, etc.)\n\nIf you tell me which system you\u2019re using (e.g., Slurm, PBS, Tapis, Kubernetes job, etc.), I can list the exact fields and show a minimal and a full example submission.",
+        "reference": "Job submission specifies the name of job, application id , version, type of job FORK or BATCH, execution system and optional job metadata ",
+        "service": "jobs"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What uniquely identifies a job in the Jobs service?",
+        "answer": "A job in the Jobs service is uniquely identified by its **job UUID** (often referred to as `uuid` or `id` in APIs). \n\n- This UUID is generated by the Jobs service when the job is created.\n- It is globally unique and is what you use in API calls to get status, logs, results, cancel, etc.\n- Other fields like job name, appId, systemId, or owner are **not** guaranteed to be unique.",
+        "reference": "A job is uniquely identified by a UUID assigned at submission time.",
+        "service": "jobs"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Does the Jobs service execute code directly without an app id?",
+        "answer": "No. The Jobs service does not execute arbitrary code directly without an appId.\n\nA Tapis job must reference:\n- an **application (appId + appVersion)**, which defines what is being run (command, inputs, parameters, etc.), and  \n- an **execution system**, where the job actually runs.\n\nSo you cannot submit raw code or a command to the Jobs service alone; it needs to be encapsulated in an application definition and referenced by appId.",
+        "reference": "No, appId is mandatory to submit the job, and it must exist prior to job submission ",
+        "service": "jobs"
+    },
+    {
+        "type": "Conceptual",
+        "question": "What is job output in Tapis?",
+        "answer": "In Tapis, **job output** means the files (and directories) that your application creates while a job is running, which Tapis then **collects and stores on an archive system** when the job finishes (if archiving is enabled).\n\nKey points:\n\n- **What it is:**  \n  All files your job writes to its working directory (e.g., logs, result files, images, etc.).\n\n- **Where it goes:**  \n  - Tapis copies these files to an **archive system** you specify for the job/app.  \n  - The location on that archive system is controlled by macros such as:\n    - `_tapisArchiveSystemDir` \u2013 the directory on the archive system where outputs are stored.\n    - `_tapisDtnSystemOutputDir` \u2013 the directory on a Data Transfer Node (DTN) used as the source when archiving.\n\n- **How you see it:**  \n  - You can inspect the job\u2019s history/status via the Jobs API.  \n  - In the history records, the **archiving step** shows that output files were transferred to the archive system.  \n  - Once archived, you access the output like any other files on that system (e.g., via Tapis Files APIs or directly if you have access to that storage).\n\nIf you tell me whether you\u2019re defining an app, submitting a job, or trying to retrieve results, I can give a concrete example with the exact fields and API calls you\u2019d use.",
+        "reference": "Job output consists of artifacts generated during the lifecycle of a job. The job output can be archived at desired location by specifying in app and/or job definition",
+        "service": "jobs"
+    },
+    {
+        "type": "Conceptual",
+        "question": "Which runtimes are supported by Tapis Jobs service?",
+        "answer": "Tapis Jobs service supports these runtimes:\n\n1. **DOCKER** (default)\n2. **SINGULARITY**\n3. **ZIP**\n\nThese values are used in the job/application definition\u2019s `runtime` field.",
+        "reference": "Runtimes supported by Tapis Jobs service are Docker, Singularity and ZIP containers",
+        "service": "jobs"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Write a curl command to search jobs with Tapis Jobs service?",
+        "answer": "Here\u2019s a simple `curl` example to search jobs with the Tapis Jobs service. This shows a POST to the `/jobs/search` endpoint using a Tapis access token.\n\n```bash\ncurl -X POST \"https://tacc.tapis.io/v3/jobs/search\" \\\n  -H \"Content-Type: application/json\" \\\n  -H \"X-Tapis-Token: $TAPIS_TOKEN\" \\\n  -d '{\n    \"search\": {\n      \"op\": \"and\",\n      \"rules\": [\n        {\n          \"field\": \"owner\",\n          \"op\": \"eq\",\n          \"value\": \"your-username\"\n        },\n        {\n          \"field\": \"status\",\n          \"op\": \"in\",\n          \"value\": [\"RUNNING\", \"PENDING\"]\n        }\n      ]\n    },\n    \"limit\": 50,\n    \"skip\": 0,\n    \"orderBy\": \"created\",\n    \"order\": \"desc\"\n  }'\n```\n\nNotes:\n- Replace `https://tacc.tapis.io` with your Tapis base URL if different.\n- Set `TAPIS_TOKEN` in your environment to a valid Tapis access token.\n- Adjust the `search.rules` array for your own criteria. Common fields include `job_uuid`, `name`, `owner`, `status`, `tenant`, `created`, etc.\n- `limit` and `skip` implement pagination. `orderBy` and `order` control sorting.\n\nIf you tell me what you want to filter on (e.g., by appId, by date, by status), I can tailor the `search` JSON exactly for that use case.",
+        "reference": "curl -H \"X-Tapis-Token:$jwt\" $BASE_URL/v3/jobs/search?limit=2&status.eq=FINISHED&created.between=2021-07-01,2021-07-21&orderBy=lastUpdated(desc),name(asc)&computeTotal=True",
+        "service": "jobs"
+    },
+    {
+        "type": "Code Generation",
+        "question": "Give PythonSDK command for getting history of a Tapis Job",
+        "answer": "Use the `Jobs.getJobHistory` (or `getJobHistoryList`) method from the Python SDK. In its simplest form:\n\n```python\nfrom tapipy.tapis import Tapis\n\n# Authenticate / create client\nt = Tapis(base_url='https://tacc.tapis.io', username='your_username', password='your_password')\nt.get_tokens()\n\n# Replace with your job UUID\njob_uuid = 'your-job-uuid'\n\n# Get full history for the job\nhistory = t.jobs.getJobHistory(job_uuid=job_uuid)\n\n# Or, if your SDK version uses list-style:\n# history = t.jobs.getJobHistoryList(job_uuid=job_uuid)\n\nprint(history)\n```\n\nIf you tell me your Tapis tenant URL and SDK version, I can adapt the exact call name (some releases use slightly different method names like `getJobHistoryList`).",
+        "reference": "t.jobs.getJobHistory(jobUuid='ba34f946-8a18-44c4-9b25-19e21dfadf69-007'), assuming 't' is your intialized Tapis client",
+        "service": "jobs"
+    },
+    {
+        "type": "Yes/No",
+        "question": "Can you subscribe to receive Tapis ob execution events?",
+        "answer": "Yes. Tapis supports subscribing to job (and similar \u201cob\u201d) execution events via its Events service using webhooks.\n\n**How it works**\n\n- Tapis has an events/notifications system.\n- You create a *subscription* that:\n  - Specifies the event type(s), e.g. `JOB_NEW_STATUS`.\n  - Points to a webhook URL (an HTTPS endpoint you control).\n- When the event occurs (e.g., a job changes status), Tapis sends an HTTP `POST` with the event payload to your webhook URL in real time.\n\n**What you need to do**\n\n1. **Expose a webhook endpoint**\n   - Implement an HTTPS endpoint that can:\n     - Accept `POST` requests.\n     - Parse JSON payloads.\n     - Return 2xx responses quickly so Tapis sees it as successful delivery.\n\n2. **Create a subscription via Tapis API or CLI**\n   - Using the Events/Notifications API (or Tapis CLI), create a subscription specifying:\n     - `eventType`: e.g. `JOB_NEW_STATUS`.\n     - `deliveryMechanism`: webhook.\n     - `deliveryTarget`: your webhook URL.\n   - Exact JSON and endpoint paths are in the Tapis docs under *Events and Notifications*:\n     https://tapis.readthedocs.io/en/latest/\n\n3. **Handle incoming events**\n   - Your service receives job execution events whenever they happen.\n   - Use the payload fields (job UUID, status, timestamps, etc.) to update your system, trigger workflows, send emails, etc.\n\nIf you tell me:\n- whether you\u2019re using Tapis v3,\n- and whether you prefer curl, Python, or the Tapis CLI,\n\nI can give you a concrete example subscription request you can paste and run.",
+        "reference": "Yes, you can subscribe to receive events through the Tapis Notifications Service.",
+        "service": "jobs"
+    }
+]

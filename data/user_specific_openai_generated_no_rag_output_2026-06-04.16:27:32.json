@@ -1,0 +1,72 @@
+[
+    {
+        "type": "User-specific",
+        "question": "How many private systems do I own?",
+        "reference": "16",
+        "service": "systems",
+        "answer": "I don\u2019t have access to your Tapis tenant or account details, so I can\u2019t see how many private systems you own.\n\nTo find this yourself via the Tapis v3 Systems API:\n\n1. **List systems you own**  \n   Call the `GET /v3/systems` endpoint with an `owner` filter set to your username and `public=false`:\n   - Example (conceptual):\n     - `owner=<your_username>`\n     - `public=false`\n   This will return all non\u2011public systems you own.\n\n2. **Count the results**  \n   The response will include an array of systems; the number of elements in that array is the number of private systems you own.\n\nIf you share your tenant name and username and the exact API tooling you\u2019re using (CLI, Python SDK, curl, etc.), I can provide a concrete example command or code snippet to run.  \n\n**Source:** Tapis v3 Systems service API documentation (systems listing and filtering by owner and public/private attributes)."
+    },
+    {
+        "type": "user-specific",
+        "question": "Get system information for system lccfuser-testvm-spadhy20 ",
+        "reference": "It is a LINUX systemType. Host is 129.114.35.53. effectiveUserId is lccfuser, rootDir is /home/lccfuser, runtime is Docker,It is a private system. It is an execution system and deafult authentication method is PKI_KEYS. Job working dir is HOST_EVAL($HOME)/sharetest/workdir ",
+        "service": "systems",
+        "answer": "I don\u2019t have enough information in the provided context to look up details for the system `lccfuser-testvm-spadhy20` or to call Tapis directly.\n\nTo get the system information yourself via Tapis v3:\n\n1. Use the Systems service `GET` call for the system ID:\n   - **Endpoint (Tapis v3):**\n     - `GET /v3/systems/{systemId}`\n   - For your case:\n     - `GET /v3/systems/lccfuser-testvm-spadhy20`\n\n2. Example curl (replace `${TOKEN}` and `${BASE_URL}` with your JWT and Tapis base URL):\n   ```bash\n   curl -H \"X-Tapis-Token: ${TOKEN}\" \\\n        \"${BASE_URL}/v3/systems/lccfuser-testvm-spadhy20\"\n   ```\n\n3. The response will include configuration such as host, scheduler, auth, rootDir, effectiveUserId, default queue, etc., for that system.\n\nIf you share the relevant snippet of system data or logs, I can help interpret it.\n\n**Source:** Tapis v3 Systems API documentation (systems: GET /v3/systems/{systemId})"
+    },
+    {
+        "type": "user-specific",
+        "question": "How many systems have system type LINUX ?",
+        "reference": "20",
+        "service": "systems",
+        "answer": "I don\u2019t have access to your specific Tapis v3 tenant or its current system definitions, so I cannot determine how many systems in your environment have system type `LINUX`.\n\nTo find this yourself using Tapis v3:\n\n1. **List all systems**  \n   Use the Systems API `GET /v3/systems` (or your tenant\u2019s equivalent base URL).\n\n2. **Filter by systemType = LINUX**  \n   - Either:\n     - Retrieve all systems and filter client\u2011side by `systemType == \"LINUX\"`, or  \n     - If your deployment supports it, use the query/filter parameters described in the Systems list endpoint to request only those with `systemType=LINUX`.\n\n3. **Count the results**  \n   The number of returned records with `systemType: \"LINUX\"` is your answer.\n\nSince I don\u2019t see actual system listings in the provided context, I can\u2019t give a numeric count.\n\n**Source:** Tapis v3 Systems API documentation (Systems service, list/query systems endpoint)."
+    },
+    {
+        "type": "user-specific",
+        "question": "How many systems are shared with the public in the same tenant?",
+        "reference": "6",
+        "service": "systems",
+        "answer": "I don\u2019t know from the provided context how many systems are shared with the public in your tenant. The number of publicly shared systems depends on how many have been registered and permissioned that way in your specific Tapis tenant.\n\nTo find this in Tapis v3, you would typically:\n\n1. List systems in your tenant.\n2. Filter for systems that are:\n   - `public` or\n   - explicitly shared with the \u201cpublic\u201d or \u201callUsers\u201d role/group (depending on your tenant\u2019s convention).\n\nWithout additional tenant-specific data or API responses, I can\u2019t state the exact number.\n\n**Source:** Tapis v3 Systems service documentation (tenant- and deployment-specific; not included in provided context)."
+    },
+    {
+        "type": "user-specific",
+        "question": "How many applications have I registered?",
+        "reference": "6",
+        "service": "apps",
+        "answer": "I don\u2019t have access to your personal Tapis account data, so I can\u2019t see how many applications you\u2019ve registered.\n\nTo check this yourself in Tapis v3:\n\n- Using the CLI (if configured):\n  ```bash\n  tapis apps list\n  ```\n  The number of applications you\u2019ve registered is the number of entries returned.\n\n- Using the REST API:\n  Send a GET request to:\n  ```http\n  GET /v3/apps\n  ```\n  with your Tapis auth token. Count the `result` array entries in the response.\n\nIf you share the output of `tapis apps list` or the API response (without sensitive tokens), I can help you interpret it.\n\n**Source:** Tapis v3 Applications API and CLI usage (apps service list endpoint and CLI `tapis apps list`)."
+    },
+    {
+        "type": "user-specific",
+        "question": "Are there any publicly shared apps?",
+        "reference": "yes. one.",
+        "service": "apps",
+        "answer": "Yes. Tapis v3 does support publicly shared apps.\n\nWhen an app is registered with permissions that allow it to be shared broadly (e.g., with all tenants or all users on a tenant), it becomes a \u201cpublic\u201d or \u201ccommunity\u201d app that others can discover and use without needing to register their own copy.\n\nYou can list available apps (including publicly shared ones) via the Apps service (for example, using the `GET /apps` or equivalent client commands) and filter or inspect the results to see which apps are shared for general use.\n\n**Source:** Tapis v3 Documentation (Apps Service, App Sharing & Permissions)"
+    },
+    {
+        "type": "user-specific",
+        "question": "Get details of application lccfuser-sentiment-analysis-spadhy20.",
+        "reference": "It is an application utilizing the sentiment analyssis model from Hugging face. container image is tapis/sentiment-analysis:1.0.2. Version is 0.1. JobType is Fork.",
+        "service": "apps",
+        "answer": "I don\u2019t have information in the provided context about an application named `lccfuser-sentiment-analysis-spadhy20`, so I can\u2019t retrieve or display its details.\n\nIf you have access to Tapis v3, you can typically get application details with a command or API call similar to:\n\n```bash\ntapis apps get -v3 -a lccfuser-sentiment-analysis-spadhy20\n```\n\nor via REST:\n\n```http\nGET /v3/apps/{tenant}/lccfuser-sentiment-analysis-spadhy20\nAuthorization: Bearer <your_token>\n```\n\nReplace `{tenant}` with your tenant ID.\n\nSince the necessary specific documentation or metadata for this app wasn\u2019t included in the context provided to me, I can\u2019t supply its exact definition or configuration.\n\n**Source:** Tapis v3 Applications service documentation (metadata not fully provided in context)."
+    },
+    {
+        "type": "user-specific",
+        "question": "What is the version of app lccfuser-sentiment-analysis-spadhy20 and the container image?",
+        "reference": "app version is 0.1. Container image is 1.0.2",
+        "service": "apps",
+        "answer": "I don\u2019t have enough information in the provided context to determine the version or container image for the app `lccfuser-sentiment-analysis-spadhy20`. The documentation excerpt you shared does not include a listing or definition for that specific app.\n\nTo find this in Tapis v3, you would typically:\n\n1. Look up the app definition:\n   - `GET /v3/apps/{appId}`  \n   - or, if multiple versions exist: `GET /v3/apps/{appId}/versions`\n\n2. In the app\u2019s JSON, check:\n   - The `version` field (e.g., `\"version\": \"0.1\"`).\n   - The container image under `jobDefinition` \u2192 `container` \u2192 `image` (e.g., `\"image\": \"dockerhubuser/repo:tag\"`).\n\nSince I can\u2019t see or query your live Tapis deployment or additional docs beyond the given context, I can\u2019t state the exact version or image for `lccfuser-sentiment-analysis-spadhy20`.\n\n**Source:** Tapis v3 Apps API documentation (app and version retrieval patterns)."
+    },
+    {
+        "type": "user-specific",
+        "question": "What apps are directly shared with me?",
+        "reference": "0",
+        "service": "apps",
+        "answer": "I don\u2019t have access to your Tapis account or workspace, so I can\u2019t see which specific apps are directly shared with you.\n\nTo find this in Tapis v3:\n\n1. Use the Apps service list endpoint filtered by apps shared with you. In many Tapis deployments, the client/UI will show a \u201cShared with me\u201d or similar filter that corresponds to apps where:\n   - You are listed in the app\u2019s `sharedWithUsers` or `sharedWithGroups`, or  \n   - The app has permissions granted to you via `permissions`/ACLs.\n\n2. If you have CLI or API access, look for an endpoint in the Apps service that:\n   - Lists apps, and  \n   - Accepts a query or filter parameter such as `shared=true`, `owner=<your-tenant-username>`, or permissions-based filters.  \n   (The exact parameter names are deployment\u2011specific, so consult your site\u2019s Apps documentation.)\n\nBecause the provided context does not include the concrete API call or UI steps for \u201capps directly shared with me,\u201d I can\u2019t give a precise command or endpoint name.\n\n**Source:** Tapis v3 Apps service documentation (metadata not fully provided in the supplied context)."
+    },
+    {
+        "type": "user-specific",
+        "question": "What apps do I have read-perms?",
+        "reference": "0",
+        "service": "apps",
+        "answer": "I don\u2019t have access to your Tapis account or permissions, so I can\u2019t directly list which apps you personally have read access to.\n\nIn Tapis v3, you (or a client) would typically find the apps you have read permissions on by calling the Apps service to list apps visible to you. For example, using the Tapis CLI or a direct API call (exact command/endpoint depends on your setup) and ensuring you\u2019re authenticated with your Tapis token. The returned list will only include apps for which you have at least read permission.\n\nIf you can share the Tapis CLI or API environment you\u2019re using (e.g., a specific command you ran or an error/output), I can help you construct the exact request to list those apps.\n\n**Source:** Tapis v3 Apps service documentation (permissions and app listing behavior)."
+    }
+]
