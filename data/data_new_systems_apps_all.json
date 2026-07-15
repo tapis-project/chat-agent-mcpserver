@@ -1,0 +1,745 @@
+[{
+    "type": "Conceptual",
+    "question": "What is the primary purpose of the Tapis Systems service?",
+    "answer": "It manages and defines remote storage and execution resources for use by other Tapis services.",
+    "reference": "Primary purpose of Tapis Systems service is storing and retrieving files and data, and running jobs ",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "In Tapis, what does a system represent?",
+    "answer": "A system represents a server or collection of servers exposed through a single hostname or IP address for storage or compute use.",
+    "reference": "A Tapis System is an abstraction of a host or cluster identified by name or IP address.",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Can a Tapis system be used for both storage and execution?",
+    "answer": "Yes, a system can be defined to support both storage and execution.",
+    "reference": "Yes, a Tapis system can be used for both storage and execution",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What are the four system types supported by Tapis?",
+    "answer": "LINUX, S3, IRODS, and GLOBUS.",
+    "reference": "LINUX, S3, IRODS or GLOBUS",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Is the system ID required to be unique within a tenant?",
+    "answer": "Yes, the system ID must be unique within a tenant.",
+    "reference": "Yes, system ID must be unique within the tenant.",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What attribute determines if a system can execute jobs?",
+    "answer": "The `canExec` attribute determines if a system can be used to execute jobs.",
+    "reference": " `canExec` Indicates if the system can be used to execute jobs.",
+    "service": "systems"
+},
+{
+    "type": "Code Generation",
+    "question": "How do you create a new system using the Tapis Python SDK?",
+    "answer": "t.systems.createSystem(**system_definition)",
+    "reference": "t.systems.createSystem(**my_storage_system)",
+    "service": "systems"
+},
+{
+    "type": "Code Generation",
+    "question": "Write a curl command to create a system.",
+    "answer": "curl -X POST -H \"content-type: application/json\" -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/systems -d @system.json",
+    "reference": "$ curl -X POST -H \"content-type: application/json\" -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/systems -d @system_example.json",
+    "service": "systems"
+},
+{
+    "type": "Code Correction",
+    "question": "Fix the following incorrect endpoint for retrieving a system: `GET /v2/system/<id>`",
+    "answer": "Use `GET /v3/systems/<id>` with X-Tapis-Token header instead.",
+    "reference": "correct endpoint to get systems is `GET /v3/systems/<system_id>` with X-Tapis-token header",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What is `effectiveUserId` used for in a Tapis system?",
+    "answer": "It defines the username used to log in to the host for file and job operations.",
+    "reference": "The attribute effectiveUserId determines the host login user, the user used to access the underlying host or service. ",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Does a system's `effectiveUserId` dynamically resolve when set to `${apiUserId}`?",
+    "answer": "Yes, it resolves based on the authenticated API user.",
+    "reference": "Yes, it does resolves the variable by extracting the identity from the request to the service (i.e. the JWT)",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What is required in a system definition for a LINUX type system?",
+    "answer": "A rootDir that begins with `/` is required.",
+    "reference": "When creating a system the required attributes are: id, systemType, host, defaultAuthnMethod, rootDir and canExec. ",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Can the `rootDir` be updated after a system is created?",
+    "answer": "No, `rootDir` cannot be updated after creation.",
+    "reference": "No the rootDir cannot be updated once the system is created",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What is the effect of setting `allowChildren` to true?",
+    "answer": "It allows creating child systems based on the parent.",
+    "reference": "Indicates if the system supports creating child systems using this system as the parent. ",
+    "service": "systems"
+},
+{
+    "type": "Code Generation",
+    "question": "How do you create a child system using the Python SDK?",
+    "answer": "t.systems.createChildSystem(parentId='parent-system', **child_definition)",
+    "reference": " t.systems.createChildSystem(parentId=\"parent-system\", **child_system)",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Can a child system be unlinked from its parent?",
+    "answer": "Yes, using the unlinkFromParent endpoint.",
+    "reference": "Yes, using unlinkFromParent endpoint a child system be unlinked from its parent",
+    "service": "systems"
+},
+{
+    "type": "Code Correction",
+    "question": "You are trying to create a new share using `tapipy` with the method `t.shares.create(share_definition)`. Based on the API documentation, what is a more likely method name for creating a share?",
+    "answer": "Based on the API documentation, a more likely method name for creating a share is `t.share.shareResource(request_body=share_definition)` [51].",
+    "reference":"Different APIs have different share resource endpoints. For example, ```python\n client.systems.shareSystemPublic(systemId=<system id>)\n. Please tell us what resource you would like to share. ",
+    "service": "systems"
+  },
+{
+    "type": "Conceptual",
+    "question": "What does enabling `canRunBatch` on a system indicate?",
+    "answer": "It indicates that the system supports batch job execution with a scheduler.",
+    "reference": "It indicates if the system supports running jobs using a batch scheduler. ",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Is the `batchScheduler` field required when `canRunBatch` is true?",
+    "answer": "Yes, it must be specified if batch execution is enabled.",
+    "reference": "Yes, it must be specified if  `canRunBatch` is true",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What does the `host` attribute represent in a system?",
+    "answer": "It represents the hostname, IP address, or endpoint ID of the resource.",
+    "reference": "It represents Host name, IP address or Globus ID",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What is the `defaultAuthnMethod` in a system definition?",
+    "answer": "It defines the default authentication method used to access the system.",
+    "reference": "It defines how access authentication is handled by default. Supported methods: PASSWORD, PKI_KEYS, ACCESS_KEY, TOKEN, TMS_KEYS.",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Does a system automatically include credentials when created?",
+    "answer": "No, credentials must be registered separately if required.",
+    "reference": "No, credentials must be registered separately.",
+    "service": "systems"
+},
+{
+    "type": "Code Generation",
+    "question": "How do you list all systems using the Python SDK?",
+    "answer": "t.systems.getSystems()",
+    "reference": "t.systems.getSystems()",
+    "service": "systems"
+},
+{
+    "type": "Code Generation",
+    "question": "How do you get details of a specific system via curl?",
+    "answer": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/systems/<systemId>",
+    "reference": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/systems/<systemId>",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What does the `enabled` attribute control?",
+    "answer": "It indicates whether the system is active and available for use.",
+    "reference": "Indicates if system is currently considered active and available for use.",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Is sharing a system with others possible?",
+    "answer": "Yes, systems can be shared with other users or publicly.",
+    "reference": "Yes, systems can be shared publicly in a tenant or shared with specific users belonging to the tenant",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What permissions can be granted on a system?",
+    "answer": "Permissions such as READ, MODIFY, and EXECUTE can be granted.",
+    "reference": "`READ`,`MODIFY`,`EXECUTE` or ` * ` (all) can be granted on a system",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "Why might you use the search endpoint for systems?",
+    "answer": "To find systems matching specific criteria like owner, type, or attributes.",
+    "reference": "Search provides a way for users to search for systems based on a list of search conditions provided either as query parameters for a GET call or a list of conditions in a request body for a POST call to a dedicated search endpoint.",
+    "service": "systems"
+},
+{
+    "type": "Conceptual",
+    "question": "What does `isPublic` indicate for a system?",
+    "answer": "That the system has been shared publically within a tenant.",
+    "reference": "Indicates if the system has been shared publicly. ",
+    "service": "systems"
+},
+{
+    "type": "Yes/No",
+    "question": "Can you limit list results with query parameters like `limit` and `skip`?",
+    "answer": "Yes, list results can be paginated using these parameters.",
+    "reference": "Yes, skip and limit can be used as query parameters to limit test results",
+    "service": "systems"
+},
+
+{
+    "type": "Conceptual",
+    "question": "What is the primary purpose of the Tapis Apps service?",
+    "answer": "It manages application definitions that describe how computational programs are configured and executed on Tapis systems.",
+    "reference": "The Tapis Applications service provides for management of Tapis applications including permissions.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What is a Tapis application?",
+    "answer": "A Tapis application is a JSON-based definition that specifies an executable, its inputs, parameters, runtime system, and execution constraints.",
+    "reference": "A Tapis application represents all the information required to run a Tapis job on a Tapis system and produce useful results. Each application is versioned and is associated with a specific tenant and owned by a specific user who has special privileges for the application.",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Does the Apps service execute applications directly?",
+    "answer": "No, the Apps service only defines applications; execution is handled by the Jobs service.",
+    "reference": "No, the Apps service provides for management of application definitions, including who has access to an application. The Jobs service is responsible for executing an application. The Jobs service uses the Systems, Apps and Files services to launch, monitor and manage execution of an application.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What is the role of an application version in Tapis?",
+    "answer": "Versions allow multiple immutable definitions of the same application to coexist and be referenced independently.",
+    "reference": "App versioning allows application authors to create and develop new app definitions while previous definitions are in use. Versioning is at the discretion of the application author. A version of an app may be locked by the app owner in order prevent updates by other users.",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Can two app versions have different execution systems?",
+    "answer": "Yes, each version can specify a different execution system and configuration.",
+    "reference": "Yes, two app versions may use different execution systems. Also, a single app version may use different execution systems since the job submission request can override the execution system to be used.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What is the execution system in an app definition?",
+    "answer": "It is the system where the application will run, typically a compute system registered with Tapis.",
+    "reference": "The attribute execSystemId in an application definition specifies the system on which the application is to be run. It may be left undefined, in which case the execution system must be provided as part of the job submission request.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What is the purpose of the app runtime section?",
+    "answer": "It specifies runtime details such as container image, command, and execution environment.",
+    "reference": "The runtime section specifies the runtime to be used for execution. Allowed values are DOCKER, SINGULARITY and ZIP.",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Can Tapis apps be containerized?",
+    "answer": "Yes, apps can use container images such as Docker or Singularity as part of their runtime definition.",
+    "reference": "Yes, typically apps are containerized as a Docker or Apptainer/Singularity image. If it is not possible to containerize the application, the ZIP runtime may be used as an alternative.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What are app inputs in Tapis?",
+    "answer": "Inputs describe files or data required by the application, including their source, format, and staging behavior.",
+    "reference": "The term inputs can be used to describe various information required to execute an application, such as file inputs, app arguments, container arguments, scheduler options and environment variables.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What are app parameters?",
+    "answer": "Parameters are user-supplied values that control application behavior, such as flags, numeric values, or strings.",
+    "reference": "App parameters are values to be passed to an application to either provide data to the application or control application behavior. They may be required or optional. They are defined in the appArgs field of the parameterSet attribute in the app definition. ",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Can app parameters have default values?",
+    "answer": "Yes, parameters can define default values that are used if the user does not supply one.",
+    "reference": "Yes, in general, many but not all parameters can include default values as part of the app definition.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What does the app permissions model control?",
+    "answer": "It controls who can view, modify, or use an application definition.",
+    "reference": "The permissions model allows for fine grained access control of Tapis applications. Permissions allow for granting READ, MODIFY or EXEC access. In addition to fine grained permissions support, Tapis also supports a higher level approach to granting access referred to as sharing.",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Are app definitions immutable once published?",
+    "answer": "Yes, published app versions are immutable; changes require creating a new version.",
+    "reference": "No, in general app versions are not immutable. The attribute locked may be set to true to disallow updates by users; however, the app owner may update the locked attribute.",
+    "service": "apps"
+},
+{
+    "type": "Code Generation",
+    "question": "How do you list all applications using the Tapis Python SDK?",
+    "answer": "t.apps.getApps()",
+    "reference": "import json\n from tapipy.tapis import Tapis\n t = Tapis(base_url='https://tacc.tapis.io', username='<userid>', password='************')\nt.apps.getApps()",
+    "service": "apps"
+},
+{
+    "type": "Code Generation",
+    "question": "Write a Python SDK call to retrieve a specific app version.",
+    "answer": "t.apps.getApp(appId=\"my-app\", appVersion=\"1.0\")",
+    "reference": "import json\n from tapipy.tapis import Tapis\n t = Tapis(base_url='https://tacc.tapis.io', username='<userid>', password='************')\nt.apps.getApp(appId=\"my-app\", appVersion=\"1.0\")",
+    "service": "apps"
+},
+{
+    "type": "Code Generation",
+    "question": "Write a curl command to list all registered apps.",
+    "answer": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/apps",
+    "reference": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/apps",
+    "service": "apps"
+},
+
+{
+    "type": "Code Correction",
+    "question": "Fix this incorrect Python SDK call: `t.apps.getApp('my-app')`",
+    "answer": "Specify the version: `t.apps.getApp(appId='my-app', appVersion='1.0')`",
+    "reference": "The version of the application must be given: t.apps.getApp(appId='my-app', appVersion=’1.0’)",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Can an app definition reference files on a different system?",
+    "answer": "Yes, app assets and inputs can reference files on other registered systems.",
+    "reference": "Yes, file inputs in an app definition often do reference files on other systems.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What is the jobType field in an app definition?",
+    "answer": "It indicates the type of job the app produces, such as BATCH or FORK.",
+    "reference": "The attribute jobType indicates how, by default, the job will be run on the execution system, either as a FORK or a BATCH job. It may be overridden in the job submit request.",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Is it possible to disable an app without deleting it?",
+    "answer": "Yes, apps or specific versions can be disabled to prevent use.",
+    "reference": "Yes, all versions may be disabled by setting enabled=false or a specific version may be disabled by setting versionEnabled=false.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What is the role of the execSystemId field?",
+    "answer": "It identifies the execution system where the app will run.",
+    "reference": "It identifies where, by default, the application will run. It may be overridden in the job submit request.",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Can multiple apps use the same execution system?",
+    "answer": "Yes, many apps can share the same execution system.",
+    "reference": "Yes, multiple apps can use the same execution system",
+    "service": "apps"
+},
+{
+    "type": "Code Correction",
+    "question": "Fix this incorrect curl command missing authentication: `curl https://tacc.tapis.io/v3/apps`",
+    "answer": "Add the token header: `curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/apps`",
+    "reference": "Add the missing token header: `curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/apps`",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "Why are apps separated from jobs in Tapis?",
+    "answer": "Separation allows reusable, versioned application definitions independent of job submissions.",
+    "reference": "Having apps as a separate resource type from jobs allows for reusable, versioned application definitions. A job may be thought of as a specific instantiation of an app version.",
+    "service": "apps"
+},
+{
+    "type": "Yes/No",
+    "question": "Can an app be shared across tenants?",
+    "answer": "No, apps are tenant-scoped and cannot be shared across tenants.",
+    "reference": "No, apps cannot be shared across tenants. Tenancy provides the important feature of isolating resources for different projects.",
+    "service": "apps"
+},
+{
+    "type": "Conceptual",
+    "question": "What is a Tapis JWT and what is its primary function in the Tapis ecosystem?",
+    "answer": "A **Tapis JWT (JSON Web Token)** is a security token used for **authentication and authorization** when interacting with Tapis services [1-3]. It allows users and services to prove their identity and permissions to access protected resources.",
+    "reference":"Tapis uses OAuth2-based authentication, issuing a short-lived JWT (JSON Web Token) for authenticated users. This token must be included in all API requests to authorize access to Tapis services.",
+    "service": "authenticator"
+  },
+  {
+    "type": "Code Generation",
+    "question": "After initializing a `Tapis` client object in Python using the `tapipy` library, how would you typically retrieve your access token?",
+    "answer": "After creating a `Tapis` object, you can access your **access token** using the attribute `t.access_token` [2, 3].",
+    "reference":"In the PySDK, the access token is a first-class Python object stored on the Tapis object t , we can access it using `t.access_token`.",
+    "service": "authenticator"
+  },
+  {
+    "type": "Code Correction",
+    "question": "The following Python code using `tapipy` is intended to print the expiration time of your access token, but it's not working. `print(t.token_expires)`. What is the correct attribute to access the expiration time of the token?",
+    "answer": "The correct attribute to access the expiration time of the access token in a `Tapis` object using `tapipy` is `t.expires_at` [2, 3].",
+    "reference":"The expiry associated with the token can be decoded from JWT claim `exp` or using tapipy `t.expires_at`",
+    "service": "authenticator"
+},
+{
+    "type": "Conceptual",
+    "question": "What standard protocol is used by Tapis for authentication?",
+    "answer": "Tapis uses OAuth 2.0 for authentication and authorization.",
+    "reference": "The default authenticator provided by the Tapis project is based on OAuth2",
+    "service":"authenticator"
+},
+{
+    "type": "Yes/No",
+    "question": "Are Tapis access tokens time-limited?",
+    "answer": "Yes, access tokens expire after a defined period.",
+    "reference": "Yes, access tokens expire after every four hours.",
+    "service":"authenticator"
+},
+{
+    "type": "Conceptual",
+    "question": "What information is typically included in a Tapis access token?",
+    "answer": "It includes the user identity, tenant, expiration time, and authorized scopes.",
+    "reference": "Tapis access token includes tenant_id, username, token_type, account_type,delegation, delegation_sub, client_id, grant_type and additional claims not listed here.",
+    "service":"authenticator"
+},
+{
+    "type": "Conceptual",
+    "question": "What is a tenant in the context of Tapis authentication?",
+    "answer": "A tenant represents an organizational domain that defines authentication and service configuration.",
+    "reference": "A tenant represents a logically isolated view of Tapis objects ( i.e., the systems, files, actors, etc.) created by users of the project.",
+    "service":"authenticator"
+},
+{
+    "type": "Code Generation",
+    "question": "How do you include a Tapis access token in a curl request?",
+    "answer": "curl -H \"X-Tapis-Token: $TOKEN\" https://tacc.tapis.io/v3/",
+    "reference": "A Tapis access token is included as a header X-Tapis-Token in the API request for example: curl -H \"X-Tapis-Token: $TOKEN\" https://tacc.tapis.io/v3/",
+    "service":"authenticator"
+},
+{
+    "type": "Code Correction",
+    "question": "Fix the following header to properly authenticate a Tapis API request: Authorization: Bearer TOKEN",
+    "answer": "Use the header: X-Tapis-Token: TOKEN",
+    "reference": "The correct way to include Tapis token is to use the header: \"X-Tapis-Token: $TOKEN \"in the Tapis API request.",
+    "service":"authenticator"
+},
+
+{
+    "type": "Yes/No",
+    "question": "Does Tapis support authentication using Kerberos tickets for API access?",
+    "answer": "Based on the provided sources, there is no mention of Tapis supporting authentication via Kerberos tickets. The primary authentication mechanism discussed involves Tapis JWTs [1-3].",
+    "reference":"No, Tapis does not support authentication using Kerberos at the moment.",
+    "service": "authenticator"
+},
+{
+    "type": "Yes/No",
+    "question": "Does Tapis authentication support programmatic access via SDKs?",
+    "answer": "Yes, SDKs such as the Python SDK support programmatic authentication.",
+    "reference": "Yes",
+    "service":"authenticator"
+},
+
+{
+    "type": "Yes/No",
+    "question": "Can Tapis APIs be accessed without authentication?",
+    "answer": "No, most Tapis APIs require authentication via a valid token.",
+    "reference": "No, almost all the Tapis APIs require authentication via a valid OAuth2 token",
+    "service":"authenticator"
+},
+{
+    "type": "Conceptual",
+    "question": "What happens when a Tapis access token expires?",
+    "answer": "The token can no longer be used, and a new one must be obtained using a refresh token or credentials.",
+    "reference": "When the token expires, the user can use a refresh token to obtain the new token",
+    "service":"authenticator"
+},
+
+{
+    "type": "Yes/No",
+    "question": "Is authentication in Tapis tenant-specific?",
+    "answer": "Yes, users authenticate within a specific tenant.",
+    "reference": "Yes, a Tapis token for one tenant can only be used for that tenant.",
+    "service":"authenticator"
+},
+{
+    "type": "Conceptual",
+    "question": "How to include a Tapis token in an API request?",
+    "answer": "The request must include an Authorization field formatted as follows: Authorization: Bearer <YOUR_TAPIS_TOKEN>",
+    "reference": "To include a Tapis token in an API request, the user must add an authorization header in the request along with user token Authorization: Bearer <YOUR_TAPIS_TOKEN>",
+    "service":"authenticator"
+},
+{
+    "type": "Code Generation",
+    "question": "Using the `tapipy` library, write a Python command to list the files and directories within the path `/mydata` on the Tapis system with the ID `mysystem`.",
+    "answer": "```python\nresults = t.files.listFiles(systemId='mysystem', path='/mydata')\n``` [7-9]\nNote that you would need to have a `Tapis` client object `t` initialized and authenticated.",
+    "reference":"```python\nresults = t.files.listFiles(systemId='mysystem', path='/mydata')\n```",
+    "service": "files"
+},
+{
+    "type": "Code Correction",
+    "question": "The following `curl` command attempts to create a new directory named `new_folder` in the root directory of the system with ID `my_system`, but it's failing. `curl -X POST -H \"Content-Type: application/json\" -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/files/ops/my_system -d '{\"path\": \"new_folder\"}'`. What is the correct endpoint path for creating a directory?",
+    "answer": "The correct endpoint path for creating a directory on a Tapis system should include the specific path within the `/ops` endpoint. The corrected `curl` command would be similar to: `curl -X POST -H \"Content-Type: application/json\" -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/files/ops/my_system/new_folder -d '{}'` [10]. The `-d '{}'` indicates an empty request body is often sufficient for creating a directory.",
+    "reference":" Your code seems right ```curl -X POST -H \"X-Tapis-Token:$JWT\" \"Content-Type: application/json\" https://tacc.tapis.io/v3/files/ops/my_system -d {\"path\": \"new_folder\"}\n```. Can you provide more details about error?",
+    "service": "files"
+},
+{
+    "type": "Yes/No",
+    "question": "Does Tapis offer a feature for automatically synchronizing files between local storage and Tapis systems?",
+    "answer": "The provided sources do not explicitly mention a feature for automatically synchronizing files between local storage and Tapis systems. The Files API focuses on listing, uploading, downloading, transferring, and managing permissions [4, 7, 8, 10-17].",
+    "reference":"No, Tapis does not offer a feature for automatically synchronizing files between local storage and Tapis systems",
+    "service": "files"
+},
+{
+    "type": "Yes/No",
+    "question": "Can PostIt URLs be redeemed without authentication?",
+    "answer": "Yes, redeeming a PostIt URL does not require authentication.",
+    "reference": "Yes, the PostIts service is a URL service that allows you to create pre-authenticated, disposable URLs to files, directories, buckets, etc in the Tapis Platform’s Files service, and it does not require authentication to redeem the files",
+    "service": "files"
+},
+{
+    "type": "Conceptual",
+    "question": "What are file transfers in Tapis?",
+    "answer": "Asynchronous bulk transfers between Tapis systems initiated via the transfers endpoint.",
+    "reference": "File transfers are used to move data between Tapis systems. They should be used for bulk data operations that are too large for the REST api to perform",
+    "service": "files"
+},
+{
+    "type": "Conceptual",
+    "question": "How are permissions inherited within the Tapis Files service?",
+    "answer": "Permissions are hierarchical; granting access to a directory typically grants the same access to all files and subdirectories within that path.",
+    "reference": "Tapis Files uses an ACL-based permission model. When a user is granted a permission on a folder, it is recursively applied to the contents unless overridden.",
+    "service": "files"
+},
+{
+    "type": "Conceptual",
+    "question": "What is a Tapis 'Post-Its' and how does it relate to the Files service?",
+    "answer": "A Post-It is a pre-authenticated, expiring URL that provides direct access to a file without requiring the recipient to have Tapis credentials.",
+    "reference": "Post-Its allow users to create shareable links to files stored on Tapis systems. These links have a configurable expiration and can be used by anyone with the URL.",
+    "service": "files"
+},
+{
+    "type": "Conceptual",
+    "question": "What are the three core permissions available in the Tapis Files Access Control List (ACL)?",
+    "answer": "READ, WRITE, and MODIFY.",
+    "reference": "The Files service manages access via ACLs. READ allows downloading/viewing, WRITE allows uploading/editing, and MODIFY allows the user to change permissions for others.",
+    "service": "files"
+},
+{
+    "type": "Code Generation",
+    "question": "Give curl command to get the actual contents of file using Tapis Files service",
+    "answer": "To retrive raw contents of file use curl -H \"Authorization: Bearer <YOUR_TAPIS_TOKEN>\" -o <LOCAL_FILENAME> https://tacc.tapis.io/v3/files/content/<SYSTEM_ID>/<PATH_TO_FILE>",
+    "reference": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/files/content/my-system/image.jpg > image.jpg",
+    "service": "files"
+},
+{
+    "type": "Conceptual",
+    "question": "What is the difference between a Tapis File and a Tapis System in the context of the Files service?",
+    "answer": "A System provides the access protocol and credentials, while the Files service provides the interface to interact with the data stored on that system.",
+    "reference": "The Files service allows users to interact with data on Tapis systems. Every file operation requires a systemId to identify the host and credentials used for the transaction.",
+    "service": "files"
+    },
+{
+    "type": "Code Generation",
+    "question": "Write a Python SDK call to create a directory '/data/newdir' on a Tapis system.",
+    "answer": "t.files.mkdir(systemId=\"my-system\", path=\"/data/newdir\")",
+    "reference": "t.files.mkdir(systemId=\"my-system\", path=\"/data/newdir\")",
+    "service": "files"
+},
+
+{
+    "type": "Yes/No",
+    "question": "Can you share files with users using Tapis files service?",
+    "answer": "Yes, you can share files and directories with other users through the Tapis Files service by managing Access Control Lists (ACLs).",
+    "reference": "Yes, the files sharing API allows you to share a file path with a set of users as well as share publicly with all users in a tenant. ",
+    "service": "files"
+},
+
+{
+    "type": "Yes/No",
+    "question": "Can you unshare files with users using Tapis files service?",
+    "answer": "Yes, you can unshare files and directories with other users through the Tapis Files service by managing Access Control Lists (ACLs).",
+    "reference": "Yes, the files unsharing API allows you to unshare a file path with a set of users as well as share publicly with all users in a tenant. ",
+    "service": "files"
+},
+{
+    "type": "Code-Correction",
+    "question": "The following Python snippet fails to download the contents of a file and instead returns a 401 error. Identify the missing component in the request headers.\"import requests\n\nurl = 'https://tacc.tapis.io/v3/files/content/ls6/home/jdoe/experiment.dat'\n# Missing header configuration\nresponse = requests.get(url)\nprint(response.content)",
+    "answer": "The request is missing the 'Authorization' header containing a valid Tapis JWT with the 'Bearer' scheme.",
+    "correction": "headers = {'Authorization': 'Bearer <YOUR_TAPIS_TOKEN>'}\nresponse = requests.get(url, headers=headers)",
+    "service": "files"
+    },
+{
+    "type": "Conceptual",
+    "question": "How does Tapis handle file operations on a system that requires Multi-Factor Authentication (MFA)?",
+    "answer": "Tapis requires a pre-authenticated session or an SSH key-based credential, as it cannot interactively prompt for MFA during background API calls.",
+    "reference": "For systems with MFA, users typically must configure a system with a long-lived credential or use a Tapis-supported authentication proxy to ensure non-interactive access.",
+    "service": "files"
+    },
+{
+    "type": "Conceptual",
+    "question": "What are the minimum pieces of information that must be provided when submitting a job for execution using the Tapis Jobs service?",
+    "answer": "At a minimum, the job submission request must specify the **job name**, **application ID**, and **application version** [24].",
+    "reference":"Required parameters for job submission are **name**, **appId**, and **appVersion**.",
+    "service": "jobs"
+},
+{
+    "type": "Code Generation",
+    "question": "Assuming you have a Python dictionary named `job_submission` that defines a Tapis job, write a `tapipy` command to submit this job.",
+    "answer": "```python\nsubmitted_job = t.jobs.submitJob(**job_submission)\n``` [24, 25]",
+    "reference":"```python\nsubmitted_job = t.jobs.submitJob(**job_submission)\n``` ",
+    "service": "jobs"
+
+  },
+  {
+    "type": "Code Correction",
+    "question": "You have submitted a Tapis job using `tapipy` and received a response object named `job_info`. You are trying to access the job's unique identifier using `job_info['uuid']`, but this key does not exist. Based on the documentation, what is the correct key to access the job's UUID in the response?",
+    "answer": "Based on the documentation, the correct key to access the unique identifier (UUID) of a Tapis job in the response is likely `jobUuid` [26-28].",
+    "reference":"The correct key to access job's uuid as per the live docs is `uuid`",
+    "service": "jobs"
+
+  },
+  {
+    "type": "Yes/No",
+    "question": "Does the Tapis Jobs service offer a feature to checkpoint and restart long-running jobs from a specific point of failure?",
+    "answer": "The provided sources do not explicitly describe a built-in checkpointing and restart feature within the Tapis Jobs service. The documentation focuses on job submission, monitoring, and management of output [24, 26, 27, 29-35].",
+    "reference":"No, Tapis Jobs service do not provide a checkpoint and restart of a long-running jobs from a specific point of failure.",
+    "service": "jobs"
+  },
+  {
+    "type": "Code Generation",
+    "question": "Write a Python SDK call to cancel a job.",
+    "answer": "t.jobs.cancelJob(jobUuid=\"my_job_id\")",
+    "reference": "t.jobs.cancelJob(jobUuid=\"my_job_id\") The caller must be the job owner, creator or a tenant administrator.",
+    "service": "jobs"
+  },
+  {
+    "type": "Yes/No",
+    "question": "Can jobs be shared with other users?",
+    "answer": "Yes, job permissions can be granted to other users.",
+    "reference": "Yes, A previously submitted job can be shared with a user in the same tenant.",
+    "service": "jobs"
+  },
+  {
+    "type": "Code Correction",
+    "question": "Fix this incorrect Python SDK call: `t.jobs.get('job123')`",
+    "answer": "Use the correct method name: `t.jobs.getJob(jobUuid='job123')`",
+    "reference": "The correct method to get the job details is `t.jobs.getJob(jobUuid='job123')`",
+    "service": "jobs"
+ },
+ {
+    "type": "Code Generation",
+    "question": "Write a curl command to retrieve all jobs.",
+    "answer": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/jobs/list",
+    "reference": "curl -H \"X-Tapis-Token: $JWT\" https://tacc.tapis.io/v3/jobs/list",
+    "service": "jobs"
+},
+{
+    "type": "Yes/No",
+    "question": "Can a job be canceled after it has started running?",
+    "answer": "Yes, users can request cancellation of a running job.",
+    "reference": "Yes, users can request the cancelation of a running job, unless it's not in the terminal state such as FINISHED, BLOCKED, or FAILED",
+    "service": "jobs"
+},
+{
+    "type": "Conceptual",
+    "question": "Name terminal job states in Tapis.",
+    "answer": "FINISHED, CANCELLED and FAILED are terminal job states.",
+    "reference": "Terminal states are FINISHED, CANCELLED and FAILED. ",
+    "service": "jobs"
+},
+{
+    "type": "Conceptual",
+    "question": "What does the job status represent?",
+    "answer": "It represents the current state of the job in its lifecycle, such as QUEUED, RUNNING, or FINISHED.",
+    "reference": "It represents the current state of the job in its lifecycle from the list of possible states, such as QUEUED, STAGING, RUNNING, FINISHED, etc.",
+    "service": "jobs"
+},
+{
+    "type": "Conceptual",
+    "question": "What information does a job submission specify?",
+    "answer": "It specifies the app ID and version, inputs, parameters, execution settings, and optional job metadata.",
+    "reference": "Job submission specifies the name of job, application id , version, type of job FORK or BATCH, execution system and optional job metadata ",
+    "service": "jobs"
+},
+{
+    "type": "Conceptual",
+    "question": "What uniquely identifies a job in the Jobs service?",
+    "answer": "Each job is uniquely identified by a UUID assigned at submission time.",
+    "reference": "A job is uniquely identified by a UUID assigned at submission time.",
+    "service": "jobs"
+},
+
+{
+    "type": "Yes/No",
+    "question": "Does the Jobs service execute code directly without an app id?",
+    "answer": "No, every job must reference an existing Tapis application id.",
+    "reference": "No, appId is mandatory to submit the job, and it must exist prior to job submission ",
+    "service": "jobs"
+},
+
+{
+    "type": "Conceptual",
+    "question": "What is job output in Tapis?",
+    "answer": "Job output consists of files generated during execution and archived according to the app definition.",
+    "reference": "Job output consists of artifacts generated during the lifecycle of a job. The job output can be archived at desired location by specifying in app and/or job definition",
+    "service": "jobs"
+},
+
+{
+    "type": "Conceptual",
+    "question": "Which runtimes are supported by Tapis Jobs service?",
+    "answer": "Tapis jobs service suports Docker, Singularity and ZIP containers run natively ",
+    "reference": "Runtimes supported by Tapis Jobs service are Docker, Singularity and ZIP containers",
+    "service": "jobs"
+},
+
+{
+    "type": "Code Generation",
+    "question": "Write a curl command to search jobs with Tapis Jobs service?",
+    "answer": "curl -X GET https://<tenant-base-url>/v3/jobs -H \"Authorization: Bearer $TAPIS_ACCESS_TOKEN\" ",
+    "reference": "curl -H \"X-Tapis-Token:$jwt\" $BASE_URL/v3/jobs/search?limit=2&status.eq=FINISHED&created.between=2021-07-01,2021-07-21&orderBy=lastUpdated(desc),name(asc)&computeTotal=True",
+    "service": "jobs"
+},
+
+{
+    "type": "Code Generation",
+    "question": "Give PythonSDK command for getting history of a Tapis Job",
+    "answer": "# Assuming 't' is your initialized Tapis client job_history = t.jobs.getJobHistory(jobUuid='YOUR_JOB_UUID_HERE') ",
+    "reference": "t.jobs.getJobHistory(jobUuid='ba34f946-8a18-44c4-9b25-19e21dfadf69-007'), assuming 't' is your intialized Tapis client",
+    "service": "jobs"
+},
+
+{
+    "type": "Yes/No",
+    "question": "Can you subscribe to receive Tapis ob execution events?",
+    "answer": "Yes, you can subscribe to receive events through the Tapis Notifications Service. ",
+    "reference": "Yes, you can subscribe to receive events through the Tapis Notifications Service.",
+    "service": "jobs"
+}
+
+]
