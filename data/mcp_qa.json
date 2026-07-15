@@ -1,0 +1,63 @@
+[
+    {
+      "type": "User-specific",
+      "question": "How many private systems do I own?",
+      "reference":"16",
+      "service": "systems"
+    },
+    {
+      "type": "user-specific",
+      "question": "Get system information for system lccfuser-testvm-spadhy20 ",
+      "reference":"It is a LINUX systemType. Host is 129.114.35.53. effectiveUserId is lccfuser, rootDir is /home/lccfuser, runtime is Docker,It is a private system. It is an execution system and deafult authentication method is PKI_KEYS. Job working dir is HOST_EVAL($HOME)/sharetest/workdir ",
+      "service": "systems"
+    },
+    {
+      "type": "user-specific",
+      "question": "How many systems have system type LINUX ?",
+      "reference":"20",
+      "service": "systems"
+    },
+    {
+      "type": "user-specific",
+      "question": "How many systems are shared with the public in the same tenant?",
+      "reference":"6",
+      "service": "systems"
+    },
+    {
+      "type": "user-specific",
+      "question": "How many applications have I registered?",
+      "reference":"6",
+      "service": "apps"
+    },
+    {
+      "type": "user-specific",
+      "question": "Are there any publicly shared apps?",
+      "reference":"yes. one.",
+      "service": "apps"
+    },
+    {
+      "type": "user-specific",
+      "question": "Get details of application lccfuser-sentiment-analysis-spadhy20.",
+      "reference":"It is an application utilizing the sentiment analyssis model from Hugging face. container image is tapis/sentiment-analysis:1.0.2. Version is 0.1. JobType is Fork.",
+      "service": "apps"
+    },
+     {
+      "type": "user-specific",
+      "question": "What is the version of app lccfuser-sentiment-analysis-spadhy20 and the container image?",
+      "reference":"app version is 0.1. Container image is 1.0.2",
+      "service": "apps"
+    },
+    {
+      "type": "user-specific",
+      "question": "What apps are directly shared with me?",
+      "reference":"0",
+      "service": "apps"
+    },
+   {
+      "type": "user-specific",
+      "question": "What apps do I have read-perms?",
+      "reference":"0",
+      "service": "apps"
+    }
+
+]   
