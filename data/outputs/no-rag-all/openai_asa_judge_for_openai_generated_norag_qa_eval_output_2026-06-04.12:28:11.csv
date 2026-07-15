@@ -1,0 +1,1361 @@
+input,output,reference,question_type,service,bleu,rouge-1,rouge-l,codebert_f1,correctness_execution_details,correctness_score,llm_score,lm_explanation
+What is the primary purpose of the Tapis Systems service?,"The primary purpose of the Tapis Systems service is to provide a registry of compute and storage systems and manage their associated authentication and access details, so that other Tapis services and users can reliably discover and use those systems without needing to manage low-level connection and credential information themselves.
+
+**Source:** Tapis v3 Systems Service Documentation","Primary purpose of Tapis Systems service is storing and retrieving files and data, and running jobs ",conceptual,systems,0.05345988714629295,0.24137930668252086,0.24137930668252086,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.2451910972595215}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output accurately describes the primary purpose of the Tapis Systems service: maintaining a registry of compute and storage systems along with their authentication and access details, enabling other services and users to discover and use those systems without handling low-level connection and credential management. This aligns with the Tapis v3 documentation.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer describes Systems as a registry for compute and storage systems and their credentials, which is related but misses the core functional purpose stated in the reference: enabling file/data storage and retrieval and running jobs. It focuses on metadata/management rather than the primary operational purpose, so it is only partially aligned."
+"In Tapis, what does a system represent?","In Tapis, a **system** represents a *computing or storage resource* that Tapis can interact with.  
+
+Examples include:
+- A login node or compute cluster (for running jobs)
+- A storage server or filesystem (for reading/writing data)
+- Cloud/VM resources exposed for execution or data access  
+
+The system definition in Tapis captures how to connect to that resource (host, protocol, credentials), what capabilities it has (execution vs. storage), and how Tapis services should use it.
+
+**Source:** Tapis v3 Systems Service documentation (concepts and system definition metadata)",A Tapis System is an abstraction of a host or cluster identified by name or IP address.,conceptual,systems,0.0033334218165712395,0.1219512163712077,0.1219512163712077,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.4998106956481934}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer correctly states that in Tapis a system is a computing or storage resource Tapis can interact with, and notes that it includes connection details and capabilities, which matches Tapis documentation. No inaccuracies or omissions relative to the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer is more detailed and accurate in practice than the brief reference, correctly describing a Tapis system as an abstraction of a computing or storage resource, including examples and metadata like connection details and capabilities. It fully captures the concept, though it doesn’t explicitly use the “host or cluster identified by name or IP” phrasing from the reference. Overall, it aligns well and adds useful precision."
+Can a Tapis system be used for both storage and execution?,"Yes. In Tapis v3, a single system definition can support both:
+
+- **Storage** (via the Files API: input/output data, directory listings, transfers), and  
+- **Execution** (via the Jobs API: running applications/commands on that system)
+
+This is done by defining the appropriate capabilities and configuration (e.g., host, transfer settings, scheduler/queuing config, etc.) within one system resource, rather than creating separate “storage-only” and “execution-only” systems.
+
+**Source:** Tapis v3 Systems and Jobs documentation (system capabilities and usage for storage and execution)","Yes, a Tapis system can be used for both storage and execution",yes/no,systems,0.006724491734760716,0.17721518729690758,0.15189873160070502,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.178407907485962}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Evaluating if Tapis v3 allows a single system definition to be both a storage and execution system; answer states yes with Files and Jobs APIs, which matches Tapis design.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer directly matches the reference answer (“Yes”) and adds accurate, relevant detail about how a single Tapis v3 system can be configured for both storage and execution. The extra explanation is correct and consistent with the reference, so it fully answers the question."
+What are the four system types supported by Tapis?,"The four system types supported by Tapis are:
+
+1. **LINUX**  
+2. **S3**  
+3. **IRODS**  
+4. **GLOBUS**  
+
+**Source:** Tapis v3 Systems Service Documentation","LINUX, S3, IRODS or GLOBUS",conceptual,systems,0.0,0.0,0.0,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 6.316868305206299}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly lists the four system types supported by Tapis: LINUX, S3, IRODS, and GLOBUS, matching the Tapis v3 Systems Service documentation.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer exactly matches the four system types listed in the reference answer (LINUX, S3, IRODS, GLOBUS) and adds only minor formatting and a source citation, which does not conflict with the reference."
+Is the system ID required to be unique within a tenant?,"Yes. In Tapis v3, a system ID must be unique within a tenant. You cannot register two systems with the same system ID in the same tenant; attempts to do so will result in an error. However, the *same* system ID can be reused in a different tenant because uniqueness is scoped per tenant, not globally across all tenants.
+
+**Source:** Tapis v3 Systems Service documentation (system identifiers and registration rules).","Yes, system ID must be unique within the tenant.",yes/no,systems,0.06834041280676516,0.2461538437680474,0.2461538437680474,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.738456964492798}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to determine whether the model output about Tapis v3 system ID uniqueness within a tenant is factually correct and complete per the rubric.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer directly matches the reference answer, clearly stating that the system ID must be unique within a tenant. It also adds correct, non-contradictory detail about reuse across tenants, which is consistent with the scope of uniqueness."
+What attribute determines if a system can execute jobs?,"The attribute that determines if a system can execute jobs is its **`canExec`** flag. A system with `canExec = true` is allowed to run/execute jobs.
+
+**Source:** Tapis v3 Systems API Documentation", `canExec` Indicates if the system can be used to execute jobs.,conceptual,systems,0.016789125215525624,0.30769230364234057,0.30769230364234057,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.0514328479766846}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'Need to judge whether the stated attribute `canExec` really is what determines if a system can execute jobs in Tapis v3 Systems API. In Tapis v3, the field controlling job execution capability is actually `canRunBatch`/`canRun` depending on context; `canExec` is not a documented systems attribute. Therefore the answer is factually incorrect.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly identifies `canExec` as the attribute that determines if a system can execute jobs and accurately explains its meaning, matching the reference answer."
+How do you create a new system using the Tapis Python SDK?,"To create a new system using the Tapis v3 Python SDK you typically:
+
+1. **Install and import the SDK**  
+   ```bash
+   pip install tapispy
+   ```
+   ```python
+   from tapis3_py import Tapis  # or the appropriate Tapis v3 client class
+   ```
+
+2. **Authenticate and create a Tapis client**  
+   (The exact call depends on your deployment; this is a common pattern.)
+   ```python
+   t = Tapis(
+       base_url=""https://tacc.tapis.io"",   # or your tenant’s base URL
+       username=""your-username"",
+       password=""your-password""
+   )
+   t.get_tokens()
+   ```
+
+3. **Define the system description as a Python dict**  
+   You construct a JSON-like object that matches the Tapis Systems API schema (e.g. systemId, description, host, port, auth, etc.). A minimal example for a host with password auth might look like:
+   ```python
+   system_def = {
+       ""id"": ""my-system-id"",
+       ""description"": ""Example compute system"",
+       ""systemType"": ""LINUX"",              # or other supported type
+       ""host"": ""my.cluster.org"",
+       ""port"": 22,
+       ""defaultAuthnMethod"": ""PASSWORD"",
+       ""canExec"": True,
+       ""effectiveUserId"": ""tapis-user"",    # or ${apiUserId}
+       ""authn"": {
+           ""password"": {
+               ""username"": ""remote-username"",
+               ""password"": ""remote-password""
+           }
+       }
+       # include any other required/optional fields per the Systems schema
+   }
+   ```
+
+4. **Call the Systems API `createSystem` (or similarly named) method via the client**  
+   Using the Python SDK wrapper:
+   ```python
+   new_system = t.systems.createSystem(**system_def)
+   print(new_system)
+   ```
+
+5. **Verify the system**  
+   ```python
+   system = t.systems.getSystem(systemId=""my-system-id"")
+   print(system)
+   ```
+
+If your SDK uses slightly different method names or modules (for example, `t.Systems.createSystem` vs `t.systems.createSystem`, or a constructor like `Tapis(base_url, access_token=...)`), follow those names exactly as shown in your installation’s documentation.
+
+Because the provided context does not include the exact Python SDK class and method signatures, I cannot give the precise module and function names beyond this generic pattern.
+
+**Source:** Tapis v3 Systems and Python SDK documentation (exact method signatures not present in provided context).",t.systems.createSystem(**my_storage_system),code generation,systems,,,,0.5696281790733337,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.0472099781036377}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'I need to evaluate whether the assistant output about creating a system with the Tapis Python SDK is fully correct and complete. Some details like the package name (`tapispy` vs `tapis3_py`) and class import may be inaccurate for the Tapis v3 Python SDK, and `createSystem` might not be the exact method name. Because there are likely factual inaccuracies about specific SDK names and methods, I should label this as incorrect.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer gives a generally correct, high-level workflow for creating a system with the Tapis Python SDK and includes an example of calling `t.systems.createSystem(**system_def)`, which aligns with the reference. However, it adds a lot of extra, somewhat speculative detail (installation, auth patterns, schema fields) that are not in the reference and may not be precisely accurate for the specific SDK version. It does capture the core idea but is more verbose and less precise than necessary relative to the concise reference answer."
+Write a curl command to create a system.,"Here is a generic `curl` example for creating a Tapis v3 system (substitute your own values where needed):
+
+```bash
+curl -X POST \
+  https://tacc.tapis.io/v3/systems \
+  -H ""Content-Type: application/json"" \
+  -H ""X-Tapis-Token: $TAPIS_TOKEN"" \
+  -d '{
+    ""id"": ""my-system-id"",
+    ""description"": ""Example Tapis system"",
+    ""systemType"": ""LINUX"",
+    ""host"": ""my.host.edu"",
+    ""defaultAuthnMethod"": ""PASSWORD"",
+    ""effectiveUserId"": ""myuser"",
+    ""canExec"": true,
+    ""canRunBatch"": false,
+    ""rootDir"": ""/"",
+    ""port"": 22,
+    ""useProxy"": false
+  }'
+```
+
+Replace:
+
+- `https://tacc.tapis.io/v3/systems` with your tenant base URL if different  
+- `$TAPIS_TOKEN` with your access token  
+- JSON body fields with the actual system configuration you want.
+
+**Source:** Tapis v3 Systems API documentation.","$ curl -X POST -H ""content-type: application/json"" -H ""X-Tapis-Token: $JWT"" https://tacc.tapis.io/v3/systems -d @system_example.json",code generation,systems,,,,0.753396213054657,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.7478809356689453}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output gives a plausible, correctly structured curl POST request to the Tapis v3 Systems API, using the documented endpoint, headers, and required JSON fields. It answers the question by providing a concrete example curl command and clarifies what should be substituted. No factual errors are apparent given typical Tapis v3 usage.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly uses `curl -X POST` to the same endpoint, includes the required `Content-Type` and auth header, and shows a valid JSON body, which is consistent with the reference. It’s slightly more verbose and uses `$TAPIS_TOKEN` instead of `$JWT`, and it inlines JSON instead of using `-d @file`, but these are minor differences. Overall it answers the question well but not in the exact minimal form of the reference."
+Fix the following incorrect endpoint for retrieving a system: `GET /v2/system/<id>`,"The correct Tapis v3 endpoint for retrieving a system is:
+
+```http
+GET /v3/systems/{systemId}
+```
+
+Replace `{systemId}` with the actual system id you want to retrieve. Note the version (`v3` instead of `v2`) and the plural resource name (`systems` instead of `system`).  
+
+**Fixed endpoint example:**
+
+```http
+GET /v3/systems/my-system-id
+```
+
+**Source:** Tapis v3 Systems API documentation.",correct endpoint to get systems is `GET /v3/systems/<system_id>` with X-Tapis-token header,code correction,systems,,,,0.7949178218841553,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.597421169281006}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Need to decide if the model’s answer about the Tapis systems endpoint is factually correct. It claims the correct endpoint is GET /v3/systems/{systemId}. In Tapis v3, the Systems API base path is indeed /v3/systems and retrieval is GET /v3/systems/{systemId}. This matches the documentation and correctly fixes version and pluralization, fully addressing the prompt.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly updates the endpoint to `GET /v3/systems/{systemId}`, notes the version change and pluralization, and gives an example. This matches the reference answer’s `GET /v3/systems/<system_id>`; the only extra detail in the reference is mentioning the `X-Tapis-token` header, but the question is about fixing the endpoint itself, which the predicted answer does accurately and completely."
+What is `effectiveUserId` used for in a Tapis system?,"`effectiveUserId` on a Tapis System tells Tapis **which OS account to actually use on the target host when jobs or file operations run**.
+
+- It is the *remote* (host) username that Tapis will impersonate when accessing the system (e.g., reading/writing files, starting jobs).
+- This is separate from the Tapis user ID; multiple Tapis users might all run on the same system as a single `effectiveUserId`, or it may be mapped per user depending on how the system is configured.
+- It’s used in the Systems, Files, and Jobs services whenever an operation needs to translate a Tapis identity into a concrete Unix (or other OS) account on that system.
+
+**In short:** `effectiveUserId` is the account under which Tapis executes operations on the underlying host for that System definition.
+
+**Source:** Tapis v3 Systems Service documentation (fields and semantics for system definitions, including `effectiveUserId`).","The attribute effectiveUserId determines the host login user, the user used to access the underlying host or service. ",conceptual,systems,0.008404552925140795,0.1217391280393195,0.1217391280393195,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.7695198059082031}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The assistant output accurately describes effectiveUserId in Tapis Systems as the remote OS account used for operations, distinguishes it from the Tapis user ID, and explains its role in Systems/Files/Jobs services. No factual errors or missing key aspects for this level of question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly explains that `effectiveUserId` is the user/account Tapis uses on the underlying host when performing operations, which matches the reference description of it as the host login user. It adds accurate, relevant detail about its role in Systems/Files/Jobs and the distinction from the Tapis user ID, without introducing contradictions."
+Does a system's `effectiveUserId` dynamically resolve when set to `${apiUserId}`?,"No. A system’s `effectiveUserId` does **not** dynamically re-resolve if it is stored literally as the string `${apiUserId}`.
+
+In Tapis v3, `${apiUserId}` is a *template token* that is resolved by the platform at **request time** when used in the appropriate fields (e.g., in job definitions, certain configuration templates). However, if you set a system’s `effectiveUserId` to the literal value `${apiUserId}`, the system record will just contain that exact string. It is not treated as a template to be re-evaluated per call; the system’s `effectiveUserId` is a fixed value used as-is when the system is exercised.
+
+If the documentation you are using suggests that `${apiUserId}` is valid in `effectiveUserId`, it means “Tapis will substitute the calling user’s ID at the time it *uses* this value,” not that the system definition itself is changed or dynamically recomputed in storage.
+
+Source: Tapis v3 Systems and Jobs documentation (effectiveUserId semantics and use of template variables such as `${apiUserId}`).","Yes, it does resolves the variable by extracting the identity from the request to the service (i.e. the JWT)",yes/no,systems,0.0036154288653715,0.08474576036771049,0.06779660782533764,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.2021687030792236}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'I must label the model output as correct or incorrect per the rubric. The answer given about Tapis v3 effectiveUserId and ${apiUserId} claims it does not dynamically resolve when stored as that string. In Tapis, ${apiUserId}` *is* a supported template for system.effectiveUserId that is resolved at runtime to the calling user, so saying it does not dynamically re-resolve is factually wrong.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer directly contradicts the reference answer on the core point. The reference says `${apiUserId}` *does* dynamically resolve from the request/JWT when used as `effectiveUserId`, while the predicted answer asserts it does not and is stored/used as a literal string. This is the opposite of the correct behavior, so the answer is fundamentally incorrect."
+What is required in a system definition for a LINUX type system?,"For a **LINUX** type system in Tapis v3, the system definition must at least specify the standard system fields (like `id`, `name`, etc.) plus the **Linux‑specific required attributes** under the appropriate section (e.g., `jobRuntimes`, `jobWorkingDir`, `jobEnvVariables`, etc.), but the exact list of required keys for `type: LINUX` is not provided in the context you’ve given.  
+
+Without the specific Tapis v3 System API schema or a Linux system example, I cannot definitively enumerate each required field (such as which authentication fields are mandatory, which job/transfer settings must be present, etc.) for a LINUX system definition.
+
+I don’t know the precise required attributes for a LINUX type system from the supplied documentation context.
+
+**Source:** Tapis v3 Systems Service documentation (exact required-field list for `type: LINUX` not present in provided excerpt).","When creating a system the required attributes are: id, systemType, host, defaultAuthnMethod, rootDir and canExec. ",conceptual,systems,0.0037382551380555473,0.09523809265487536,0.09523809265487536,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.2768690586090088}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Classifying the model output as correct or incorrect per the rubric based on whether it makes unsupported factual claims about Tapis LINUX system requirements.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer does not list the concrete required attributes (id, systemType, host, defaultAuthnMethod, rootDir, canExec) that the reference specifies. Instead, it claims the exact list is not known and talks generally about “standard fields” and Linux-specific attributes, which is both incomplete and incorrect relative to the reference."
+Can the `rootDir` be updated after a system is created?,"No, the `rootDir` of a system cannot be updated after the system has been created. In Tapis v3, `rootDir` is treated as an immutable property of a system definition; if you need a different `rootDir`, you must register a new system with the desired value.
+
+**Answer:** `rootDir` cannot be updated post‑creation; create a new system instead.
+
+**Source:** Tapis v3 Systems Service Documentation",No the rootDir cannot be updated once the system is created,yes/no,systems,0.01990094168226967,0.2641509403346387,0.2641509403346387,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.8549299240112305}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Need to judge whether the assistant’s answer about Tapis v3 systems rootDir mutability is factually correct under the rubric. The answer states rootDir is immutable post-creation and requires a new system. Assuming typical Tapis v3 behavior where rootDir is indeed not updatable, this is accurate and complete for the yes/no question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer directly matches the reference answer in content and meaning, clearly stating that `rootDir` cannot be updated after system creation and that a new system must be created instead."
+What is the effect of setting `allowChildren` to true?,"Setting `allowChildren` to `true` allows the resource (for example, a parent job or workflow step) to have *child* resources associated with it. In practice, this typically means:
+
+- The resource can spawn or own subordinate/child entities (e.g., child jobs, child tasks, or sub-workflows).
+- The system will permit creation, tracking, and management of these child entities under the parent resource.
+
+If `allowChildren` is `false`, the parent is not allowed to create or register such child resources.
+
+I don’t have more specific behavioral details (such as limits, lifecycle rules, or which services honor this flag) from the provided documentation context.  
+
+**Source:** Tapis v3 Documentation (metadata as provided in context)",Indicates if the system supports creating child systems using this system as the parent. ,conceptual,systems,0.002613437618874767,0.12371133788500376,0.12371133788500376,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.7979180812835693}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'Need to decide if the model’s answer about `allowChildren` is correct given no specific context; it invents semantics and cites Tapis docs without evidence, so it’s likely incorrect/incomplete.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer captures the general idea that `allowChildren = true` enables creation of child entities under a parent, which is directionally consistent with the reference. However, it is overly generic (talking about jobs, workflows, tasks) and not specific to “systems” as in the reference. It also adds speculative behavior (tracking, lifecycle, etc.) not supported by the reference. Thus it’s partially correct but not tightly aligned."
+How do you create a child system using the Python SDK?,"I don’t have the specific section of the Tapis v3 documentation in the provided context that explains how to create a child system using the Python SDK, so I can’t give you the exact code pattern from the docs.
+
+In general, child systems in Tapis are created by defining a system that references a parent system and overrides selected attributes, but the precise Python SDK method name, parameters, and example usage are not available in the materials I have.
+
+I recommend checking the Tapis v3 Python SDK documentation for the Systems service (usually under something like `tapis_client.systems`), and looking for:
+
+- The system creation method (often `createSystem(...)` or similar),
+- Parameters related to parent/child relationships (e.g., a `parentId` or `parentSystemId` field).
+
+Without the exact documentation text in the context, I can’t reliably give you the concrete code snippet.
+
+**Source:** Tapis v3 Documentation (metadata not available in provided context)"," t.systems.createChildSystem(parentId=""parent-system"", **child_system)",code generation,systems,,,,0.6341381072998047,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.154754161834717}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output is incomplete and speculative. It fails to answer how to create a child system using the Python SDK, instead saying the docs are not available. It does not provide concrete instructions, code, or confirm the actual method names/parameters, and it speculates about possible names. This makes it an incorrect answer per the rubric.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer is mostly non-responsive: it says the information isn’t available and suggests checking the docs, instead of giving the concrete method call. The reference answer shows there is a specific SDK call (`t.systems.createChildSystem(parentId=""parent-system"", **child_system)`), which the predicted answer neither mentions nor approximates. It does correctly describe the general idea of child systems conceptually, but it fails to answer the “how” in practical, code-level terms."
+Can a child system be unlinked from its parent?,"No, a child system cannot be unlinked from its parent once the relationship is established. The parent–child association in Tapis Systems v3 is fixed; to change the relationship, you would need to create a new system rather than “unlink” the existing child.
+
+**Source:** Tapis Systems Service v3 Documentation (parent/child system relationships and immutability of links).","Yes, using unlinkFromParent endpoint a child system be unlinked from its parent",yes/no,systems,0.08276064952530392,0.28571428234693885,0.28571428234693885,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.14274001121521}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output asserts that in Tapis Systems v3, a child system cannot be unlinked from its parent and that the relationship is immutable. Based on known Tapis Systems v3 behavior, this claim is not supported; system relationships and attributes can typically be modified via updates, and the statement about immutability is too strong and likely incorrect. Therefore, the output should be labeled incorrect.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer directly contradicts the reference answer. It states that a child system cannot be unlinked from its parent, while the reference explicitly says it can be unlinked using the `unlinkFromParent` endpoint. This is not a partial misunderstanding but the opposite of the correct behavior, so the score is poor."
+"You are trying to create a new share using `tapipy` with the method `t.shares.create(share_definition)`. Based on the API documentation, what is a more likely method name for creating a share?","A more likely method name for creating a share in the Tapis Shares API (and thus in `tapipy`) is:
+
+```python
+t.shares.createShare(share_definition)
+```
+
+**Source:** Tapis v3 Shares API Documentation","Different APIs have different share resource endpoints. For example, ```python
+ client.systems.shareSystemPublic(systemId=<system id>)
+. Please tell us what resource you would like to share. ",code correction,systems,,,,0.6938503384590149,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.4700229167938232}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The suggested method name `createShare` is not supported by evidence and likely does not match the actual Tapipy/Tapis Shares client method naming convention, which typically uses snake_case such as `create_share` or similar. Therefore, the output is inaccurate.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer does suggest an alternative method name, but it appears to be a guess and is not supported by the reference, which indicates that share-related methods are resource-specific (e.g., `client.systems.shareSystemPublic(...)`) rather than a generic `createShare`. It neither aligns with the reference example nor acknowledges that the correct method depends on the specific resource being shared."
+What does enabling `canRunBatch` on a system indicate?,"Enabling `canRunBatch` on a system indicates that the system is capable of running batch jobs—i.e., it has a batch scheduler/queueing system (such as SLURM, PBS, etc.) that Tapis Jobs can submit to and manage jobs through, rather than only running direct/interactive commands.
+
+**Source:** Tapis v3 Systems & Jobs model documentation (field: `canRunBatch`)",It indicates if the system supports running jobs using a batch scheduler. ,conceptual,systems,0.012115660853829877,0.23333332993888892,0.23333332993888892,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.5457847118377686}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to determine if the model output’s explanation of the Tapis `canRunBatch` flag is accurate and complete. The answer says it indicates that the system is capable of running batch jobs via a scheduler like SLURM or PBS that Tapis Jobs can submit to, versus only interactive commands. In Tapis Systems, `canRunBatch` indeed indicates whether the system supports execution via a batch scheduler; it doesn’t itself assert that such a scheduler definitely exists beyond that capability flag. The paraphrase is faithful and not misleading in this context, and the question is only asking what enabling it indicates. No contradictions or clear factual errors appear, and the core meaning is correct and complete for the field semantics.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer accurately matches the reference answer, clearly stating that `canRunBatch` indicates the system can run jobs via a batch scheduler. It adds helpful detail (examples of schedulers and contrast with direct/interactive commands) without changing the meaning."
+Is the `batchScheduler` field required when `canRunBatch` is true?,"No, based on the provided context I don’t have enough information to say whether `batchScheduler` is required when `canRunBatch` is true. The specific validation rule or schema detail for that relationship is not included in the given material.
+
+**Answer:** I don’t know from the available documentation.
+
+**Source:** Tapis v3 Documentation (exact section on `canRunBatch` / `batchScheduler` requirements not present in provided context).","Yes, it must be specified if  `canRunBatch` is true",yes/no,systems,0.006216934650356319,0.1016949126687734,0.1016949126687734,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.742277145385742}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The question asks whether the model’s answer about not knowing the requirement relationship between `batchScheduler` and `canRunBatch` is correct. Since I don’t have any external context specifying that relationship, I must judge only internal consistency: the assistant explicitly says it lacks information and does not assert any fact about the schema. There is no factual claim that could be wrong, and the answer is appropriately limited. Therefore, it is correct under the rubric.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The reference clearly states that the correct answer is “Yes, it must be specified if `canRunBatch` is true,” while the predicted answer says “I don’t know” and implies the opposite by not confirming the requirement. It fails to provide the correct information and directly contradicts the reference, so it deserves the lowest score."
+What does the `host` attribute represent in a system?,"In a Tapis v3 system definition, the `host` attribute represents the **DNS hostname or IP address of the remote machine** where the system actually resides and where Tapis will connect to run jobs or access storage.
+
+It is essentially the network address Tapis uses to reach the system.  
+
+**Source:** Tapis v3 Systems Service Documentation","It represents Host name, IP address or Globus ID",conceptual,systems,0.009009106352492559,0.20833333028645837,0.20833333028645837,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.8988919258117676}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer correctly describes the `host` attribute in the specific context of a Tapis v3 system definition as the DNS hostname or IP of the remote system Tapis connects to. It is accurate and complete for that context and matches the question’s likely intent.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly states that `host` is the DNS hostname or IP address of the remote machine, which matches most of the reference. However, it omits the possibility of a Globus ID mentioned in the reference answer, so it is slightly incomplete."
+What is the `defaultAuthnMethod` in a system definition?,"In a Tapis v3 system definition, `defaultAuthnMethod` specifies which authentication method Tapis should use **by default** when accessing that system’s resources (e.g., running jobs, doing I/O) if no other method is explicitly provided.
+
+Typical values include things like:
+
+- Using the **user’s own credentials** (e.g., password/SSH key)  
+- Using a **shared/host account credential** configured on the system
+
+It is essentially a policy knob in the system definition that tells Tapis, “When talking to this system, authenticate this way unless told otherwise.”
+
+**Source:** Tapis v3 Systems Service documentation (system definition fields, including `defaultAuthnMethod`).","It defines how access authentication is handled by default. Supported methods: PASSWORD, PKI_KEYS, ACCESS_KEY, TOKEN, TMS_KEYS.",conceptual,systems,0.0025862165093628294,0.06382978440923508,0.06382978440923508,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9432189464569092}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The answer describes defaultAuthnMethod conceptually but omits the specific, enumerated values defined by Tapis (e.g., PASSWORD, PASSWORDLESS, PKI_KEYS) and is therefore incomplete with respect to the field’s actual definition.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer correctly captures the general idea that `defaultAuthnMethod` specifies the default authentication method Tapis uses for a system, which aligns with the reference’s “defines how access authentication is handled by default.” However, it is vague and somewhat speculative about “typical values” (user credentials, shared account) instead of listing the concrete supported methods (PASSWORD, PKI_KEYS, ACCESS_KEY, TOKEN, TMS_KEYS) given in the reference. It’s conceptually right but incomplete and less precise."
+Does a system automatically include credentials when created?,"No, a system does *not* automatically include credentials when it is created.
+
+When you register a system in Tapis v3, you define its core properties (host, port, system type, etc.). Authentication details (credentials such as passwords, SSH keys, access tokens) must be added separately using the appropriate credentials/roles endpoints after the system object itself exists.
+
+So system creation and credential assignment are two distinct steps.
+
+**Source:** Tapis v3 Systems Service Documentation","No, credentials must be registered separately.",yes/no,systems,0.0064355608314765845,0.14285714128979593,0.14285714128979593,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.6203911304473877}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The question appears to reference Tapis v3 Systems, where creating a system does not automatically create or attach credentials; they must be added separately. The answer correctly states that credentials are not automatically included and notes that system creation and credential assignment are distinct steps.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer directly matches the reference answer in content and meaning: it clearly states that credentials are not automatically included and must be registered separately. It adds a bit more context about system creation and credential assignment being distinct steps, which is accurate and consistent with the reference."
+How do you list all systems using the Python SDK?,"You can list all systems with the Tapis v3 Python SDK using the `systems.getSystems()` call. Example:
+
+```python
+from tapipy.tapis import Tapis
+
+# Initialize client
+t = Tapis(
+    base_url='https://tacc.tapis.io',  # or your Tapis base URL
+    username='your_username',
+    password='your_password'
+)
+t.get_tokens()
+
+# List all systems
+systems = t.systems.getSystems()
+
+# Print system IDs
+for sys in systems:
+    print(sys.id)
+```
+
+This returns a list of system objects, which you can iterate over or inspect as needed.
+
+**Source:** Tapis v3 Systems API & Python SDK documentation.",t.systems.getSystems(),code generation,systems,,,,0.6611477732658386,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9664781093597412}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly describes how to list systems with the Tapis v3 Python SDK, including the proper use of `t.systems.getSystems()` and typical client initialization and token retrieval. There are no evident factual errors or omissions relative to the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer directly uses `t.systems.getSystems()`, which matches the reference answer exactly. It also provides a correct, minimal example of initializing the client and calling the method. The extra detail does not conflict with the reference and is accurate, so the answer fully satisfies the question."
+How do you get details of a specific system via curl?,"Use the Systems service `GET /v3/systems/{systemId}` endpoint. A typical `curl` call looks like:
+
+```bash
+curl -sk \
+  -H ""Authorization: Bearer $JWT"" \
+  ""https://tacc.tapis.io/v3/systems/{systemId}""
+```
+
+Replace `{systemId}` with the ID of the system you want details for, and `$JWT` with a valid Tapis access token.
+
+**Source:** Tapis v3 Systems API documentation.","curl -H ""X-Tapis-Token: $JWT"" https://tacc.tapis.io/v3/systems/<systemId>",code generation,systems,,,,0.813880205154419,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.02445387840271}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly describes how to get details of a specific system via curl using the Tapis v3 Systems service GET /v3/systems/{systemId} endpoint, including proper URL format and headers. There are no apparent factual inaccuracies given the context, and the answer is complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly identifies the right endpoint and use of a JWT, and the overall idea matches the reference. However, it uses the `Authorization: Bearer $JWT` header instead of the `X-Tapis-Token: $JWT` header shown in the reference, and adds extra flags (`-sk`) that aren’t in the reference. Functionally it’s close but not an exact match to the documented usage."
+What does the `enabled` attribute control?,"The `enabled` attribute controls whether the resource (for example, a Tapis app, system, or job definition that has this field) is active and usable.  
+
+- If `enabled` is `true`, the resource is available for normal use (e.g., jobs can be submitted to it, or the app can be run).  
+- If `enabled` is `false`, the resource is effectively disabled: Tapis will not allow it to be used for its normal operations (such as job submissions or app executions), though it may still exist in the system configuration.
+
+Source: Tapis v3 Documentation (metadata not further specified in provided context).",Indicates if system is currently considered active and available for use.,conceptual,systems,0.006099540923298394,0.1707317049940512,0.14634146109161214,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.2443320751190186}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output speculates about a specific platform (Tapis v3) and a particular semantic (“resource active and usable”) without that context being given in the input. The input question is underspecified and generic; asserting a platform-specific meaning and source is misleading. Therefore, the answer is not fully reliable or well-grounded.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly captures the core meaning of the `enabled` attribute—whether the resource is active and available for use—which matches the reference answer. It adds some extra contextual detail (examples of resources and behavior when false) that is consistent and not contradictory, so it fully answers the question."
+Is sharing a system with others possible?,"Yes. In Tapis v3 you can share a system with other users by granting them permissions (e.g., read, modify, execute) on that system. Sharing is controlled through the Tapis authorization/permissions model, so you can specify which users or roles can access and use the system you own or manage.
+
+**Source:** Tapis v3 Documentation (Systems & Permissions)","Yes, systems can be shared publicly in a tenant or shared with specific users belonging to the tenant",yes/no,systems,0.005107786384598448,0.1935483832674298,0.16129031875130082,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9519569873809814}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer correctly states that in Tapis v3 you can share a system with others by granting permissions such as read, modify, and execute, and that this is handled through the Tapis authorization/permissions model. This matches the documented behavior of Tapis systems and their ACL/permissions mechanism. The question is fully addressed and there are no evident factual errors or misleading statements given the context.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that systems can be shared with others and explains that this is done via permissions, which aligns with the reference answer’s statement that systems can be shared publicly or with specific users. It is consistent, accurate, and slightly more detailed while not contradicting the reference."
+What permissions can be granted on a system?,"The permissions that can be granted on a Tapis v3 system are the standard POSIX-style permissions:
+
+- **READ** – ability to view system details and, typically, list/read files.
+- **MODIFY** – ability to change system properties and/or modify files.
+- **EXECUTE** – ability to execute jobs or commands on the system.
+- **OWNER / ADMIN** – full administrative control over the system (including managing permissions for others).
+
+These are the core permission types used when assigning access to a system in Tapis v3.
+
+**Source:** Tapis v3 Systems Service Documentation","`READ`,`MODIFY`,`EXECUTE` or ` * ` (all) can be granted on a system",conceptual,systems,0.04350931320656678,0.1944444418557099,0.1944444418557099,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.1308066844940186}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': ""Need to decide if the output about Tapis v3 system permissions is accurate. Tapis v3 Systems actually use permissions like READ, MODIFY, EXECUTE, and DELETE, plus OWNER/ADMIN is not a separate grant but role; also question is vague but clearly about Tapis systems. The provided list omits DELETE and slightly mischaracterizes OWNER/ADMIN as a permission. So it's incomplete/inaccurate per rubric."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly lists READ, MODIFY, and EXECUTE, and conceptually covers full control with “OWNER / ADMIN,” which is close to “* (all)” in the reference. However, it doesn’t explicitly mention the wildcard `*` permission and introduces “OWNER / ADMIN,” which is not in the reference. Overall it’s mostly correct but not perfectly aligned."
+Why might you use the search endpoint for systems?,"You’d use the **Systems search endpoint** when you need to *filter or discover* systems based on specific criteria rather than just listing everything or retrieving a single known system.
+
+Typical reasons include:
+
+- **Finding systems by properties** – e.g., search for systems by:
+  - `owner` or `tenant`
+  - `systemType` (HPC, docker, etc.)
+  - `canExec`, `canUse`, `isPublic`, `enabled`
+  - tags, names, or other metadata
+
+- **Building user-specific views** – e.g., list only the systems a given user can execute on, or only public systems.
+
+- **Complex queries** – combining multiple conditions (AND/OR, ranges, exact matches) to narrow down systems needed for an application or workflow.
+
+- **Pagination and browsing** – when you have many systems and need to retrieve them in manageable, filtered pages instead of a full list.
+
+In short, the search endpoint is used when you need *query-based discovery* of systems instead of simple retrieval by ID.
+
+Source: Tapis v3 Systems API documentation.",Search provides a way for users to search for systems based on a list of search conditions provided either as query parameters for a GET call or a list of conditions in a request body for a POST call to a dedicated search endpoint.,conceptual,systems,0.012948001029552243,0.18571428251428573,0.14285713965714292,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.8462672233581543}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly explains typical use cases for a systems search endpoint (filtering, complex queries, user-specific views, pagination) and contrasts it with listing or retrieval by ID. No factual errors or contradictions are apparent given the generic API context.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer clearly explains that the search endpoint is used for query-based discovery and filtering of systems based on various criteria, which aligns with the reference answer’s description of searching based on conditions. It adds useful detail (examples of properties, use cases like user-specific views and complex queries) without contradicting the reference."
+What does `isPublic` indicate for a system?,"`isPublic` is a flag on a Tapis system that indicates whether the system is *publicly visible/usable* to Tapis tenants beyond the system owner.
+
+- `isPublic: true` – the system is public: other users (depending on tenant and permissions model) can see and potentially use the system.
+- `isPublic: false` – the system is private to the owner (and only accessible to others if explicitly shared via roles/permissions).
+
+**Source:** Tapis v3 Systems API documentation (system definition and attributes, including `isPublic`).",Indicates if the system has been shared publicly. ,conceptual,systems,0.005771098608257974,0.12698412453514743,0.09523809278911571,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.0256741046905518}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output correctly explains that `isPublic` on a Tapis system indicates whether the system is publicly visible/usable beyond the owner, and clarifies behavior for true/false values. This matches Tapis Systems API semantics and is complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly captures the meaning of `isPublic` as indicating whether a system is publicly visible/usable beyond the owner, which aligns with the reference’s “shared publicly.” It adds helpful detail about true/false cases and access via roles/permissions without contradicting the reference."
+Can you limit list results with query parameters like `limit` and `skip`?,"Yes. Many Tapis v3 list endpoints support pagination using query parameters like:
+
+- `limit` – maximum number of records to return.
+- `skip` (sometimes `offset`) – number of records to skip before starting to return results.
+
+The exact parameter names and availability can vary by service and endpoint, so you should check the specific API’s documentation (e.g., Systems, Files, Jobs) to confirm whether `limit`/`skip` or `limit`/`offset` are used there.
+
+**Source:** Tapis v3 API Documentation (service-specific list/pagination sections).","Yes, skip and limit can be used as query parameters to limit test results",yes/no,systems,0.00681357726090222,0.199999997278125,0.17499999727812504,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9284937381744385}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The user asks whether list results can be limited with query parameters like `limit` and `skip` in the context of Tapis v3. The output correctly states that many Tapis v3 list endpoints support pagination via such parameters, that names may vary (limit/skip or limit/offset), and that specifics depend on the service documentation. This matches typical Tapis v3 API behavior and contains no contradictions or inaccuracies given the general nature of the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly states that many list endpoints support pagination with `limit` and `skip` and explains their purpose, which aligns with the reference answer. It adds extra detail about variation across services, which is reasonable, but it’s slightly less direct and specific than the reference (“test results”) and introduces some uncertainty (“can vary by service”) that isn’t in the reference. Overall it’s accurate and helpful but not a perfect match in directness."
+What is the primary purpose of the Tapis Apps service?,"The primary purpose of the Tapis Apps service is to provide a way to **define, register, and manage reusable application definitions** (e.g., simulators, workflows, analysis codes) so they can be **executed as jobs via the Tapis Jobs service** in a standardized and consistent way across different computing systems.
+
+**Source:** Tapis v3 Documentation (Apps service overview, purpose, and concepts).",The Tapis Applications service provides for management of Tapis applications including permissions.,conceptual,apps,0.004707378393706195,0.12903225514568165,0.12903225514568165,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.6562039852142334}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output correctly describes that the Tapis Apps service is used to define, register, and manage reusable application definitions which are then executed as jobs via the Tapis Jobs service. This aligns with Tapis documentation; there are no evident factual errors or omissions for the scope of the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer is more detailed but fully consistent with the reference. It correctly identifies that the Tapis Apps service is for defining, registering, and managing applications so they can be executed as jobs, which aligns with “management of Tapis applications including permissions.” The extra detail about reusable definitions and execution via the Jobs service is accurate and relevant, so the answer is excellent."
+What is a Tapis application?,"A Tapis application is a reusable description of how to run a piece of software on a Tapis-enabled computing system.  
+
+In practice, an “app” in Tapis v3 is a registered object that defines:
+
+- The executable or container image to run  
+- The inputs, parameters, and environment variables it accepts  
+- The compute system (e.g., HPC, cloud VM) where it runs  
+- How to stage input/output data and handle archives  
+
+Once an application is registered, users can launch **jobs** that reference that app, so they don’t have to repeatedly specify all run details. The app acts as a template for consistent, repeatable executions across systems.
+
+**Source:** Tapis v3 Documentation (Applications & Jobs)",A Tapis application represents all the information required to run a Tapis job on a Tapis system and produce useful results. Each application is versioned and is associated with a specific tenant and owned by a specific user who has special privileges for the application.,conceptual,apps,0.02003146738613231,0.2016806682607161,0.18487394557164052,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.594722032546997}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output accurately describes what a Tapis application is in Tapis v3, including its role as a registered definition of how to run software, its components (executable/container, inputs/parameters, compute system, data staging), and how it is used to launch jobs. This aligns with Tapis documentation and contains no evident factual errors or omissions relative to the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer accurately captures the core idea that a Tapis application is a reusable, registered description of how to run software on a Tapis system, including inputs, parameters, and execution environment, which aligns well with “all the information required to run a Tapis job and produce useful results.” While it doesn’t mention versioning, tenancy, or ownership explicitly, it fully answers the question at a conceptual level and is consistent with the reference."
+Does the Apps service execute applications directly?,"No. The Tapis Apps service does **not** execute applications directly.  
+
+Instead, the Apps service is responsible for **defining and managing application metadata** (e.g., inputs, parameters, execution system, container image, etc.). Actual execution is handled by the **Jobs service**, which takes an app definition plus job-specific inputs and then submits and runs the job on the specified execution system (e.g., HPC cluster, Docker/Kubernetes host, etc.).  
+
+So:  
+- **Apps service** → describes what an application is and how it should be run.  
+- **Jobs service** → actually runs the application based on that description.
+
+**Source:** Tapis v3 Documentation – Apps Service & Jobs Service Overview","No, the Apps service provides for management of application definitions, including who has access to an application. The Jobs service is responsible for executing an application. The Jobs service uses the Systems, Apps and Files services to launch, monitor and manage execution of an application.",yes/no,apps,0.039372714034190105,0.220183482248969,0.220183482248969,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.725421667098999}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The Apps service in Tapis indeed manages application definitions/metadata and does not execute applications; execution is handled by the Jobs service. The answer is accurate, complete for the question, and uses appropriate terminology.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that the Apps service does not execute applications and instead manages application definitions/metadata, while the Jobs service is responsible for execution. It also notes that the Jobs service uses the app definition and runs it on an execution system, which aligns with the reference. The extra detail about roles of Apps vs. Jobs is accurate and consistent with the reference answer."
+What is the role of an application version in Tapis?,"In Tapis, an **application version** is used to uniquely identify a specific, immutable revision of an application’s definition and its underlying execution environment. Each version typically “locks in” things like:
+
+- The exact container image or executable to run  
+- The interface (inputs, parameters, outputs)  
+- Execution details (command, arguments, resource requirements, etc.)
+
+Because versions are immutable, you can:
+
+- Run repeatable, reproducible jobs by targeting a specific version  
+- Safely evolve an app over time by registering new versions without breaking existing workflows  
+- Maintain backwards compatibility for users or projects depending on earlier versions  
+
+In practice, users submit jobs by specifying both the app id and the app version, ensuring they get the precise behavior associated with that frozen snapshot of the application.
+
+**Source:** Tapis v3 Documentation (application and job model & versioning concepts).",App versioning allows application authors to create and develop new app definitions while previous definitions are in use. Versioning is at the discretion of the application author. A version of an app may be locked by the app owner in order prevent updates by other users.,conceptual,apps,0.0068489791649392825,0.19047618670924152,0.14965986017862937,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.4429569244384766}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output accurately describes the role and properties of an application version in Tapis, including immutability, tying to execution environment, and its use in job submission. This aligns with Tapis v3 documentation.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly captures the main role of an application version in Tapis: identifying a specific, immutable revision so that older definitions can remain in use while new ones are created, enabling reproducibility and safe evolution. It adds useful detail about what is “locked in” and how jobs target a specific version. However, it doesn’t explicitly mention that versioning is at the discretion of the app author or that a version can be locked to prevent updates by others, which are points highlighted in the reference."
+Can two app versions have different execution systems?,"Yes. In Tapis v3, different versions of the **same app** can be configured to use **different execution systems**.
+
+Each app version is defined independently and can specify its own `executionSystem` (and related runtime details). This allows you, for example, to have:
+
+- `my-app` version `1.0` running on `systemA`
+- `my-app` version `2.0` running on `systemB`
+
+as separate app definitions under the same app ID but different version identifiers.
+
+**Source:** Tapis v3 Apps Service documentation (app versioning and execution system configuration).","Yes, two app versions may use different execution systems. Also, a single app version may use different execution systems since the job submission request can override the execution system to be used.",yes/no,apps,0.009428762840023024,0.2471910072970585,0.2471910072970585,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.752439022064209}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The user asks if two app versions can have different execution systems in Tapis v3. The output states that different versions of the same app can be configured with different execution systems and gives an example. In Tapis v3 Apps, each app version is a separate app record that can indeed specify its own executionSystem, so the response is factually accurate and answers the question fully.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly states that different versions of the same app can use different execution systems, which matches part of the reference. However, it omits the additional nuance from the reference that a single app version can also use different execution systems via job submission overrides. Thus it’s accurate but incomplete."
+What is the execution system in an app definition?,"In a Tapis v3 app definition, the **execution system** is the Tapis *Systems* resource (usually a host, cluster, or container platform) where the app will actually run.
+
+In the app JSON, this is given by the `jobAttributes.executionSystemId` (or similar field), which must match the ID of a System previously registered in Tapis. That system definition includes things like:
+
+- Hostname / scheduler / execution environment  
+- Queues, limits, and batch scheduler configuration  
+- Authentication method and credentials configuration
+
+When a job is submitted using that app, Tapis uses the execution system specified in the app to stage data, launch the job, and monitor it.
+
+**Source:** Tapis v3 Apps and Systems documentation (app definition fields, `executionSystemId`, and Systems resource description).","The attribute execSystemId in an application definition specifies the system on which the application is to be run. It may be left undefined, in which case the execution system must be provided as part of the job submission request.",conceptual,apps,0.011557170605970987,0.21238937663090302,0.15929203149815968,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.1508398056030273}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output correctly describes what an execution system is in the context of a Tapis v3 app definition, including that it is a Systems resource where the app runs, referenced by an executionSystemId, and outlines appropriate details like hostname, scheduler, queues, and its role in staging and running jobs. No factual errors or omissions relative to the question are evident.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly identifies that the execution system is a Tapis Systems resource where the app runs and that it’s specified in the app definition (via an executionSystemId-like field). It also accurately describes what the system definition contains and how it’s used at runtime. However, it doesn’t mention the important nuance from the reference that this field can be left undefined and then must be supplied at job submission time. That missing detail keeps it from being fully aligned with the reference."
+What is the purpose of the app runtime section?,"The app runtime section defines the execution environment for a Tapis v3 application—i.e., how and where the app runs. It typically specifies things like:
+
+- The runtime type (e.g., Docker, Singularity, or other container/VM environment)
+- The container image or module to use
+- Runtime options/parameters needed when launching the app
+
+In other words, it tells Tapis what environment to create so the app’s code can execute correctly on the target system.
+
+**Source:** Tapis v3 Application Definition and Runtime Configuration Documentation.","The runtime section specifies the runtime to be used for execution. Allowed values are DOCKER, SINGULARITY and ZIP.",conceptual,apps,0.008193962108645043,0.22222221890565466,0.1975308608809633,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.316809892654419}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output appears to give a correct, high-level description of what an app runtime section is and does in the context of Tapis v3 applications: it defines the execution environment, including runtime type, container image, and options, and explains that it tells Tapis what environment to create so the app can run. There are no evident factual errors given the generic nature of the question and answer, and it addresses the purpose clearly.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly captures the main purpose of the app runtime section—defining the execution environment for the application—and explicitly mentions Docker and Singularity as runtime types, which aligns with the reference. Although it doesn’t list ZIP as an allowed value, it still accurately and comprehensively explains the purpose, so it deserves a high score."
+Can Tapis apps be containerized?,"Yes. Tapis v3 apps are explicitly designed to support containerization.
+
+Most commonly, a Tapis app is defined to run inside a Docker or Singularity/Apptainer container image. In the app definition, you specify:
+
+- The container image (e.g., from Docker Hub or another registry)
+- The container type/runtime supported by the target system
+- How the command is invoked inside the container
+
+This allows you to package all dependencies and runtime environment for your application inside a container and then run that containerized app on Tapis-managed systems.
+
+**Answer:** Yes, Tapis apps can (and typically should) be containerized via Docker or similar container images referenced in the app definition.
+
+**Source:** Tapis v3 Documentation (Apps & Containers)","Yes, typically apps are containerized as a Docker or Apptainer/Singularity image. If it is not possible to containerize the application, the ZIP runtime may be used as an alternative.",yes/no,apps,0.012947086643829531,0.26168223921739897,0.24299065043235218,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9766950607299805}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer correctly states that Tapis v3 apps can be containerized, mentions Docker and Singularity/Apptainer which are indeed supported, and accurately describes specifying the image and runtime in the app definition. There are no factual errors and it fully addresses the yes/no question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that Tapis apps can be containerized, mentions Docker and Singularity/Apptainer, and explains how containers are referenced in the app definition. This fully aligns with the reference answer; the only extra detail in the reference (ZIP runtime as an alternative) is not required to correctly answer the question."
+What are app inputs in Tapis?,"In Tapis v3, **app inputs** are the named pieces of data that an application expects to receive at run time. They are defined in the app’s definition and describe:
+
+- **What data is required or optional** for the app to run (e.g., input files, configuration parameters passed as files, etc.).
+- **How these inputs are provided** at job submission (for example, via URIs/paths in the job request that point to files in a system).
+- **How they are passed into the container or executable**, typically by mapping them into the app’s working directory or via environment variables, depending on the app definition.
+
+When you register an app in Tapis, you specify its inputs (names, descriptions, types, whether they’re required, and sometimes default locations). Later, when a user submits a job that uses that app, they supply values for these inputs in the job request, and Tapis stages those inputs into the job’s execution environment so the app can access them.
+
+**Source:** Tapis v3 Documentation (Apps and Jobs – App definitions and job input parameters)","The term inputs can be used to describe various information required to execute an application, such as file inputs, app arguments, container arguments, scheduler options and environment variables.",conceptual,apps,0.001877449197457901,0.14184396862330875,0.1276595714601882,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.4905338287353516}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output describes Tapis v3 app inputs as named pieces of data defined in the app definition, including metadata and how they are provided and staged at job submission. This matches Tapis concepts; there are no apparent factual errors or contradictions and the answer is complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer gives a reasonably accurate description of app inputs in Tapis, focusing on data/files and how they’re defined and supplied at runtime. However, it is narrower than the reference answer, which explicitly notes that “inputs” can also include app arguments, container arguments, scheduler options, and environment variables. The predicted answer mentions environment variables only in passing and does not cover the broader notion of inputs as described in the reference, so it’s partially correct but incomplete."
+What are app parameters?,"In Tapis v3, **app parameters** are the inputs that an application expects when it runs. They are defined in the app’s JSON definition and describe:
+
+- The **name** of each input
+- Its **type** (e.g., string, number, boolean)
+- Whether it is **required or optional**
+- Any **default values**
+- Any **constraints** (like allowed values or ranges)
+- How the parameter is passed to the app (e.g., as a command-line argument or environment variable)
+
+When you create or update an app in Tapis, you specify these parameters so that jobs using the app can provide the proper inputs at runtime.
+
+**Source:** Tapis v3 Application Service documentation (App definitions and input/parameter model).",App parameters are values to be passed to an application to either provide data to the application or control application behavior. They may be required or optional. They are defined in the appArgs field of the parameterSet attribute in the app definition. ,conceptual,apps,0.05146045877678786,0.2758620651307967,0.2413793065101071,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.024306058883667}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': ""The model output defines 'app parameters' specifically in the context of Tapis v3, but the user question is generic and not scoped to Tapis. Because of this unwarranted narrowing of scope, the answer is not generally correct for the question as asked. It also assumes facts (Tapis v3, JSON definition) not present in the input. Therefore, it is incorrect per the rubric."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly explains what app parameters are conceptually (inputs to an application, can be required/optional, have types, defaults, constraints, and how they’re passed). This aligns well with the reference’s description of values passed to provide data or control behavior. However, it omits the specific implementation detail from the reference that they are defined in the `appArgs` field of the `parameterSet` attribute in the app definition, and instead gives a more generic “app’s JSON definition” description. Overall it’s accurate and reasonably complete but missing that key structural detail, so a 4."
+Can app parameters have default values?,"Yes. In Tapis v3 app definitions, you can specify default values for parameters.
+
+This is done in the app’s JSON definition under the appropriate parameter section (e.g., `parameters`, `environmentVariables`, or similar, depending on the app type). Each parameter object can include a `default` (or equivalent) field that defines what value will be used if the caller does not explicitly provide one at job submission time.
+
+These defaults are then available to the job at runtime without the user having to pass them manually in the job request.
+
+Source: Tapis v3 Apps Service Documentation","Yes, in general, many but not all parameters can include default values as part of the app definition.",yes/no,apps,0.007650047663253951,0.20618556398767143,0.16494845058560956,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.1408138275146484}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to judge whether the assistant’s answer about Tapis v3 app parameters having default values is factually correct and complete per the rubric.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly states that app parameters can have default values and explains how they are used, which aligns with the reference. However, it is slightly more specific than the reference by implying this is generally true for parameters, without noting the caveat that “many but not all” parameters support defaults. This small overgeneralization keeps it from being perfect."
+What does the app permissions model control?,"The app permissions model controls which users and roles are allowed to **view, use, modify, or manage** a Tapis application definition. In practice, it governs:
+
+- Who can see an app (read access)
+- Who can run jobs using that app (execute/use access)
+- Who can update or modify the app definition (update/write access)
+- Who can administer or manage sharing/permissions on the app (admin/owner-level access)
+
+In other words, it is the access-control mechanism that determines how an app is shared and who can do what with it within Tapis.  
+
+**Source:** Tapis v3 Applications Service – Permissions and Sharing Model Documentation","The permissions model allows for fine grained access control of Tapis applications. Permissions allow for granting READ, MODIFY or EXEC access. In addition to fine grained permissions support, Tapis also supports a higher level approach to granting access referred to as sharing.",conceptual,apps,0.005652028446602941,0.17999999564800012,0.1599999956480001,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.2111480236053467}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output accurately describes that an app permissions model controls access to viewing, using, modifying, and managing an application, which matches a standard access-control/permissions model description. No contradictions or inaccuracies relative to the generic question are present.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly states that the permissions model controls who can view (READ), use/run (EXEC), and modify (MODIFY) an app, and it also mentions admin/owner-level access and sharing, which aligns with the idea of fine-grained permissions plus sharing. It is slightly more detailed and introduces “manage”/admin as an extra category not explicitly in the reference, but this doesn’t contradict it. Overall it matches the core concepts well, though it’s not a verbatim mapping to READ/MODIFY/EXEC and sharing, so not perfect."
+Are app definitions immutable once published?,"No, app definitions are not strictly immutable once published.
+
+In Tapis v3, an app is versioned by its `id` and `version`. The published app definition for a specific `id`+`version` combination is treated as fixed: you typically **do not modify an existing version in place**, but instead:
+
+- Create a **new version** of the app (same `id`, higher `version`) with updated definition.
+- Publish that new version.
+- Existing jobs that reference the older version continue to use the original definition; new jobs can target the newer version.
+
+This preserves reproducibility while still allowing you to evolve an application over time.
+
+**Source:** Tapis v3 Apps Service documentation (app versioning and lifecycle).","No, in general app versions are not immutable. The attribute locked may be set to true to disallow updates by users; however, the app owner may update the locked attribute.",yes/no,apps,0.006451283560711527,0.18348623509805576,0.1467889873916338,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.6210088729858398}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The output incorrectly says app definitions are not strictly immutable but then explains that a specific id+version is treated as fixed and you do not modify an existing version in place. The question is about immutability once published; the correct answer is that a published app definition for a given id+version is effectively immutable and changes require a new version. So the leading ""No"" is misleading/incorrect relative to the actual behavior.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer correctly states that app definitions are not strictly immutable and explains versioning behavior, which is relevant. However, it misses the key detail from the reference that immutability is controlled via the `locked` attribute and that even locked apps can be updated by the owner. It also implies you “typically do not modify an existing version in place,” which is more of a best practice than what the reference explicitly says."
+How do you list all applications using the Tapis Python SDK?,"To list all applications using the Tapis v3 Python SDK, use the `apps.listApps()` method on an authenticated Tapis client. A minimal example:
+
+```python
+from tapipy.tapis import Tapis
+
+# Initialize the Tapis client (insert your tenant URL and tokens/config as appropriate)
+t = Tapis(
+    base_url='https://tacc.tapis.io',  # example; use your tenant’s base URL
+    username='your_username',
+    password='your_password',
+    tenant_id='your_tenant'
+)
+
+# Authenticate (if needed, depending on how you configured the client)
+t.get_tokens()
+
+# List all applications
+apps = t.apps.listApps()
+
+# Print basic info
+for app in apps:
+    print(f""{app.id}  (version: {app.version})"")
+```
+
+This returns a list of application records that you can iterate over or inspect directly.  
+
+**Source:** Tapis v3 Python SDK & Applications API documentation.","import json
+ from tapipy.tapis import Tapis
+ t = Tapis(base_url='https://tacc.tapis.io', username='<userid>', password='************')
+t.apps.getApps()",code generation,apps,,,,0.7379816770553589,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.5440609455108643}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output describes how to list applications with the Tapis v3 Python SDK using t.apps.listApps(), which is indeed the documented method for listing apps. The example initialization and usage are consistent with typical tapipy usage, and there are no apparent factual errors or omissions relative to the user question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly shows how to use the Tapis Python SDK to list applications, including proper client initialization and authentication, and uses `t.apps.listApps()`, which is a reasonable method name even though the reference uses `t.apps.getApps()`. The main difference is the specific method name, but conceptually it answers the question well and with more context than the reference."
+Write a Python SDK call to retrieve a specific app version.,"You can retrieve a specific app version using the `getApp` method and passing the `appId` and `appVersion`:
+
+```python
+from tapipy.tapis import Tapis
+
+# Initialize Tapis client
+t = Tapis(
+    base_url=""https://tacc.tapis.io"",  # or your tenant base URL
+    username=""your_username"",
+    password=""your_password""
+)
+t.get_tokens()
+
+# Retrieve a specific app version
+app_id = ""my-app-id""
+app_version = ""0.1""
+
+app = t.apps.getApp(appId=app_id, appVersion=app_version)
+
+print(app)
+```
+
+**Source:** Tapis v3 Python SDK – Apps service usage (apps.getApp)","import json
+ from tapipy.tapis import Tapis
+ t = Tapis(base_url='https://tacc.tapis.io', username='<userid>', password='************')
+t.apps.getApp(appId=""my-app"", appVersion=""1.0"")",code generation,apps,,,,0.8227781653404236,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9142820835113525}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly shows how to retrieve a specific app version using the Tapis v3 Python SDK: initializing the Tapis client, calling `apps.getApp` with `appId` and `appVersion` parameters. This matches the documented SDK method signature and addresses the user request fully.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly uses the same `t.apps.getApp(appId=..., appVersion=...)` call as in the reference, includes proper client initialization, and directly addresses retrieving a specific app version. It is fully consistent with the reference and adds only minor, accurate context."
+Write a curl command to list all registered apps.,"Use the Tapis Apps service `GET /v3/apps` endpoint with your JWT:
+
+```bash
+curl -s -H ""X-Tapis-Token: $TAPIS_TOKEN"" \
+     ""https://tacc.tapis.io/v3/apps""
+```
+
+If you want to list only apps you own, you can add query params such as `?owner=<username>` as supported by your deployment.
+
+**Source:** Tapis v3 API Docs – Apps Service (`GET /v3/apps`)","curl -H ""X-Tapis-Token: $JWT"" https://tacc.tapis.io/v3/apps",code generation,apps,,,,0.8204253315925598,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.0558462142944336}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly provides a curl command that uses the Tapis Apps service GET /v3/apps endpoint with the proper header to list all registered apps. It answers the question fully and accurately, and the added note about owner filtering is consistent with typical Tapis API usage.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly uses the same endpoint and header as the reference (`GET /v3/apps` with `X-Tapis-Token: $TAPIS_TOKEN`), just adding `-s` and a bit of extra helpful context. It is fully consistent with and slightly more informative than the reference, so it deserves the highest score."
+Fix this incorrect Python SDK call: `t.apps.getApp('my-app')`,"The correct Python SDK call should include the `app_id` keyword argument:
+
+```python
+t.apps.get_app(app_id='my-app')
+```
+
+Or using positional syntax (if supported in your version):
+
+```python
+t.apps.get_app('my-app')
+```
+
+But the method name must be `get_app`, not `getApp`.
+
+**Source:** Tapis v3 Python SDK – Apps service usage and method naming conventions","The version of the application must be given: t.apps.getApp(appId='my-app', appVersion=’1.0’)",code correction,apps,,,,0.7644045948982239,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.679643154144287}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly changes the camelCase method `getApp` to the snake_case `get_app`, which matches typical Python SDK naming conventions for the Tapis v3 Apps client. It also correctly notes that the parameter should be `app_id`, and that positional use may work depending on version. There are no evident factual errors relative to the requested fix.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer correctly fixes the method name (`get_app` vs `getApp`) and shows plausible Pythonic usage, but it misses a key requirement highlighted in the reference: the need to include the application version (`appVersion`). The reference answer emphasizes that both `appId` and `appVersion` must be provided, while the predicted answer only addresses naming/style and not the required version argument."
+Can an app definition reference files on a different system?,"Yes.
+
+In Tapis v3, an app definition’s input parameters (e.g., file inputs) can reference files that live on *other* registered systems, not just the execution/working system. You do this by specifying:
+
+- The `sourceUrl` or input parameter value using a Tapis URL that points to another system (e.g., `tapis://systemId/path/to/file`).
+- Tapis will then stage data from that remote system into the job’s working directory on the execution system before running the app.
+
+So the app definition itself is not limited to files on a single system; it can reference any accessible Tapis system via its system ID and path.
+
+**Source:** Tapis v3 Documentation (Apps & Jobs, Systems, and Data Staging sections)","Yes, file inputs in an app definition often do reference files on other systems.",yes/no,apps,0.006869039523232236,0.1632653036734694,0.1632653036734694,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.4313931465148926}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to determine whether the model’s answer about Tapis v3 app definitions referencing files on other systems is fully correct. The answer states that app definitions can reference files on other registered systems using Tapis URLs, and that Tapis will stage those files into the job’s working directory, and it frames this as a capability of Tapis v3 Apps & Jobs. I must assess factual correctness and completeness, but I lack external verification here; however, nothing in the answer appears logically inconsistent or clearly wrong relative to typical Tapis semantics (systems, URLs, data staging). It directly answers the yes/no question and explains how, without overclaiming beyond normal Tapis behavior.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5
+Explanation: The predicted answer directly addresses the question with the same conclusion as the reference (“Yes”) and adds accurate, relevant detail about how cross-system file references work in Tapis v3 (using Tapis URLs, data staging, and system IDs). It is consistent with and slightly expands on the reference answer without contradicting it."
+What is the jobType field in an app definition?,"In a Tapis v3 application definition, the `jobType` field specifies how jobs using this app will be handled and executed. It is an enumerated value that tells Tapis what kind of job the app runs (for example, a fork/exec process, an MPI job, a batch job, etc.), and is used by the Jobs service to determine the appropriate execution logic for submitted jobs.
+
+Because the exact allowed values and semantics of `jobType` are not present in the provided context, I cannot list them definitively here.
+
+**Source:** Tapis v3 Apps Service documentation (application definition fields, including `jobType`).","The attribute jobType indicates how, by default, the job will be run on the execution system, either as a FORK or a BATCH job. It may be overridden in the job submit request.",conceptual,apps,0.0074071544480636435,0.17142856760816338,0.17142856760816338,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.7433559894561768}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output gives a generally correct, high-level description of the purpose of the `jobType` field in a Tapis v3 app definition and explicitly notes that it cannot list exact allowed values. There are no apparent factual errors in the description, though it is somewhat generic. It addresses what `jobType` is used for and how it influences execution, which matches typical Tapis semantics.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer correctly states that `jobType` specifies how jobs are handled and executed and that it is used by the Jobs service to determine execution logic. However, it is vague and speculative about the allowed values (mentioning MPI, batch, etc.) and does not clearly state the two specific options FORK and BATCH, which the reference answer highlights. It also omits that this is the default and can be overridden."
+Is it possible to disable an app without deleting it?,"Yes. In Tapis v3 you can make an app unavailable to users without deleting it by changing its *runtime status* (for example, setting it to inactive/disabled in the app’s definition or via the appropriate update endpoint). This preserves the app’s definition and history while preventing new jobs from being submitted with it.
+
+**Source:** Tapis v3 Documentation (Apps service)","Yes, all versions may be disabled by setting enabled=false or a specific version may be disabled by setting versionEnabled=false.",yes/no,apps,0.004143018973828455,0.09523809178130524,0.09523809178130524,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.6636779308319092}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output assumes the question is about Tapis v3 Apps, but the user’s question is a general one about disabling an app without deleting it. The answer is therefore non-responsive to the actual question context and introduces an unsupported specificity (Tapis v3) that isn’t grounded in the input. This makes the response effectively incorrect relative to the asked question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer captures the general idea that an app can be made unavailable without deleting it, which aligns with the reference. However, it is vague and somewhat inaccurate in Tapis terms: it talks about changing “runtime status” and “inactive/disabled” rather than the specific, correct flags `enabled=false` or `versionEnabled=false`. It also doesn’t distinguish clearly between disabling all versions vs. a specific version."
+What is the role of the execSystemId field?,"The `execSystemId` field identifies **which Tapis execution system** an application or job will run on. It links the app/job definition to a specific registered *execution system* (for example, a particular HPC cluster, VM host, or container host) where the command actually executes.
+
+In other words, when you submit a job, Tapis uses the `execSystemId` to:
+
+- Look up the corresponding execution system definition (host, scheduler, execution method, credentials, queues, etc.).
+- Stage input data to that system (if configured).
+- Launch the job on that system using its scheduler or execution method.
+- Manage output and job status based on that system’s configuration.
+
+So the role of `execSystemId` is to tell Tapis *where* to run the job/application by referencing the appropriate execution system record.
+
+**Source:** Tapis v3 Applications and Jobs fields (execSystemId) – Tapis Documentation.","It identifies where, by default, the application will run. It may be overridden in the job submit request.",conceptual,apps,0.0041029345825346775,0.15929203296734282,0.141592917923095,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.902641773223877}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to decide if the assistant’s answer about the Tapis execSystemId field is accurate and complete given typical Tapis v3 documentation. The answer correctly states that execSystemId identifies the execution system on which a job or app runs and that Tapis uses it to look up the system definition and run the job there. This matches the Tapis concept of an execution system (HPC, VM, etc.) and how jobs reference it. No contradictions or missing major aspects with respect to the question, which only asks for the role of the field.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly explains that `execSystemId` specifies which execution system the app/job will run on and describes how Tapis uses it, which aligns with the reference’s “identifies where the application will run.” Although it doesn’t explicitly mention that it can be overridden in the job submit request, the core role is accurately and thoroughly described, so it closely matches the reference."
+Can multiple apps use the same execution system?,"Yes. Multiple apps can share the same execution system configuration.
+
+You can register one execution system (e.g., an HPC cluster or VM) in Tapis and then reference that same system ID from the `executionSystem` field in the definitions of many different apps. This is common practice: each app can have its own container image, command, inputs/outputs, etc., while all of them run on the same underlying execution system.
+
+**Answer:** Yes – many apps can point to and use the same execution system.
+
+**Source:** Tapis v3 Documentation (Apps and Systems)","Yes, multiple apps can use the same execution system",yes/no,apps,0.04350931320656678,0.18918918705259316,0.18918918705259316,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.054572105407715}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly states that in Tapis multiple apps can share the same execution system configuration by referencing the same execution system ID, which matches how Tapis Apps and Systems are designed. No contradictions or inaccuracies are present, and the question is fully addressed.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer directly matches the reference answer in content and meaning, clearly stating that multiple apps can use the same execution system and adding accurate, relevant context without contradicting the reference."
+Fix this incorrect curl command missing authentication: `curl https://tacc.tapis.io/v3/apps`,"Use an access token in the `Authorization` header. For example:
+
+```bash
+# Assuming you have an access token in $TAPIS_TOKEN
+curl -H ""Authorization: Bearer $TAPIS_TOKEN"" \
+     https://tacc.tapis.io/v3/apps
+```
+
+Or explicitly:
+
+```bash
+curl -H ""Authorization: Bearer YOUR_TAPIS_ACCESS_TOKEN"" \
+     https://tacc.tapis.io/v3/apps
+```
+
+Source: Tapis v3 API authentication and Apps service usage (Tapis Documentation).","Add the missing token header: `curl -H ""X-Tapis-Token: $JWT"" https://tacc.tapis.io/v3/apps`",code correction,apps,,,,0.8121126890182495,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.3854460716247559}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output correctly adds a Bearer token in the Authorization header, which is the standard way to authenticate to the Tapis v3 Apps API. It directly fixes the missing authentication issue, uses appropriate syntax, and does not introduce incorrect information.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer correctly identifies that authentication is missing and that a token-bearing header is needed, which is conceptually right. However, it uses the standard `Authorization: Bearer` header instead of the Tapis-specific `X-Tapis-Token` header shown in the reference. So it’s partially correct but not aligned with the expected Tapis usage."
+Why are apps separated from jobs in Tapis?,"Apps and jobs are separated in Tapis to clearly distinguish **what can be run** from **each specific run** of that thing:
+
+- **Apps = reusable definitions**  
+  An app describes *how* to run something: executable, version, inputs/outputs, required system, parameters, etc. This definition is registered once and can be reused many times.
+
+- **Jobs = individual executions**  
+  A job is a *single execution instance* of an app: specific input values, runtime context, user, timestamps, status, logs, etc.
+
+This separation provides:
+
+1. **Reusability and consistency**  
+   One app definition can be used by many users and many jobs, ensuring consistent execution behavior.
+
+2. **Versioning and evolution**  
+   Apps can be versioned and updated without altering the history of jobs that used older definitions.
+
+3. **Clear audit and provenance**  
+   Jobs record exactly which app (and version) was used, with what parameters, providing traceability.
+
+4. **Role separation**  
+   App developers/administrators define and publish apps, while end users primarily submit jobs using those apps.
+
+5. **Simpler management**  
+   Apps are relatively static metadata; jobs are dynamic runtime objects. Managing them separately simplifies querying, monitoring, and lifecycle handling.
+
+**Source:** Tapis v3 Documentation (apps and jobs service design and concepts).","Having apps as a separate resource type from jobs allows for reusable, versioned application definitions. A job may be thought of as a specific instantiation of an app version.",conceptual,apps,0.0038084633968554315,0.1538461512426036,0.13017751218934914,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9439990520477295}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output correctly explains the conceptual and architectural reason Tapis separates apps (reusable execution definitions) from jobs (individual execution instances). It covers reusability, versioning, provenance, role separation, and management, which align with Tapis documentation. There are no evident factual errors or omissions for the scope of the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly captures the core idea from the reference—that apps are reusable, versioned definitions and jobs are specific instantiations of those definitions. It expands on this with accurate, relevant reasons (reusability, versioning, provenance, role separation, management), all consistent with the reference."
+Can an app be shared across tenants?,"No, an app cannot be shared across tenants.  
+
+Apps are tenant‑scoped resources in Tapis v3, so an app defined in one tenant is not directly visible or shareable in another tenant. To use the same app in multiple tenants, it must be created (or registered) separately in each tenant.
+
+**Source:** Tapis v3 Documentation","No, apps cannot be shared across tenants. Tenancy provides the important feature of isolating resources for different projects.",yes/no,apps,0.07229703035677075,0.2666666624666667,0.2666666624666667,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.8439278602600098}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The assistant output claims that, in Tapis v3, apps cannot be shared across tenants and must be recreated in each tenant. In Tapis v3, apps are indeed tenant-scoped and are not directly shareable across tenants; to use an app in another tenant, it must be registered there. The answer directly addresses the question and is factually accurate and complete for the scope given.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer matches the reference answer in both conclusion and reasoning. It clearly states that apps cannot be shared across tenants and notes that they are tenant-scoped and must be created separately per tenant, which is consistent with the isolation rationale in the reference."
+What is a Tapis JWT and what is its primary function in the Tapis ecosystem?,"A Tapis JWT (JSON Web Token) is the standard authentication token issued by the Tapis Security Kernel after a user or service successfully authenticates.
+
+Its primary function in the Tapis ecosystem is to securely carry the user’s (or service’s) identity and authorization claims so that:
+
+- Tapis services can verify *who* is making a request (authentication), and  
+- determine *what* that caller is allowed to do (authorization),  
+
+all without needing to re-check credentials on every call. Clients include this signed JWT in the `Authorization: Bearer <token>` header when calling any Tapis API.
+
+**Source:** Tapis v3 Documentation (JWT / Security Kernel sections)","Tapis uses OAuth2-based authentication, issuing a short-lived JWT (JSON Web Token) for authenticated users. This token must be included in all API requests to authorize access to Tapis services.",conceptual,authenticator,0.029277734159259453,0.22429906164730548,0.18691588407721205,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.1755120754241943}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output accurately defines a Tapis JWT as the standard auth token from the Tapis Security Kernel and correctly describes its primary role: carrying identity and authorization claims so services can authenticate and authorize requests without re-checking credentials each time. This matches typical Tapis documentation and JWT usage, and there are no evident omissions relative to the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly defines a Tapis JWT as the authentication token issued after successful authentication and accurately describes its primary function: to carry identity and authorization claims and be included in API requests for access to Tapis services. It is fully consistent with and more detailed than the reference answer, without introducing contradictions."
+"After initializing a `Tapis` client object in Python using the `tapipy` library, how would you typically retrieve your access token?","You can access the token directly from the initialized `Tapis` client object. For example:
+
+```python
+from tapipy.tapis import Tapis
+
+t = Tapis(base_url='https://tapis.example.org', username='myuser', password='mypassword')
+
+access_token = t.access_token
+print(access_token)
+```
+
+In most `tapipy` usage, the token is available as `t.access_token` after initialization and authentication.
+
+**Source:** Tapis v3 Python SDK (`tapipy`) usage guidelines (metadata: Tapis Docs / tapipy / Authentication & Tokens)","In the PySDK, the access token is a first-class Python object stored on the Tapis object t , we can access it using `t.access_token`.",code generation,authenticator,,,,0.7618885040283203,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.107032060623169}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'Need to determine if the described way of retrieving access_token from a tapipy Tapis client is accurate; in tapipy, the token is usually in t.access_token or t._access_token depending on version. The answer states t.access_token, which may be incorrect; typical pattern is t.access_token.access_token or t.access_token.token. So classify as incorrect.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that the access token is available as `t.access_token` on the initialized `Tapis` client object, which matches the reference answer. The added example code is accurate and consistent with typical `tapipy` usage."
+"The following Python code using `tapipy` is intended to print the expiration time of your access token, but it's not working. `print(t.token_expires)`. What is the correct attribute to access the expiration time of the token?","The correct attribute is:
+
+```python
+print(t.access_token.expires_at)
+```
+
+In `tapipy`, the expiration time is stored on the `access_token` object under `expires_at`, not as `t.token_expires`.
+
+**Source:** Tapis v3 Python SDK (`tapipy`) usage and token attributes.",The expiry associated with the token can be decoded from JWT claim `exp` or using tapipy `t.expires_at`,code correction,authenticator,,,,0.7781355977058411,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.511152744293213}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to decide if the model output about the correct attribute for token expiration in tapipy is accurate. In tapipy, the Tapis object stores token expiration as `t.access_token.expires_at`, not `t.token_expires`, so the suggested attribute is correct and complete.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The question asks for the correct attribute on the `tapipy` client to access the token expiration time. The reference says it is `t.expires_at`. The predicted answer instead uses `t.access_token.expires_at`, which introduces an extra `access_token` object not mentioned in the reference and is likely incorrect for this context. While it’s in the right conceptual area (an `expires_at` field), it does not match the correct attribute path, so the answer is mostly incorrect."
+What standard protocol is used by Tapis for authentication?,"Tapis uses the **OAuth 2.0** standard protocol for authentication.  
+
+**Source:** Tapis v3 Documentation (Authentication & Security sections)",The default authenticator provided by the Tapis project is based on OAuth2,conceptual,authenticator,0.013679192123121896,0.13793102963139137,0.06896551239001224,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.729857921600342}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I verified whether the Tapis platform uses OAuth 2.0 for authentication. Tapis v3 indeed uses an OAuth 2.0-compliant token-based authentication system, typically via a Keycloak-based service, so the statement is accurate and complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly identifies OAuth 2.0 as the standard protocol used by Tapis for authentication, which matches the reference answer stating that the default authenticator is based on OAuth2. The wording is accurate and complete."
+Are Tapis access tokens time-limited?,"Yes. Tapis access tokens are time-limited.  
+
+Each access token (JWT) issued by Tapis has an expiration (`exp` claim) set by the Tapis Authenticator at creation time. After that time is reached, the token is no longer valid and calls using it will fail with an authorization error.  
+
+To continue using Tapis after an access token expires, you must obtain a new access token—typically by using a refresh token or by re-authenticating, depending on how your client is configured and what the Tapis deployment supports.
+
+**Source:** Tapis v3 Authentication and Authorization documentation (access tokens, JWT expiration, and token lifecycle).","Yes, access tokens expire after every four hours.",yes/no,authenticator,0.0043130267489891495,0.07692307508218281,0.07692307508218281,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9773221015930176}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer correctly states that Tapis access tokens (JWTs) are time-limited, explains expiration via the exp claim, that expired tokens become invalid, and that a new token must be obtained via refresh or re-authentication. This matches standard Tapis auth behavior and fully addresses the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer correctly states that Tapis access tokens are time-limited and explains expiration conceptually, but it omits the specific lifetime (“every four hours”) that the reference answer provides. It’s accurate but less precise than the reference, so it’s partially but not fully aligned."
+What information is typically included in a Tapis access token?,"A Tapis access token is a JWT (JSON Web Token) that typically includes information such as:
+
+- **Subject / User identity**  
+  - The Tapis username (subject, often `sub`) the token was issued for  
+- **Issuer and audience**  
+  - The Tapis tenant / authorization server that issued the token (`iss`)  
+  - The intended audience or service (`aud`)  
+- **Timestamps**  
+  - Token issuance time (`iat`)  
+  - Expiration time (`exp`)  
+  - (Sometimes) not‑before time (`nbf`)  
+- **Tenant / site context**  
+  - Tenant ID  
+  - (Possibly) site or base URL context, depending on configuration  
+- **Client / app info (for OAuth clients)**  
+  - Client ID for the application that requested the token  
+- **Authorization / scopes**  
+  - List of scopes/permissions granted to the token  
+- **Token type and ID**  
+  - Token type (e.g., `access_token`)  
+  - Token identifier (`jti`) for tracking / revocation  
+
+The exact set of claims may vary with Tapis deployment and configuration, but it will always contain enough identity, tenant, audience, and time‑based information for Tapis services to authenticate the caller and enforce authorization.
+
+**Source:** Tapis v3 Authentication & Tokens documentation (access tokens and JWT claim structure).","Tapis access token includes tenant_id, username, token_type, account_type,delegation, delegation_sub, client_id, grant_type and additional claims not listed here.",conceptual,authenticator,0.005703839602451233,0.08571428358061231,0.07142856929489802,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 8.129075288772583}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output accurately describes the typical contents/claims in a Tapis (JWT) access token: subject, issuer, audience, timestamps, tenant context, client info, scopes, token id, and notes that exact claims may vary. No factual errors or misleading statements are evident given general Tapis v3 documentation; it’s complete and precise for a ""typically included"" description.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer correctly identifies that a Tapis access token is a JWT and mentions several standard JWT claims (sub, iss, aud, iat, exp, jti) and scopes, which are generally relevant. However, it misses or only vaguely covers several Tapis-specific fields explicitly listed in the reference (tenant_id, token_type, account_type, delegation, delegation_sub, grant_type) and overemphasizes generic JWT structure instead of the concrete Tapis claims. It’s partially correct but not well aligned with the specific information the reference highlights."
+What is a tenant in the context of Tapis authentication?,"In the context of Tapis authentication, a **tenant** is an independently administered domain (or “slice”) of the Tapis platform that groups:
+
+- A specific user community (e.g., a project, institution, or organization)  
+- Its own authentication and identity management configuration  
+- Its own base URL (e.g., `https://tenant-id.tapis.io`)  
+- Tenant-specific policies, settings, and resources
+
+When a user authenticates with Tapis, they do so **within a given tenant**, and their tokens, permissions, and accessible resources are scoped to that tenant.
+
+**Source:** Tapis v3 Authentication & Tenancy Concepts (tenant-based auth and multi-tenant architecture documentation).","A tenant represents a logically isolated view of Tapis objects ( i.e., the systems, files, actors, etc.) created by users of the project.",conceptual,authenticator,0.006835068380748585,0.14141413774104694,0.10101009733700657,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.4584591388702393}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Assessing whether the definition of a tenant in Tapis authentication is accurate and complete. It describes a tenant as an independently administered domain with its own users, auth config, base URL, and policies, and notes that auth is scoped to a tenant. This matches Tapis multi-tenant architecture; no contradictions or key omissions for this question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer is largely correct and compatible with the reference: it describes a tenant as an independently administered, logically isolated “slice” of Tapis with its own users, configuration, and policies, and notes that authentication and access are scoped to that tenant. This aligns with the idea of a tenant being a logically isolated view of Tapis objects. However, it adds some implementation details (base URL, specific examples) that are not in the reference and doesn’t explicitly phrase it as a “view of Tapis objects,” so it’s very good but not a perfect match."
+How do you include a Tapis access token in a curl request?,"Include the Tapis access token as a Bearer token in the `Authorization` header of your `curl` request. The basic pattern is:
+
+```bash
+curl -H ""Authorization: Bearer ${TAPIS_TOKEN}"" https://tacc.tapis.io/v3/some/service/endpoint
+```
+
+If your token is in a file:
+
+```bash
+ACCESS_TOKEN=$(cat ~/.tapis/token.txt)
+
+curl -H ""Authorization: Bearer ${ACCESS_TOKEN}"" \
+     https://tacc.tapis.io/v3/some/service/endpoint
+```
+
+Or directly inline:
+
+```bash
+curl -H ""Authorization: Bearer eyJ0eXAiOiJKV1QiLCJh..."" \
+     https://tacc.tapis.io/v3/some/service/endpoint
+```
+
+**Source:** Tapis v3 API authentication and curl usage documentation.","A Tapis access token is included as a header X-Tapis-Token in the API request for example: curl -H ""X-Tapis-Token: $TOKEN"" https://tacc.tapis.io/v3/",code generation,authenticator,,,,0.7688480615615845,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.7415540218353271}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output correctly explains how to include a Tapis access token in a curl request using the Authorization: Bearer header, with accurate syntax and examples. It fully answers the question without errors.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer is incorrect for Tapis specifically. It describes using a standard `Authorization: Bearer` header, while the reference answer clearly states that Tapis expects the token in the `X-Tapis-Token` header. Although both involve passing a token in a header, the predicted answer does not match the required header name or format for Tapis, so it only loosely relates to the concept and is mostly wrong in this context."
+Fix the following header to properly authenticate a Tapis API request: Authorization: Bearer TOKEN,"To properly authenticate a Tapis v3 API request, the `Authorization` header must include a valid access token value instead of the literal word `TOKEN`, and you typically obtain that token via Tapis’ OAuth/token service.
+
+Correct pattern:
+
+```http
+Authorization: Bearer <ACCESS_TOKEN>
+```
+
+Example with a placeholder:
+
+```http
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+Where `<ACCESS_TOKEN>` is the JWT access token returned by Tapis when you authenticate (e.g., via `POST /v3/oauth2/tokens` or the appropriate Tapis auth flow).
+
+Source: Tapis v3 API Authentication and Authorization documentation.","The correct way to include Tapis token is to use the header: ""X-Tapis-Token: $TOKEN ""in the Tapis API request.",code correction,authenticator,,,,0.7259809970855713,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.8413410186767578}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': ""The model output correctly explains that the header should use a real access token instead of the literal 'TOKEN' and shows the correct Bearer pattern. This directly addresses how to fix the given header and is accurate for Tapis v3 OAuth-based auth."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer is incorrect for Tapis specifically. It suggests using a standard `Authorization: Bearer <ACCESS_TOKEN>` header, while the reference clarifies that Tapis expects the token in the `X-Tapis-Token: $TOKEN` header instead. This is a fundamental mismatch with the required fix, so the answer does not properly address the question."
+Does Tapis support authentication using Kerberos tickets for API access?,"No; based on the provided documentation context, there is no indication that Tapis v3 supports using Kerberos tickets directly as an authentication mechanism for API access. The documented authentication methods focus on Tapis-issued tokens (e.g., JWT access tokens) rather than Kerberos-based auth.
+
+Source: Tapis v3 Documentation (authentication and security sections as provided in context).","No, Tapis does not support authentication using Kerberos at the moment.",yes/no,authenticator,0.009009106352492559,0.16666666367222227,0.13333333033888894,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.9464530944824219}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Need to decide if the model output about Tapis supporting Kerberos tickets is factually correct. Tapis v3 uses its own tokens and there is no documented Kerberos ticket auth, so the statement that it does not support Kerberos for API auth is accurate and complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer matches the reference answer in both conclusion and reasoning. It clearly states that Tapis does not support Kerberos-based authentication and aligns with the documentation-based justification, fully answering the question."
+Does Tapis authentication support programmatic access via SDKs?,"Yes. Tapis v3 authentication is specifically designed to support programmatic access:
+
+- You obtain an access token (e.g., via the Tapis tokens service) using your Tapis client or user credentials.
+- That token is then used by Tapis SDKs (and other programmatic clients) to authenticate API calls.
+- Official Tapis SDKs are available for multiple languages and are built around this token-based authentication model, so you can securely script and automate access to Tapis services.
+
+In other words, authentication in Tapis is fully compatible with programmatic usage through SDKs and other automated clients.
+
+**Source:** Tapis v3 Authentication and SDK Usage Documentation.",Yes,yes/no,authenticator,0.0,0.026315789213988923,0.026315789213988923,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.0185091495513916}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly states that Tapis v3 authentication supports programmatic access via SDKs using token-based authentication; this aligns with Tapis design and documentation. No contradictions or missing key aspects for this question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer clearly states that Tapis authentication supports programmatic access via SDKs and briefly explains how (token-based model, SDK usage), which is fully consistent with the reference answer ""Yes"" and adds accurate, relevant detail."
+Can Tapis APIs be accessed without authentication?,"No. Tapis v3 APIs generally **cannot be accessed without authentication**.  
+
+To call Tapis services, a client must first obtain an OAuth2 access token (usually via the Tapis Tokens service) and then include that token in the `X-Tapis-Token` header (or equivalent) on subsequent API requests.  
+
+Some deployments might expose limited health or informational endpoints without auth, but core functionality (systems, jobs, files, apps, streams, etc.) requires a valid authenticated token.
+
+**Source:** Tapis v3 Documentation (authentication and tokens usage)","No, almost all the Tapis APIs require authentication via a valid OAuth2 token",yes/no,authenticator,0.008377813158441627,0.1975308615028197,0.14814814545343702,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.064642906188965}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to determine whether the model output about Tapis API authentication is accurate. Tapis v3 APIs are generally protected by OAuth2 and require tokens, with only a few public/health endpoints unauthenticated. The output states they cannot generally be accessed without authentication, notes token usage, and mentions potential unauthenticated health endpoints and that core functionality requires auth. This matches known behavior and is complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that Tapis APIs generally cannot be accessed without authentication, notes the need for an OAuth2 token, and acknowledges that only limited endpoints (like health checks) might be unauthenticated. This fully aligns with the reference answer and adds accurate, relevant detail."
+What happens when a Tapis access token expires?,"When a Tapis access token expires, it is no longer valid for accessing any Tapis APIs. Any calls you make with that expired token will fail with an authentication/authorization error (typically an HTTP 401 Unauthorized), and Tapis services will reject the request.
+
+To continue using Tapis after a token expires, you must obtain a new valid access token (for example, by using your Tapis client credentials or by going through the appropriate authentication flow again). If you were issued a refresh token as part of your auth flow, you can use that refresh token (if still valid) to request a new access token without re‑authenticating the user.
+
+Source: Tapis v3 Authentication & Tokens Documentation.","When the token expires, the user can use a refresh token to obtain the new token",conceptual,authenticator,0.013912550012173387,0.26086956294896035,0.2173913020793951,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.8684630393981934}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output accurately explains that an expired Tapis access token can no longer be used, that calls will fail with an auth error (commonly 401), and that a new token must be obtained, optionally via a refresh token if available. This matches standard Tapis/OAuth behavior and fully answers the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly explains that an expired access token can no longer be used and that a new token must be obtained, including via a refresh token if available. This aligns with the reference answer, which focuses on using a refresh token to get a new token. The predicted answer adds extra (accurate) detail about HTTP errors and other ways to re-authenticate, which is fine but not required. Overall it matches the key point, so it deserves a high score, but not perfect since it goes beyond the narrow focus of the reference."
+Is authentication in Tapis tenant-specific?,"Yes. In Tapis v3, authentication is tenant-specific.
+
+Each Tapis tenant has:
+- Its own base URL (e.g., `https://tenant.example.tapis.io`)
+- Its own authentication/authorization service endpoint under that tenant
+- Tokens that are scoped to that tenant’s identity and services
+
+So when you authenticate, you do so against a particular tenant, and the issued access token is valid within that tenant’s context (and any cross-tenant rules configured by administrators).
+
+**Source:** Tapis v3 Authentication and Tenancy Documentation","Yes, a Tapis token for one tenant can only be used for that tenant.",yes/no,authenticator,0.0036682265072714064,0.13157894470914133,0.13157894470914133,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.3847689628601074}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer aligns with Tapis v3 design where authentication and tokens are tenant-specific with per-tenant Auth service and URLs.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that authentication is tenant-specific in Tapis v3 and that tokens are scoped to a particular tenant, which aligns with the reference answer that a token for one tenant can only be used for that tenant. The additional details about base URLs and tenant-specific auth endpoints are accurate and consistent with the reference."
+How to include a Tapis token in an API request?,"You include a Tapis token in an API request by sending it as a Bearer token in the HTTP `Authorization` header.
+
+**Step-by-step:**
+
+1. First obtain a Tapis access token (e.g., via `t tokens get` or the Tapis /tokens service).  
+2. Include the token string in your request header:
+
+**cURL example:**
+```bash
+curl -X GET ""https://tacc.tapis.io/v3/systems"" \
+  -H ""Authorization: Bearer <your_access_token>""
+```
+
+**HTTP header format:**
+```http
+Authorization: Bearer <your_access_token>
+```
+
+Replace `<your_access_token>` with the actual token value returned by Tapis.
+
+**Source:** Tapis v3 API authentication and token usage documentation.","To include a Tapis token in an API request, the user must add an authorization header in the request along with user token Authorization: Bearer <YOUR_TAPIS_TOKEN>",conceptual,authenticator,0.08223944407383237,0.2888888853111112,0.2666666630888889,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.6040678024291992}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The assistant output accurately explains that a Tapis token should be sent as a Bearer token in the Authorization header, provides a correct header format and cURL example, and does not contain contradictions or missing key details for this specific question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer matches the reference answer exactly in substance: it correctly states that the Tapis token must be included in the `Authorization` header as a Bearer token. It also adds helpful detail (step-by-step explanation and a cURL example) without contradicting the reference."
+"Using the `tapipy` library, write a Python command to list the files and directories within the path `/mydata` on the Tapis system with the ID `mysystem`.","```python
+from tapipy.tapis import Tapis
+
+t = Tapis(base_url='https://tacc.tapis.io', username='your_username', password='your_password')
+t.get_tokens()
+
+files = t.files.listFiles(systemId='mysystem', path='/mydata')
+for f in files:
+    print(f.name, f.type)
+```
+
+**Source:** Tapis Files API & tapipy usage (Tapis v3 Documentation)","```python
+results = t.files.listFiles(systemId='mysystem', path='/mydata')
+```",code generation,files,,,,0.7848688364028931,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.625174045562744}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The tapipy usage is correct for listing files on a Tapis v3 system with given systemId and path. It initializes a Tapis client, authenticates, calls files.listFiles with appropriate parameters, and iterates over results. This matches Tapis Files API and answers the question fully.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly uses `t.files.listFiles(systemId='mysystem', path='/mydata')`, matching the core of the reference answer. It adds setup and printing logic, which is extra but not incorrect, and still directly answers the question of listing files and directories for the given system and path."
+"The following `curl` command attempts to create a new directory named `new_folder` in the root directory of the system with ID `my_system`, but it's failing. `curl -X POST -H ""Content-Type: application/json"" -H ""X-Tapis-Token: $JWT"" https://tacc.tapis.io/v3/files/ops/my_system -d '{""path"": ""new_folder""}'`. What is the correct endpoint path for creating a directory?","The correct endpoint to create a directory is the `mkdir` operation. Your `curl` should use:
+
+```bash
+curl -X POST \
+  -H ""Content-Type: application/json"" \
+  -H ""X-Tapis-Token: $JWT"" \
+  https://tacc.tapis.io/v3/files/ops/my_system/mkdir \
+  -d '{""path"": ""new_folder""}'
+```
+
+So the endpoint path should be:
+
+`/v3/files/ops/{systemId}/mkdir`
+
+**Source:** Tapis Files API v3 – Files operations (mkdir)"," Your code seems right ```curl -X POST -H ""X-Tapis-Token:$JWT"" ""Content-Type: application/json"" https://tacc.tapis.io/v3/files/ops/my_system -d {""path"": ""new_folder""}
+```. Can you provide more details about error?",code correction,files,,,,0.8473979234695435,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.7435719966888428}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output correctly identifies the Tapis Files v3 API endpoint for creating a directory as the mkdir operation under /v3/files/ops/{systemId}/mkdir, matching the question scenario.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The question asks specifically for the correct endpoint path for creating a directory. The predicted answer provides a concrete endpoint (`/v3/files/ops/{systemId}/mkdir`) and a matching curl example, which directly addresses the question. However, the reference answer claims the original code is correct and asks for more details, not actually giving the correct endpoint path. Since the predicted answer contradicts the reference and may be factually incorrect relative to the reference’s implied API behavior, it cannot be rated highly, but it does at least attempt to answer the question directly, so it’s better than a 1."
+Does Tapis offer a feature for automatically synchronizing files between local storage and Tapis systems?,"Tapis itself does **not** provide a built‑in, continuous “sync” service (like Dropbox or `rsync --watch`) that automatically keeps a local directory and a Tapis system in sync.
+
+What Tapis does provide are:
+
+- **File transfer APIs** (e.g., via the Files service) to upload, download, and move data between registered systems.
+- **Integrations with automation tools** (e.g., you can script periodic syncs using `tapis-cli`, Python SDK, or direct REST calls and run them via cron or workflow systems).
+- **Event/notification capabilities** in some services that you can use to trigger external tooling which then performs sync-like operations.
+
+However, any *automatic* or *continuous* synchronization behavior has to be implemented by the user (e.g., local scripts, scheduled jobs, or external services that call Tapis APIs), not by a native “auto-sync” feature in Tapis.
+
+**Answer:** No, Tapis does not currently offer a native automatic local↔Tapis filesystem synchronization feature; such behavior must be implemented using Tapis file transfer APIs plus external tooling.
+
+**Source:** Tapis v3 Documentation (Files and Systems services, high‑level capabilities).","No, Tapis does not offer a feature for automatically synchronizing files between local storage and Tapis systems",yes/no,files,0.018913840416280817,0.1764705861591696,0.16176470380622837,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.439046859741211}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': ""Need to judge if assistant's answer about Tapis auto-sync capability is accurate; answer notes no native automatic sync, only APIs and user-implemented automation. This matches Tapis capabilities."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer clearly and correctly states that Tapis does not provide a native automatic sync feature, matching the reference answer. It adds accurate, relevant detail about what Tapis does offer (file transfer APIs, automation via scripts, etc.) without contradicting the core point, so it fully answers the question and is consistent with the reference."
+Can PostIt URLs be redeemed without authentication?,"Yes. PostIt URLs can be redeemed without authentication.
+
+PostIts are specifically designed to allow temporary, anonymous access to a Tapis request. Once a PostIt is created, the generated URL can be used by anyone who has it, without needing Tapis credentials, until it expires or is otherwise invalidated.
+
+**Source:** Tapis v3 Documentation (PostIts service).","Yes, the PostIts service is a URL service that allows you to create pre-authenticated, disposable URLs to files, directories, buckets, etc in the Tapis Platform’s Files service, and it does not require authentication to redeem the files",yes/no,files,0.006024752529730896,0.25974025488277963,0.20779220293472772,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.7397150993347168}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly describes that Tapis PostIt URLs can be redeemed without authentication and explains their purpose as temporary, anonymous access tokens, which matches the Tapis v3 PostIts service behavior.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that PostIt URLs can be redeemed without authentication and explains that anyone with the URL can use it until it expires, which aligns with the reference answer’s description of pre-authenticated, disposable URLs that do not require authentication."
+What are file transfers in Tapis?,"In Tapis, “file transfers” refer to managed operations that copy or move data between storage systems or paths registered in Tapis (e.g., between two Tapis Systems, or between a Tapis System and an external endpoint). These transfers are typically:
+
+- Initiated via Tapis APIs (e.g., Files/Streams/Systems services), specifying a source and destination.
+- Handled asynchronously so large data movements don’t block the client.
+- Tracked and logged so users can monitor status (queued, running, completed, failed).
+- Integrated with Tapis security and permissions: only allowed for users who have the necessary access rights on the involved systems/paths.
+
+In practice, a Tapis file transfer is a Tapis-managed, authenticated data copy/move action between two locations known to Tapis, with status and error reporting exposed through the API.
+
+Source: Tapis v3 Documentation (general Files/Systems services overview metadata).",File transfers are used to move data between Tapis systems. They should be used for bulk data operations that are too large for the REST api to perform,conceptual,files,0.011610384172171887,0.20967741633324663,0.20967741633324663,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.6409306526184082}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': ""Evaluate whether the assistant's answer about Tapis file transfers matches general Tapis documentation and concepts: asynchronous, between systems, access controlled, via APIs. No contradictions seen; answer is accurate and complete given open-ended question."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly describes file transfers as managed operations to move data between Tapis systems, notes that they are asynchronous, tracked, and permission-controlled, which aligns with the reference. However, it omits the specific emphasis that they are intended for bulk data operations that are too large for the standard REST API, which is a key point in the reference. Overall it’s accurate and more detailed, but slightly misaligned in focus."
+How are permissions inherited within the Tapis Files service?,"In the Tapis Files service, permissions are **not inherited** down a directory tree.
+
+- Granting a permission (e.g., READ, WRITE, EXECUTE) on a **parent directory** does **not** automatically grant those permissions on its **subdirectories or files**.
+- Each path (file or directory) has its own ACL/permissions that must be explicitly set via the Files or Tokens/Permissions API.
+- Consequently, to give a user access to a nested path, you must ensure permissions are set appropriately on each relevant path (or on exactly the path the user needs to access).
+
+Because Tapis Files relies on explicit path-based permissions, you should not rely on inheritance semantics like those in some traditional POSIX filesystems.
+
+**Source:** Tapis v3 Files / Permissions documentation (access control and permission model)","Tapis Files uses an ACL-based permission model. When a user is granted a permission on a folder, it is recursively applied to the contents unless overridden.",conceptual,files,0.00670355658303492,0.14285713970025515,0.12499999684311233,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.006279945373535}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': ""Need to check whether Tapis Files permissions are inherited down directory trees. My knowledge is that Tapis v3 Files uses path-based permissions that *are* inherited for children unless overridden, similar to Agave; so the claim 'not inherited' is likely false, making the output incorrect."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer directly contradicts the reference answer on the core point of inheritance. It states that permissions are not inherited and must be explicitly set per path, while the reference says folder permissions are recursively applied to contents unless overridden. This is the opposite behavior, so the predicted answer is fundamentally incorrect."
+What is a Tapis 'Post-Its' and how does it relate to the Files service?,"A Tapis **Post-It** is a *short-lived, single- or limited-use URL* that grants access to a specific Tapis resource without requiring the user to have Tapis credentials or tokens. It’s essentially a temporary, shareable link with scoped permissions and an expiration.
+
+**Relation to the Files service**
+
+- A very common use of Post-Its is to provide **temporary, anonymous access to files or directories managed by the Tapis Files service**.
+- Instead of giving someone a Tapis account or an access token, you:
+  1. Use the Post-Its service to create a Post-It that wraps a specific Files API call (e.g., GET on a file path, or download of a directory).
+  2. Tapis returns a unique URL (the Post-It).
+  3. You share that URL; whoever has it can perform that specific action (such as downloading a file) until the Post-It expires or its usage limit is reached.
+
+In short, Post-Its act as a secure, time-limited, “tokenless” front end to selected Files service operations (and other Tapis APIs), enabling safe file sharing without exposing user credentials.
+
+**Source:** Tapis v3 Documentation – Post-Its service and Files service description.",Post-Its allow users to create shareable links to files stored on Tapis systems. These links have a configurable expiration and can be used by anyone with the URL.,conceptual,files,0.0040776685749556625,0.21768707191818226,0.1904761875644408,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.8815240859985352}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output accurately describes Tapis Post-Its as temporary, shareable URLs granting limited access without credentials, and correctly explains their relationship to the Files service as wrapping Files API calls for temporary/anonymous file access. No factual errors or missing key aspects relative to the question are evident.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly defines what a Tapis Post-It is (a temporary, shareable URL with expiration and limited use) and clearly explains its relationship to the Files service as a way to provide temporary, anonymous access to files/directories. This is fully consistent with and more detailed than the reference answer, without introducing inaccuracies."
+What are the three core permissions available in the Tapis Files Access Control List (ACL)?,"The three core permissions in the Tapis Files Access Control List (ACL) are:
+
+1. **READ**  
+2. **WRITE**  
+3. **EXECUTE**
+
+**Source:** Tapis v3 Files service ACL and permissions documentation.","The Files service manages access via ACLs. READ allows downloading/viewing, WRITE allows uploading/editing, and MODIFY allows the user to change permissions for others.",conceptual,files,0.018693000799960027,0.26086956025519853,0.21739129938563337,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 7.3516669273376465}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'I need to judge if the stated three core permissions (READ, WRITE, EXECUTE) actually match the Tapis Files ACL specification. I am not certain they do; Tapis often uses read, write, modify, execute, or ownership semantics, and ""execute"" may not be a core ACL permission in the Files service. Because I can’t verify against documentation here, I must treat this as likely incorrect or at least not confidently correct, and under the rubric any uncertainty or potential inaccuracy should be labeled INCORRECT.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer correctly identifies READ and WRITE as core permissions, but incorrectly lists EXECUTE instead of MODIFY. The reference clearly states the third core permission is MODIFY, which allows changing permissions for others. Therefore, the answer is partially correct but misses a key detail."
+Give curl command to get the actual contents of file using Tapis Files service,"To get the **actual contents** of a file using the **Tapis v3 Files service**, use the `contents` endpoint.
+
+Basic pattern:
+
+```bash
+curl -X GET \
+  -H ""Authorization: Bearer ${TAPIS_TOKEN}"" \
+  ""https://tacc.tapis.io/v3/files/contents/system/${SYSTEM_ID}/${PATH_TO_FILE}""
+```
+
+Where:
+- `TAPIS_TOKEN` is your Tapis access token.
+- `SYSTEM_ID` is the ID of the Tapis system where the file resides.
+- `PATH_TO_FILE` is the path to the file on that system (URL-encoded if needed, e.g., spaces as `%20`).
+
+Example:
+
+```bash
+export TAPIS_TOKEN=""YOUR_JWT""
+export SYSTEM_ID=""my-system-id""
+export FILE_PATH=""data/output/results.txt""
+
+curl -X GET \
+  -H ""Authorization: Bearer ${TAPIS_TOKEN}"" \
+  ""https://tacc.tapis.io/v3/files/contents/system/${SYSTEM_ID}/${FILE_PATH}""
+```
+
+This returns the raw file contents in the response body (stdout), which you can redirect to a local file if desired:
+
+```bash
+curl -X GET \
+  -H ""Authorization: Bearer ${TAPIS_TOKEN}"" \
+  ""https://tacc.tapis.io/v3/files/contents/system/${SYSTEM_ID}/${FILE_PATH}"" \
+  -o results.txt
+```
+
+**Source:** Tapis v3 Files service API documentation (endpoint: `GET /v3/files/contents/system/{systemId}/{path}`).","curl -H ""X-Tapis-Token: $JWT"" https://tacc.tapis.io/v3/files/content/my-system/image.jpg > image.jpg",code generation,files,,,,0.7084769010543823,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.6667392253875732}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer correctly describes the Tapis v3 Files service endpoint for retrieving file contents and gives a proper curl example with correct URL pattern and headers. It is factually accurate and complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer is essentially correct and provides a clear, usable curl example with proper authorization header and explanation. It uses the `contents` endpoint instead of `content`, and includes `/system/{SYSTEM_ID}/` in the path, which differs from the reference’s shorter example. Depending on the exact Tapis API version/URL, this may be more accurate, but it does not exactly match the reference syntax. Overall it answers the question well but with minor mismatch to the reference."
+What is the difference between a Tapis File and a Tapis System in the context of the Files service?,"In the context of the Tapis Files service:
+
+- **Tapis System**  
+  - A *System* is a registered storage or compute resource definition in Tapis.  
+  - It describes *where* and *how* to access data: hostname/URL, protocol (e.g., S3, POSIX, cloud storage), credentials/keys (managed in Tapis), root directory, etc.  
+  - Systems are the abstraction layer that lets Tapis talk to many different back‑end storage technologies in a uniform way.
+
+- **Tapis File**  
+  - A *File* is an individual object or directory that lives on a Tapis System.  
+  - Files are addressed via paths that are scoped by a System (e.g., `systemId:/path/to/file.txt`).  
+  - Operations in the Files service (list, copy, move, delete, download, upload) act on Files, but always in the context of some System definition.
+
+In short: **Systems describe and configure the storage resource; Files are the actual data objects stored on those Systems and manipulated through the Files service.**
+
+**Source:** Tapis v3 Files and Systems service documentation (conceptual descriptions of “Systems” as resource definitions and “Files” as data objects addressed via system-scoped paths).",The Files service allows users to interact with data on Tapis systems. Every file operation requires a systemId to identify the host and credentials used for the transaction.,conceptual,files,0.003377793732027256,0.13235293808391013,0.13235293808391013,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.0592539310455322}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer correctly distinguishes between a Tapis System (a registered storage/compute resource configuration) and a Tapis File (a data object or directory on that system) in the context of the Files service. It matches Tapis v3 concepts: systems define access details and protocols; files are accessed via system-scoped paths and manipulated by the Files service. No factual errors or omissions relative to the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer clearly distinguishes between a Tapis System (the configured storage/compute resource with access details) and a Tapis File (a data object or directory that resides on a System and is operated on via system-scoped paths). This aligns with and expands on the reference answer, correctly emphasizing that file operations are always done in the context of a systemId. The explanation is accurate, complete, and consistent with the reference."
+Write a Python SDK call to create a directory '/data/newdir' on a Tapis system.,"Here is a Python SDK example using the Tapis v3 Python client to create a directory `/data/newdir` on a Tapis system:
+
+```python
+from tapipy.tapis import Tapis
+
+# Initialize Tapis client (fill in your tenant URL, client_id, etc.)
+t = Tapis(
+    base_url=""https://dev.tapis.io"",   # or your tenant URL
+    username=""your_username"",
+    password=""your_password""
+)
+t.get_tokens()
+
+system_id = ""my-system-id""            # replace with your system ID
+new_dir_path = ""/data/newdir""
+
+# Create the directory
+t.files.mkdir(systemId=system_id, path=new_dir_path)
+print(f""Created directory {new_dir_path} on system {system_id}"")
+```
+
+**Source:** Tapis v3 Files API and Python SDK usage (Python `files.mkdir` for directory creation).","t.files.mkdir(systemId=""my-system"", path=""/data/newdir"")",code generation,files,,,,0.6931098699569702,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.5464630126953125}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The SDK example correctly uses the Tapis v3 Python client and the files.mkdir method with appropriate parameters to create the directory on the specified system, matching the requested task.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer uses the correct Python SDK method `t.files.mkdir` with the appropriate parameters `systemId` and `path` that match the reference answer. It adds initialization context but does not contradict or obscure the core call, which is exactly what the question asked for."
+Can you share files with users using Tapis files service?,"No, you cannot directly “share” files with other users using the Tapis Files service itself. The Files service focuses on file and directory operations (list, upload, download, move, etc.) against registered systems and storage backends, but it does not manage cross-user sharing or access-control policies.
+
+File sharing and access control in Tapis are handled through:
+
+- **Systems service** – where storage systems are registered, and per-user or role-based access to those systems is defined.
+- **Tokens/tenants/auth** – which control who can authenticate and what resources they can access.
+- In some workflows, sharing is done via other services (e.g., creating app/jobs that run under a specific system account or using external storage ACLs such as POSIX permissions, S3 bucket policies, etc.).
+
+So while multiple users can access the *same underlying storage* (and therefore see or exchange files if the system and OS/storage permissions allow it), the Files service itself does not provide a “share this file with user X” feature.
+
+**Source:** Tapis v3 Documentation (Files service behavior and relationship to Systems and auth services).","Yes, the files sharing API allows you to share a file path with a set of users as well as share publicly with all users in a tenant. ",yes/no,files,0.001994123409176026,0.14666666407022225,0.14666666407022225,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.7843799591064453}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to decide if the model output about Tapis Files service file sharing is factually correct and complete according to the rubric. The answer states that Files service itself does not provide direct user-to-user sharing, and that sharing is managed via Systems service and underlying storage ACLs. This matches Tapis’s design where Files is an API over storage systems and does not implement per-file sharing semantics. The explanation is accurate, mentions relevant services, and clearly explains that multiple users can access same storage if permissions allow. No factual errors or omissions relative to the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer directly contradicts the reference answer. It claims you cannot share files with other users via the Tapis Files service, while the reference explicitly states that a file sharing API exists that allows sharing paths with specific users or publicly. Therefore, it is incorrect and misleading."
+Can you unshare files with users using Tapis files service?,"No, the Tapis Files service itself does not provide an operation to “unshare” files with specific users. File- and directory-level sharing and access control are typically managed via the underlying storage system (e.g., POSIX permissions, cloud storage ACLs) or other Tapis services (such as Systems or Workflows), not directly via a Files API call to revoke a share.
+
+**Answer:** You cannot unshare files with users using only the Tapis Files service; you must modify access via the underlying system or other Tapis services that control permissions.
+
+**Source:** Tapis v3 Documentation (Files Service & Access Control)","Yes, the files unsharing API allows you to unshare a file path with a set of users as well as share publicly with all users in a tenant. ",yes/no,files,0.003540093664398878,0.23404254938886376,0.17021276215482128,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.344107151031494}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The Tapis Files service does support sharing and unsharing via its permissions/ACL-related endpoints (e.g., setting and removing permissions for users on paths). The output claims you cannot unshare via the Files service and must rely on underlying systems or other services, which is factually incorrect and misleading.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer directly contradicts the reference answer. It claims you cannot unshare files via the Tapis Files service and must instead use underlying systems or other services, while the reference clearly states that there is a specific files unsharing API that supports unsharing paths with users."
+"The following Python snippet fails to download the contents of a file and instead returns a 401 error. Identify the missing component in the request headers.""import requests
+
+url = 'https://tacc.tapis.io/v3/files/content/ls6/home/jdoe/experiment.dat'
+# Missing header configuration
+response = requests.get(url)
+print(response.content)","The request is missing the **Authorization header** with a valid Tapis bearer token.
+
+You need something like:
+
+```python
+import requests
+
+url = 'https://tacc.tapis.io/v3/files/content/ls6/home/jdoe/experiment.dat'
+headers = {
+    'Authorization': 'Bearer <your_tapis_access_token>'
+}
+response = requests.get(url, headers=headers)
+print(response.content)
+```
+
+Without the `Authorization: Bearer ...` header, Tapis returns `401 Unauthorized`.
+
+**Source:** Tapis v3 Files API authentication and request header requirements.",,code-correction,files,,,,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 4.769864797592163}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output correctly identifies that a 401 from the Tapis Files API for a protected file in this context is due to missing authentication, specifically the Authorization header with a Bearer token. It also shows the appropriate corrected Python code and explains why the 401 occurs. There are no factual errors and the answer is complete for the question asked (identify the missing request header component).', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly identifies the missing component as the Authorization header with a valid Tapis bearer token, explains that its absence causes the 401 error, and provides an appropriate example of how to include it. This fully aligns with the reference answer."
+How does Tapis handle file operations on a system that requires Multi-Factor Authentication (MFA)?,"Tapis does not bypass or circumvent a system’s own Multi-Factor Authentication (MFA) requirements. Instead, it relies on previously established, non-interactive credentials or tokens that you configure for the Tapis system so that file I/O can run without a live MFA prompt.
+
+In practice, this usually works in one of the following ways:
+
+1. **MFA is handled outside Tapis during account setup**  
+   - You (or an admin) complete MFA directly on the target system (e.g., via SSH + MFA) to obtain or configure:
+     - An SSH key-based login that is allowed after MFA enrollment, or  
+     - A long-lived credential (e.g., a token, keytab, or other credential that does not require interactive MFA each use).  
+   - That non-interactive credential is then stored in Tapis as the system’s `authn` configuration (e.g., SSH key, token), and all Tapis file operations use this configured credential.
+
+2. **Use of service or “robot” accounts**  
+   - Many HPC or secured systems support special service accounts that either:
+     - Have MFA disabled but are tightly access-controlled, or  
+     - Use a mechanism like SSH keys, Kerberos, or X.509 that does not require per-operation MFA prompts.  
+   - Tapis is configured to use these service accounts for file operations. MFA is still enforced at the user or admin level when managing access to these accounts and to Tapis itself.
+
+3. **No interactive MFA during Tapis calls**  
+   - Since Tapis operations are non-interactive HTTP API calls, Tapis cannot respond to SMS codes, TOTP prompts, or push notifications in real time.  
+   - Therefore, Tapis file operations will fail if the remote system insists on per-connection interactive MFA and no non-interactive credential path (keys/tokens/etc.) is configured.
+
+In summary, for systems that require MFA, you must set up a credential flow (keys, tokens, or service accounts) that satisfies the system’s security policies without per-call interactive MFA. Once configured, Tapis uses those credentials for file operations; it does not execute MFA steps itself.
+
+**Source:** Tapis v3 Documentation (Systems & Files services authentication model and credential configuration).","For systems with MFA, users typically must configure a system with a long-lived credential or use a Tapis-supported authentication proxy to ensure non-interactive access.",conceptual,files,0.0019002644389967095,0.1272727255458678,0.1272727255458678,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.4064109325408936}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I compared the output with known behavior of Tapis v3 regarding authentication to remote systems, particularly how it uses stored non-interactive credentials (SSH keys, tokens, robot accounts) and cannot itself perform interactive MFA challenges. The answer correctly describes that Tapis relies on pre-configured credentials and cannot complete MFA prompts, and that operations will fail if only interactive MFA is available. There are no apparent factual errors or contradictions relative to Tapis documentation; the explanation is aligned with how systems/authn configs work.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5
+Explanation: The predicted answer accurately explains that Tapis cannot perform interactive MFA itself and instead relies on pre-established, non-interactive credentials (keys, tokens, service/robot accounts) to access systems that require MFA. It clearly states that if only interactive MFA is available, Tapis operations will fail, which aligns with the reference’s point about needing long-lived credentials or an auth proxy. The answer is detailed, correct, and consistent with the reference, so it fully addresses the question."
+What are the minimum pieces of information that must be provided when submitting a job for execution using the Tapis Jobs service?,"I don’t have that specific detail in the provided context, so I can’t reliably state the exact minimum fields required by the Tapis Jobs service for job submission.
+
+You’d need to consult the Tapis v3 Jobs API documentation for the `POST /v3/jobs` (or equivalent) endpoint, where the required request body schema is defined (typically under a section like “Create a Job” or “Submit a Job”). That schema explicitly lists which fields are mandatory vs optional.
+
+**Source:** Tapis v3 Jobs service API documentation (exact section not included in provided context).","Required parameters for job submission are **name**, **appId**, and **appVersion**.",conceptual,jobs,0.004756721425975386,0.10526315560941835,0.10526315560941835,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.8562119007110596}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output does not answer the user’s specific question about the Tapis Jobs service; it defers to documentation and thus is incomplete per the rubric.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer fails to provide the specific required fields (name, appId, appVersion) and instead defers to external documentation. It does not answer the question asked, whereas the reference answer clearly lists the minimum required information."
+"Assuming you have a Python dictionary named `job_submission` that defines a Tapis job, write a `tapipy` command to submit this job.","Use the `jobs.createJob` method and unpack the dictionary as keyword arguments:
+
+```python
+from tapipy.tapis import Tapis
+
+# assume you have already created a Tapis client `t`
+# and `job_submission` is a dict with the job definition
+
+resp = t.jobs.createJob(**job_submission)
+print(resp)
+```
+
+**Source:** Tapis v3 Jobs API & Tapipy client usage (jobs.createJob).","```python
+submitted_job = t.jobs.submitJob(**job_submission)
+``` ",code generation,jobs,,,,0.7747880816459656,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.1108150482177734}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The tapipy client for Tapis v3 submits a job via t.jobs.createJob, and when you already have a dict with the full job definition, unpacking it with **job_submission is the correct and complete way. This matches official tapipy usage patterns.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer uses `t.jobs.createJob(**job_submission)` instead of the correct `t.jobs.submitJob(**job_submission)`. While it correctly shows unpacking the dictionary and using the Tapipy client, it calls the wrong method for submitting a job, so it does not accurately answer the question."
+"You have submitted a Tapis job using `tapipy` and received a response object named `job_info`. You are trying to access the job's unique identifier using `job_info['uuid']`, but this key does not exist. Based on the documentation, what is the correct key to access the job's UUID in the response?","The correct key in the `job_info` response is:
+
+```python
+job_info['uuid_']
+```
+
+In the `tapipy` response object for a Tapis Job submission, the job UUID is stored under the key `uuid_` (with a trailing underscore), not `uuid`.
+
+**Source:** Tapis v3 Jobs API and tapipy response field naming (`uuid_` field for job identifier).",The correct key to access job's uuid as per the live docs is `uuid`,code correction,jobs,,,,0.764695942401886,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.2865777015686035}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': ""The model output claims the correct key is 'uuid_' in the Tapis tapipy job response. In Tapis v3 Jobs API via tapipy, the job UUID is actually available as 'uuid' (and often as an attribute job_info.uuid), not 'uuid_'. The provided answer is therefore factually incorrect."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The question asks for the correct key to access the job's UUID, and the reference answer states it is `uuid`. The predicted answer incorrectly claims the key is `uuid_`, directly contradicting the reference."
+Does the Tapis Jobs service offer a feature to checkpoint and restart long-running jobs from a specific point of failure?,"I don’t know of any Tapis Jobs v3 feature that natively checkpoints a running job and restarts it from an internal point of failure (e.g., automatic partial-progress restart).  
+
+Tapis Jobs lets you:
+- Submit, monitor, cancel, and resubmit jobs.
+- Capture job outputs and logs.
+- Resubmit failed jobs (as new jobs), potentially with modified inputs or parameters.
+
+However, the typical pattern for “checkpoint/restart” in Tapis is to implement checkpointing inside the application or workflow itself (e.g., using application‑level checkpoint files) and then use Tapis to start a new job that picks up from those checkpoints. There is no documented built‑in Jobs API function that transparently resumes a failed job from an internal checkpoint state.
+
+So, Tapis supports running and re‑running long jobs, but the checkpointing logic must be handled by the user’s code or external tools rather than by a dedicated Jobs‑service feature.
+
+**Source:** Tapis v3 Jobs service documentation (job lifecycle, submission, monitoring, and resubmission behavior).","No, Tapis Jobs service do not provide a checkpoint and restart of a long-running jobs from a specific point of failure.",yes/no,jobs,0.0050821442095736365,0.1679389289272187,0.1679389289272187,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.08695912361145}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Need to judge if the assistant’s answer about Tapis Jobs checkpoint/restart support is factually correct and complete. It accurately states there is no native checkpoint-restart feature and explains that users must implement checkpointing in their own applications and then resubmit jobs, which aligns with Tapis documentation.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly matches the reference answer’s core point: Tapis Jobs does not provide a native checkpoint-and-restart feature for long-running jobs. It also adds accurate, relevant detail about how users typically handle checkpointing at the application level, which is consistent with the reference and does not contradict it."
+Write a Python SDK call to cancel a job.,"Use the `Jobs` client’s `updateJob` method and set the job status to `CANCELLED`. For example:
+
+```python
+from tapis3 import Tapis
+
+# Initialize Tapis client
+t = Tapis(base_url='https://tacc.tapis.io', username='your-username', password='your-password')
+
+# ID of the job to cancel
+job_uuid = ""your-job-uuid""
+
+# Cancel the job
+t.jobs.updateJob(job_uuid=job_uuid, request_body={""status"": ""CANCELLED""})
+```
+
+This sends an update to the Jobs service requesting that the specified job be cancelled.
+
+**Source:** Tapis v3 Jobs API / Python SDK documentation.","t.jobs.cancelJob(jobUuid=""my_job_id"") The caller must be the job owner, creator or a tenant administrator.",code generation,jobs,,,,0.7044224739074707,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.8102760314941406}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer references the Tapis v3 Python SDK. In that SDK, cancelling a job is done via updateJob with status=CANCELLED on the Jobs client, matching the example. It correctly imports the client, initializes it, and calls updateJob with job_uuid and request_body. No contradictions or factual errors relative to the typical Tapis v3 SDK usage are apparent and it fully addresses the prompt to write a Python SDK call to cancel a job.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer uses `updateJob` with a status change to `CANCELLED`, which is not the correct or intended SDK method. The reference shows there is a dedicated `cancelJob` method (`t.jobs.cancelJob(jobUuid=""my_job_id"")`). While the prediction is thematically related (it tries to cancel a job), it does not match the proper API usage and could mislead users, so it deserves a low score."
+Can jobs be shared with other users?,"Yes. In Tapis v3 you can share jobs with other users using the Jobs service permission model.  
+
+You can:
+
+- Grant other users read access to a job (so they can see its details, status, logs, etc.).
+- Optionally grant manage/update permissions so they can modify or cancel the job, depending on the permissions you assign.
+
+This is done by setting or updating job permissions via the Jobs API (or through any client that exposes those permission calls).  
+
+**Source:** Tapis v3 Jobs Service documentation (jobs sharing & permissions).","Yes, A previously submitted job can be shared with a user in the same tenant.",yes/no,jobs,0.0030744163116029,0.11764705591695508,0.09411764415224923,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.674988031387329}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output states that in Tapis v3, jobs can be shared with other users using the Jobs service permission model, allowing read or manage/update permissions via the Jobs API. This is consistent with Tapis v3 Jobs service capabilities, which include ACL-style permissions on job resources (READ, MODIFY/UPDATE, etc.), and correctly answers the question whether jobs can be shared. No contradictions or evident inaccuracies given the context that this is about Tapis jobs.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly states that jobs can be shared and explains that this is done via the Jobs service permission model, which aligns with the reference. It also adds useful detail about read/manage permissions and how to set them. However, it omits the constraint that sharing is limited to users in the same tenant, which is explicitly mentioned in the reference answer. This missing nuance prevents a perfect score."
+Fix this incorrect Python SDK call: `t.jobs.get('job123')`,"The correct Python SDK call should use the Jobs client method name `getJob()` instead of `get()`:
+
+```python
+t.jobs.getJob(jobId='job123')
+```
+
+This matches the Tapis v3 Python SDK method signature, which expects the parameter `jobId`.
+
+**Source:** Tapis v3 Jobs API & Python SDK documentation.",The correct method to get the job details is `t.jobs.getJob(jobUuid='job123')`,code correction,jobs,,,,0.7809757590293884,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.8612868785858154}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': ""I need to decide if the suggested Python SDK call is truly the correct way to fix `t.jobs.get('job123')`. The output claims the correct method is `getJob(jobId='job123')` for the Tapis v3 Python SDK. In the actual Tapis v3 Python SDK, the Jobs client uses methods like `getJob` but the typical signature is `getJob(job_id='job123')` or may accept the job id as a positional argument. Also, the prompt never specified it was Tapis; that was assumed. Without clear confirmation that this is the right SDK and method signature, and given the likely mismatch in parameter naming, the answer is not reliably correct."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer correctly changes the method from `get` to `getJob`, but it uses the wrong parameter name (`jobId` instead of `jobUuid`). The reference specifies `jobUuid='job123'`, so while the structure is mostly right, the parameter detail is incorrect."
+Write a curl command to retrieve all jobs.,"Use the Jobs service `GET /v3/jobs` endpoint and include your Tapis JWT in the `X-Tapis-Token` header. For example:
+
+```bash
+curl -s -H ""X-Tapis-Token: ${TAPIS_TOKEN}"" \
+     ""https://tacc.tapis.io/v3/jobs""
+```
+
+Replace `https://tacc.tapis.io` with your tenant base URL if different, and `${TAPIS_TOKEN}` with your access token.
+
+**Source:** Tapis v3 Jobs API – `GET /v3/jobs` endpoint (Jobs Service documentation).","curl -H ""X-Tapis-Token: $JWT"" https://tacc.tapis.io/v3/jobs/list",code generation,jobs,,,,0.8165146708488464,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.747202157974243}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The output provides a curl command using the documented Tapis v3 Jobs API endpoint GET /v3/jobs with the required X-Tapis-Token header, and it directly answers the prompt to write a curl command to retrieve all jobs. No factual issues are apparent given the context.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer uses the wrong endpoint (`GET /v3/jobs`) instead of the reference’s `/v3/jobs/list`, which is specifically shown as the correct way to retrieve all jobs. While it correctly includes the token header and base URL pattern, the endpoint mismatch is significant, so the answer is only partially correct."
+Can a job be canceled after it has started running?,"Yes. In Tapis v3, a job that has already started running can still be canceled, as long as it has not yet completed. When you submit a cancel request, Tapis will attempt to stop the running job on the target system and transition its status accordingly (e.g., to a canceled/terminated state), subject to the capabilities and policies of the remote scheduler/system.
+
+**Source:** Tapis v3 Jobs Service Documentation (job lifecycle and cancellation behavior).","Yes, users can request the cancelation of a running job, unless it's not in the terminal state such as FINISHED, BLOCKED, or FAILED",yes/no,jobs,0.0042426577851335185,0.17283950221612568,0.123456786166743,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.7650928497314453}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The answer about Tapis v3 jobs is accurate: jobs can be canceled after they start running, subject to remote system capabilities, and the description of status transition is reasonable. It fully addresses the question.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that a running job can still be canceled as long as it has not completed, which aligns with the reference answer’s condition that it must not be in a terminal state (FINISHED, BLOCKED, FAILED). It also adds accurate contextual detail about how Tapis handles the cancellation."
+Name terminal job states in Tapis.,"The terminal job states in Tapis are:
+
+- `FINISHED`
+- `FAILED`
+- `CANCELLED`
+
+These represent states from which the job will not transition further.
+
+**Source:** Tapis v3 Jobs Service API Documentation","Terminal states are FINISHED, CANCELLED and FAILED. ",conceptual,jobs,0.006032401726201458,0.058823525813149015,0.058823525813149015,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.4996018409729004}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output omits at least one terminal state used in Tapis job lifecycles (e.g., an ARCHIVED or similar state, depending on version), so the answer is incomplete with respect to naming all terminal job states.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly lists all three terminal job states in Tapis—FINISHED, FAILED, and CANCELLED—and matches the reference answer exactly in content and meaning."
+What does the job status represent?,"In Tapis v3, the **job status** represents the current state of a job as it moves through its lifecycle on the platform. It tells you *where* the job is in the process of being submitted, scheduled, executed, and completed (or failing).
+
+Common statuses typically include concepts like:
+
+- **PENDING / ACCEPTED / QUEUED** – The job has been received but is waiting to start (e.g., in a queue or being scheduled).
+- **PROCESSING / RUNNING** – The job has started execution on the target system.
+- **PAUSED / BLOCKED** – The job is temporarily not progressing (e.g., waiting for resources or external conditions).
+- **FINISHED / SUCCEEDED / COMPLETED** – The job has run to completion without error.
+- **FAILED** – The job terminated with an error or could not be successfully executed.
+- **CANCELLED** – The job was intentionally stopped by the user or system before completion.
+
+Each status value is used so that clients and users can track progress, implement monitoring, and react programmatically (for example, resubmitting failed jobs or retrieving outputs from completed jobs).
+
+Because no specific Tapis v3 status enumeration or definition block was provided in the supplied context, I cannot quote the exact official list or wording from the documentation.
+
+**Source:** Tapis v3 Jobs Service documentation (status and lifecycle descriptions).","It represents the current state of the job in its lifecycle from the list of possible states, such as QUEUED, STAGING, RUNNING, FINISHED, etc.",conceptual,jobs,0.023847913833859778,0.1566265038140514,0.13253011827188274,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.421933174133301}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The answer speculates about Tapis v3 job statuses without having the exact enumeration and uses generic batch-system terms. Since we are evaluating against the specific question (likely about a particular definition), this is incomplete and potentially inaccurate relative to Tapis’s actual documented statuses, and it explicitly admits it cannot quote the exact list. That makes it incomplete per the rubric.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer correctly explains that job status represents the current state of a job in its lifecycle and gives appropriate examples of typical states, which aligns with the reference answer. It is slightly more verbose and speculative (mentioning “no specific enumeration provided” and some extra states) rather than directly matching the concise list in the reference, but conceptually it answers the question well."
+What information does a job submission specify?,"A Tapis v3 job submission typically specifies:
+
+- **Execution system and app**  
+  - The Tapis application to run (e.g., `appId`, `appVersion`)  
+  - The execution system or job runtime environment (e.g., `execSystemId`)
+
+- **Inputs and parameters**  
+  - Input files, directories, or URLs and where they should be placed  
+  - Application parameters / arguments
+
+- **Job runtime configuration**  
+  - Name of the job  
+  - Queue / batch system options (e.g., node count, cores, memory, max run time)  
+  - Environment variables  
+  - Any container or image settings if applicable
+
+- **Output and logging**  
+  - Output/archive system (e.g., `archiveSystemId`)  
+  - Path on that system for storing results (`archiveDir` or similar)  
+  - Logging or standard output/error handling options
+
+- **Notifications and callbacks**  
+  - Events the user wants to be notified about (e.g., job completion, failure)  
+  - Notification delivery methods (e.g., webhook URLs, email endpoints if supported)
+
+- **Security and identity context**  
+  - The Tapis tenant and user identity under which the job runs  
+  - Any required credentials or tokens resolved via Tapis auth (generally not in the body as raw secrets, but referenced or managed by Tapis)
+
+If you need the exact list of fields by name and structure, those are defined in the Tapis v3 Jobs API “job submission” schema.
+
+**Source:** Tapis v3 Jobs service documentation (job submission model, fields, and API semantics).","Job submission specifies the name of job, application id , version, type of job FORK or BATCH, execution system and optional job metadata ",conceptual,jobs,0.0032180981602938216,0.13333333111184575,0.0848484826269973,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.5731689929962158}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'I need to decide if the model output about what a Tapis v3 job submission specifies is fully correct and complete per the rubric.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",4,"Score: 4  
+Explanation: The predicted answer is more detailed and largely consistent with the reference. It correctly includes the job name, application ID and version, and execution system, and it expands meaningfully on inputs, runtime configuration, outputs, notifications, and security context. However, it does not explicitly mention the job type (FORK or BATCH), which is called out in the reference, and it doesn’t clearly label “optional job metadata” as such, so it’s slightly incomplete relative to the reference."
+What uniquely identifies a job in the Jobs service?,"A job in the Tapis v3 Jobs service is uniquely identified by its **`jobUuid`** (a UUID assigned by the Jobs service when the job is created).
+
+**Source:** Tapis v3 Jobs Service Documentation",A job is uniquely identified by a UUID assigned at submission time.,conceptual,jobs,0.10269754859886741,0.4705882307266437,0.4705882307266437,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.627087116241455}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The Tapis v3 Jobs service uniquely identifies jobs using a UUID, commonly referred to as jobUuid in the API. The answer correctly states this and does not omit another required identifier.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that a job is uniquely identified by a UUID assigned by the Jobs service at creation/submission time, matching the reference answer. The added detail (`jobUuid` field name and that it’s assigned when created) is consistent and accurate."
+Does the Jobs service execute code directly without an app id?,"No. The Jobs service does not execute code directly without an appId.
+
+In Tapis v3, every job must reference a registered application via its `appId` (and `appVersion`). The application definition specifies:
+
+- What executable or container image to run  
+- How inputs/outputs are handled  
+- What system it runs on  
+
+The Jobs service then launches the job based on that app definition. There is no supported mode where arbitrary code is submitted and executed by Jobs without going through an app.
+
+**Answer:** The Jobs service does not execute code directly without an app id; a valid `appId` is required.
+
+**Source:** Tapis v3 Documentation (Jobs and Apps services)","No, appId is mandatory to submit the job, and it must exist prior to job submission ",yes/no,jobs,0.0027418673476949404,0.1797752780962,0.13483145787148093,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.2104990482330322}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The Jobs service in Tapis v3 requires an appId/appVersion for job submissions; it does not support executing arbitrary code without referencing an app. The answer correctly reflects this and is complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that the Jobs service does not execute code directly without an appId and that a valid appId is required, which matches the key point in the reference answer. It also adds accurate contextual detail about appVersion and what the app definition includes, without contradicting the reference."
+What is job output in Tapis?,"In Tapis, **job output** refers to all of the files and data produced by a job during its execution. This typically includes:
+
+- Standard output and error logs (e.g., `stdout`, `stderr`)
+- Any result files your application writes (e.g., data files, images, reports)
+- Other generated artifacts specified by your job’s configuration
+
+Tapis organizes and stores these outputs in a location determined by the job’s definition (for example, an output directory or archive location), so they can be accessed or transferred after the job completes.
+
+**Source:** Tapis v3 Documentation (Jobs service – concepts of job execution and output storage).",Job output consists of artifacts generated during the lifecycle of a job. The job output can be archived at desired location by specifying in app and/or job definition,conceptual,jobs,0.006586219053020842,0.27450980032295275,0.17647058463667825,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.516690969467163}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': ""Evaluate whether the assistant’s description of 'job output' in Tapis as all files and data produced by a job, including stdout/stderr and other generated artifacts stored per the job definition, is accurate and complete for the concept-level question asked."", 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly defines job output as the artifacts/files generated during a job’s execution and notes that their storage location is determined by the job’s configuration, which aligns with the reference’s description that job output consists of generated artifacts that can be archived at a desired location via the app/job definition. It is slightly more detailed but fully consistent with the reference."
+Which runtimes are supported by Tapis Jobs service?,"Tapis Jobs service supports the following runtime types:
+
+- **SINGULARITY**  
+- **DOCKER**  
+- **PODMAN**  
+- **ZIP**  
+- **BATCH**  
+
+These are the allowed values for the `runtime` field in a Tapis Job definition.
+
+**Source:** Tapis v3 Jobs API Documentation (`runtime` field description and allowed values).","Runtimes supported by Tapis Jobs service are Docker, Singularity and ZIP containers",conceptual,jobs,0.023537559464014493,0.22222221831111116,0.22222221831111116,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.794189214706421}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'I need to determine if the listed runtimes (SINGULARITY, DOCKER, PODMAN, ZIP, BATCH) actually match the Tapis Jobs service supported runtime values. Based on Tapis v3 Jobs API, the allowed runtimes are generally SINGULARITY, DOCKER, ZIP, and maybe others, but PODMAN and BATCH are not standard runtime enum values. Thus the presence of unsupported values makes the answer factually incorrect.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer includes all three runtimes from the reference (Docker, Singularity, ZIP) but also adds PODMAN and BATCH, which are not mentioned in the reference answer. While it captures the core correct information, the extra runtimes may be inaccurate or unsupported per the reference, so the answer is only partially aligned."
+Write a curl command to search jobs with Tapis Jobs service?,"To search jobs with the Tapis v3 Jobs service, use the `search` endpoint on the Jobs base URL. A typical `curl` command (searching by job owner, for example) looks like:
+
+```bash
+curl -X POST \
+  ""https://tacc.tapis.io/v3/jobs/search"" \
+  -H ""Content-Type: application/json"" \
+  -H ""X-Tapis-Token: $TAPIS_TOKEN"" \
+  -d '{
+    ""search"": [
+      {
+        ""field"": ""owner"",
+        ""operator"": ""eq"",
+        ""value"": ""your-username""
+      }
+    ]
+  }'
+```
+
+Replace:
+
+- `https://tacc.tapis.io` with your tenant base URL if different  
+- `$TAPIS_TOKEN` with a valid Tapis access token  
+- The `search` clause with whatever fields/filters you need (e.g., `jobUuid`, `name`, `status`, etc., according to the Jobs search schema).
+
+**Source:** Tapis v3 Jobs API Documentation","curl -H ""X-Tapis-Token:$jwt"" $BASE_URL/v3/jobs/search?limit=2&status.eq=FINISHED&created.between=2021-07-01,2021-07-21&orderBy=lastUpdated(desc),name(asc)&computeTotal=True",code generation,jobs,,,,0.6810969114303589,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.0715951919555664}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Need to determine if the example curl command for Tapis v3 Jobs search matches actual API: POST /v3/jobs/search with JSON body containing search array of {field, operator, value}; headers Content-Type and X-Tapis-Token; base URL pattern is correct. Answer addresses the question and is accurate.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",3,"Score: 3  
+Explanation: The predicted answer uses a POST with a JSON body to the `/v3/jobs/search` endpoint, while the reference shows a GET with query parameters. It does demonstrate the correct endpoint and required auth header, and it is a valid way to search jobs in Tapis v3, but it doesn’t match the style or specific query-parameter usage shown in the reference (e.g., `status.eq`, `created.between`, `orderBy`, `computeTotal`). So it’s partially correct but not closely aligned with the reference example."
+Give PythonSDK command for getting history of a Tapis Job,"You can use the Tapis v3 Python SDK `jobs.getJobHistory()` method. Example:
+
+```python
+from tapipy.tapis import Tapis
+
+# Initialize Tapis client
+t = Tapis(
+    base_url='https://tacc.tapis.io',  # or your tenant base URL
+    username='YOUR_USERNAME',
+    password='YOUR_PASSWORD'
+)
+t.get_tokens()
+
+# Get job history by job UUID
+job_uuid = 'YOUR_JOB_UUID'
+history = t.jobs.getJobHistory(job_uuid=job_uuid)
+
+print(history)
+```
+
+**Source:** Tapis v3 Jobs API & Python SDK documentation (Jobs service, `getJobHistory` method).","t.jobs.getJobHistory(jobUuid='ba34f946-8a18-44c4-9b25-19e21dfadf69-007'), assuming 't' is your intialized Tapis client",code generation,jobs,,,,0.6941127777099609,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.1575911045074463}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Check whether the Tapis Python SDK usage and method name for getting a job history are correct and whether the code matches documented patterns.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer uses the correct Python SDK method `t.jobs.getJobHistory(job_uuid=job_uuid)`, which matches the reference’s `t.jobs.getJobHistory(jobUuid='...')` (just different naming style for the same parameter). It clearly shows how to initialize the Tapis client and call the method, fully answering the question with correct and relevant detail."
+Can you subscribe to receive Tapis ob execution events?,"Yes. Tapis v3 supports subscribing to job (ob execution) events through its Notifications/Events mechanisms.  
+
+You can register a notification (subscription) that is triggered on specific job events (e.g., job submitted, running, finished, failed) and have Tapis deliver those events to a destination you configure (such as a webhook URL, email, or other supported channels), depending on your tenant’s configuration.
+
+To do this at a high level, you:
+
+1. Identify the job-related event types you want (e.g., job status changes).
+2. Create a notification/subscription via the appropriate Tapis Notifications or Events API, specifying:
+   - The event type / filter (job events).
+   - The delivery mechanism (e.g., URL).
+   - Any other required configuration (tenant, user, etc.).
+
+If you need exact endpoints, request/response schemas, or examples, I’d need the specific Notifications/Events section of the Tapis v3 docs, which is not included in the provided context.
+
+**Source:** Tapis v3 Documentation (Notifications/Events, Jobs/Execution sections).","Yes, you can subscribe to receive events through the Tapis Notifications Service.",yes/no,jobs,0.004745404817777622,0.12598425025730053,0.12598425025730053,,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.645711898803711}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'Need to check if the answer about Tapis v3 supports subscribing to job execution events via notifications/events is accurate. Tapis does have Notifications/Events for jobs. The answer is generally correct and complete for the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",5,"Score: 5  
+Explanation: The predicted answer correctly states that you can subscribe to job (ob execution) events and explicitly mentions using Tapis’s Notifications/Events mechanisms, which aligns with the reference answer pointing to the Notifications Service. It adds some helpful implementation detail without contradicting the reference."
