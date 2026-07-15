@@ -1,0 +1,213 @@
+input,output,reference,question_type,service,bleu,rouge-1,rouge-l,correctness_execution_details,correctness_score,llm_score,lm_explanation
+How many private systems do I own?,"To determine the number of private systems you own, you would typically need to query the Tapis Systems service, which manages system registrations. Private systems are those that are not publicly accessible and are owned by a specific Tapis user.
+
+You can use the Tapis CLI or the Tapis API directly to list your systems and filter by the `owner` and `isPublic` attributes. Here's a general approach:
+
+1. Authenticate with Tapis using your credentials.
+2. Use the Tapis CLI command `systems list --owner <your_username> --isPublic false` or make a GET request to the `/systems` endpoint with appropriate query parameters to filter systems owned by you and are private.
+
+The exact command or API call might vary based on the Tapis version and the specifics of your setup.
+
+For more detailed instructions, you can refer to the Tapis Documentation on Systems: https://tapis.readthedocs.io/en/latest/Systems.html
+
+Source: 
+- Title: Tapis Documentation
+- URL: https://tapis.readthedocs.io/en/latest/Systems.html
+- Version: v3
+- Section: Systems Management",16,user-specific,systems,0.0,0.0,0.0,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.253872871398926}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output does not and cannot answer the user’s specific question about how many private systems they own; instead it describes how they could find that information. This makes the answer incomplete relative to the question asked, even if the procedural description may be accurate.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The question asks for a specific numeric value (“How many private systems do I own?”) and the reference answer is “16”. The predicted answer instead explains how one might determine this via Tapis APIs/CLI and never provides the number 16, so it does not actually answer the question."
+Get system information for system lccfuser-testvm-spadhy20 ,"To get system information for the system ""lccfuser-testvm-spadhy20"", you would typically use the Tapis CLI or make an API call to the Tapis Systems endpoint.
+
+Using Tapis CLI, the command would be:
+```bash
+tapis systems get lccfuser-testvm-spadhy20
+```
+This command retrieves and displays the system information for the specified system.
+
+If you're making an API call, you would use the Tapis API endpoint for systems, specifying the system ID:
+```bash
+curl -X GET \
+  https://api.tapis.io/v3/systems/lccfuser-testvm-spadhy20 \
+  -H 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+```
+Replace `YOUR_ACCESS_TOKEN` with a valid access token for your Tapis account.
+
+Both methods should return detailed information about the system ""lccfuser-testvm-spadhy20"", including its configuration, status, and other relevant details.
+
+Source: 
+- Tapis Documentation: [Systems API](https://tapis.readthedocs.io/en/latest/technical/systems.html#systems-api) 
+- Tapis CLI Documentation: [Tapis CLI Systems Commands](https://tapis.readthedocs.io/en/latest/technical/cli.html#systems-commands)","It is a LINUX systemType. Host is 129.114.35.53. effectiveUserId is lccfuser, rootDir is /home/lccfuser, runtime is Docker,It is a private system. It is an execution system and deafult authentication method is PKI_KEYS. Job working dir is HOST_EVAL($HOME)/sharetest/workdir ",user-specific,systems,0.0021708234367587642,0.06956521361965994,0.06956521361965994,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.999929666519165}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output gives generic Tapis CLI and API commands for getting system information, but the user input does not specify Tapis at all. It assumes an unrelated context and does not actually retrieve or present system information for the named system. Therefore it is incomplete and not guaranteed correct for the task as stated.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer explains how to retrieve system information via Tapis CLI/API, but the question (as clarified by the reference) expects specific details about the system (OS type, host, effectiveUserId, rootDir, runtime, privacy, system type, auth method, job working dir). None of these concrete attributes are provided in the predicted answer, so it does not actually answer the question content, only the method to get it."
+How many systems have system type LINUX ?,"To determine the number of systems with the system type LINUX, we would typically need to query the Tapis systems database or API. The Tapis documentation provides details on how to interact with the Systems service, including listing systems and filtering by various criteria.
+
+Assuming we have access to the Tapis Systems service and the necessary permissions, we can use the service's API to list systems and filter the results by system type.
+
+Here's a general approach:
+1. Use the Tapis Systems API to list systems.
+2. Filter the results to include only systems with the type ""LINUX"".
+
+The exact number of LINUX systems would depend on the data stored in the Tapis database at the time of the query.
+
+To get the exact count, one would typically make a GET request to the `/systems` endpoint and then filter the response.
+
+For example, a GET request to `https://tapis.example.org/v3/systems?systemType=LINUX` might return a list of systems that are of type LINUX. The exact endpoint and parameters may vary based on the Tapis implementation.
+
+Let's hypothetically say the response to such a query returns a JSON object containing a list of systems, and the list has a certain number of elements.
+
+```json
+{
+  ""result"": [
+    {...system1...},
+    {...system2...},
+    ...
+  ]
+}
+```
+
+The count of systems would be the number of elements in the `result` list.
+
+Since I don't have real-time access to a Tapis v3 instance or its documentation that includes specific query results or the current state of registered systems, I can't provide an exact count.
+
+However, the process to find the answer involves querying the Tapis Systems API with a filter for `systemType=LINUX`.
+
+Source: 
+- Tapis Documentation: Systems Service API (https://tapis.readthedocs.io/en/latest/technical/systems.html) 
+- Tapis API Reference: https://tapis.readthedocs.io/en/latest/api/index.html",20,user-specific,systems,0.0,0.0,0.0,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.3909270763397217}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output does not answer the concrete question (it never gives a number) and instead describes a procedure and limitations, making the answer incomplete for the user’s query.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The question asks for a specific numeric count (“How many systems have system type LINUX?”), and the reference answer is “20”. The predicted answer does not provide this number, instead describing how one might query an API and explicitly stating it cannot give an exact count. This fails to answer the question as posed, so it deserves the lowest score."
+How many systems are shared with the public in the same tenant?,"To determine the number of systems shared with the public in the same tenant, you would typically need to access the Tapis system or its documentation to query or look up this information. 
+
+In Tapis v3, systems can be shared with different permissions and with various entities, including the public. The sharing is typically managed through the Systems service, where you can define permissions for a system, including setting it to be publicly accessible.
+
+To directly answer the question, one would usually need to:
+1. Access the Tapis API or a relevant interface (like a CLI or UI if available) that provides information on systems.
+2. Use a query or command to list systems that are shared with the public within a specific tenant.
+
+The Tapis documentation provides detailed information on how to manage systems, including sharing them. According to the documentation, systems can be shared by adjusting their permissions.
+
+To directly count systems shared with the public, you would look for systems where the permission is set to allow public access.
+
+The metadata for the relevant document is: 
+```json
+{
+  ""title"": ""Tapis Systems Documentation"",
+  ""version"": ""v3"",
+  ""url"": ""https://tapis.readthedocs.io/en/latest/Systems.html""
+}
+```",6,user-specific,systems,0.0,0.0,0.0,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.6471028327941895}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The output does not actually answer the user’s question about a specific count of systems shared with the public in the same tenant; instead it explains how one might find that information. This makes the answer incomplete relative to the question asked.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The question asks for a specific numeric value (“How many systems…”), and the reference answer is simply “6.” The predicted answer does not provide this number at all; instead, it describes how one might find the information using Tapis, which does not answer the question directly."
+How many applications have I registered?,"To determine the number of applications you have registered, you would typically need to access the Tapis API or a client interface that interacts with the Tapis system, such as the Tapis CLI or a UI built on top of Tapis.
+
+You can use the Tapis CLI command `tapis apps list --limit 1000` to list your applications. If you want to count them, you could pipe the output to a command that counts the lines (excluding headers). Alternatively, you can directly query the Tapis API using an HTTP client like `curl`.
+
+Here's an example using `curl` and `jq` (a lightweight JSON processor) to count the number of applications:
+```bash
+curl -X GET \
+  https://api.tapis.io/v3/apps \
+  -H 'accept: application/json' \
+  -H 'x-tapis-token: YOUR_TAPIS_TOKEN' | jq '.result | length'
+```
+Replace `YOUR_TAPIS_TOKEN` with your actual Tapis token.
+
+This command sends a GET request to the Tapis API to list your applications and then uses `jq` to parse the JSON response and count the number of applications in the result.
+
+**Source:** 
+- Document: Tapis Documentation - Apps API 
+  - URL: https://tapis.readthedocs.io/en/latest/technical/apps.html#list-apps
+  - Section: List Apps 
+  - Relevant Metadata: API endpoint for listing apps is `/v3/apps`, and it returns a JSON response that includes a list of apps.",6,user-specific,apps,0.0,0.0,0.0,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.551198959350586}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The model output gives a generic method to find the number of registered Tapis applications rather than an explicit numeric answer, which is appropriate because the model cannot know the user’s actual account data. The described Tapis CLI and API usage, including the endpoint and jq length command, is accurate and logically consistent with the question’s intent of determining how many apps are registered.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The question asks for a specific numeric answer (“How many applications have I registered?”), and the reference answer is “6”. The predicted answer instead explains how to find the number using Tapis CLI and API, but never provides the actual count. It does not match or approximate the reference answer, so it poorly answers the question."
+Are there any publicly shared apps?,"To determine if there are any publicly shared apps, we need to consider the Tapis framework's capabilities and documentation regarding app sharing.
+
+Tapis is designed to facilitate the sharing of applications (apps) and other resources among its users. The framework allows users to create, manage, and share apps with others, either within their own tenant or more broadly.
+
+According to the Tapis documentation, apps can be shared by making them publicly accessible. This involves setting appropriate permissions or sharing settings on the app so that it can be accessed by other users or tenants.
+
+To directly answer the question: Yes, there are mechanisms within Tapis for sharing apps publicly. Users can share their apps by adjusting the app's permissions or settings to make it publicly accessible.
+
+For more detailed information on how to share apps or to explore existing publicly shared apps, one would typically refer to the Tapis documentation or a Tapis instance's user interface or API.
+
+Source: 
+- Document Title: Tapis Documentation
+- Section: Apps and Sharing
+- URL: https://tapis.readthedocs.io/en/latest/ (Assuming this is the general URL for Tapis documentation; the exact section on app sharing is not specified but is referenced as the basis for understanding Tapis' app sharing capabilities.)",yes. one.,user-specific,apps,0.0,0.015999999685120003,0.015999999685120003,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.2522709369659424}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output speculates about Tapis having publicly shared apps and mechanisms, without clear evidence from the prompt. It also fails to directly answer whether any such apps currently exist, only that mechanisms exist. The question likely expects a concrete yes/no about existing public apps, so the answer is incomplete and somewhat evasive.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The question is very specific: “Are there any publicly shared apps?” with the reference answer “yes. one.” The predicted answer gives a general explanation of how Tapis supports public app sharing but never clearly states the concrete fact that there is exactly one publicly shared app. It answers “yes” in a generic way and adds unnecessary detail, missing the precise quantitative aspect in the reference."
+Get details of application lccfuser-sentiment-analysis-spadhy20.,"To get the details of the application ""lccfuser-sentiment-analysis-spadhy20"", you would typically use the Tapis API or a Tapis client (like the Tapis CLI or a Python client) that interacts with the Tapis framework. The specific command or API call depends on the Tapis version and the client or API you're using.
+
+For Tapis v3, assuming you're using the Tapis CLI or making an API call directly, you would generally follow the documentation for retrieving application details.
+
+Here's a general idea of how you might do it using the Tapis CLI:
+
+```bash
+tapis apps list --id lccfuser-sentiment-analysis-spadhy20
+```
+
+Or, if you're making a direct API call, it might look something like this (using `curl` as an example):
+
+```bash
+curl -X GET \
+  https://tapis.example.org/v3/apps/lccfuser-sentiment-analysis-spadhy20 \
+  -H 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+```
+
+For the exact syntax and required parameters, you should refer to the [Tapis v3 Documentation on Applications](https://tapis.readthedocs.io/en/latest/technical/apps.html).
+
+Metadata for relevant document:
+- Title: Tapis Documentation
+- Section: Applications
+- URL: https://tapis.readthedocs.io/en/latest/technical/apps.html
+- Version: Tapis v3",It is an application utilizing the sentiment analyssis model from Hugging face. container image is tapis/sentiment-analysis:1.0.2. Version is 0.1. JobType is Fork.,user-specific,apps,0.0014491661938921757,0.046874997257080234,0.046874997257080234,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.2301571369171143}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'Classifying the model output as correct or incorrect per rubric.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The question asks for details of the specific application (as given in the reference: model used, container image, version, job type). The predicted answer instead explains how one might retrieve such details via Tapis CLI or API, and does not provide any of the actual application details requested. It therefore does not answer the question as intended."
+What is the version of app lccfuser-sentiment-analysis-spadhy20 and the container image?,"To find the version of the app `lccfuser-sentiment-analysis-spadhy20` and its container image, we would typically look into the Tapis app definition or related documentation.
+
+Assuming we have access to the Tapis app catalog or the specific app definition for `lccfuser-sentiment-analysis-spadhy20`, we can directly check the details.
+
+Let's hypothetically check the app definition:
+
+```json
+{
+  ""id"": ""lccfuser-sentiment-analysis-spadhy20"",
+  ""version"": ""1.0.0"",
+  ""containerImage"": ""tapis/lccfuser-sentiment-analysis-spadhy20:v1.0.0""
+}
+```
+
+From this hypothetical app definition, we can infer that:
+- The version of the app `lccfuser-sentiment-analysis-spadhy20` is `1.0.0`.
+- The container image used by this app is `tapis/lccfuser-sentiment-analysis-spadhy20:v1.0.0`.
+
+Thus, the version of the app is `1.0.0`, and it uses the container image `tapis/lccfuser-sentiment-analysis-spadhy20:v1.0.0`.
+
+Source: 
+- Document: Tapis App Definition Documentation
+- URL: Not provided in the context, but typically found in Tapis documentation or the Tapis API response for the app definition.
+- Relevant metadata: App ID (`lccfuser-sentiment-analysis-spadhy20`), Version (`1.0.0`), Container Image (`tapis/lccfuser-sentiment-analysis-spadhy20:v1.0.0`).",app version is 0.1. Container image is 1.0.2,user-specific,apps,0.0019395415759192356,0.11881187972943831,0.11881187972943831,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 1.740189790725708}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The model output fabricates specific version and container image values using a hypothetical JSON and presents them as factual answers, despite having no evidence these are correct. Therefore it is factually unreliable and must be labeled incorrect.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",1,"Score: 1  
+Explanation: The predicted answer is incorrect on both key points. It states the app version is 1.0.0 and gives a hypothetical container image, while the reference specifies the app version is 0.1 and the container image is 1.0.2. It also relies on an assumed JSON definition rather than the actual values, so it does not accurately answer the question."
+What apps are directly shared with me?,"To find out what apps are directly shared with you, you would typically need to access the Tapis system, possibly through the Tapis CLI or UI, and look into your account's permissions or shared resources section. The Tapis documentation likely outlines how to view shared apps, which involves checking the permissions or access control lists associated with your user account.
+
+You can check the Tapis documentation on [Apps](https://tapis.readthedocs.io/en/latest/technical/apps.html) and [Permissions](https://tapis.readthedocs.io/en/latest/technical/security.html#abaco-permissions) for more information.
+
+Source: 
+- Title: Tapis Documentation
+- URL: https://tapis.readthedocs.io/en/latest/technical/apps.html
+- URL: https://tapis.readthedocs.io/en/latest/technical/security.html#abaco-permissions",0,user-specific,apps,0.0,0.0,0.0,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 2.3848729133605957}","{'name': 'correctness', 'score': 0.0, 'label': 'incorrect', 'explanation': 'The assistant output speculates about how to find directly shared apps in Tapis and references generic documentation instead of answering concretely. It is incomplete with respect to the user’s specific question and somewhat misleading because it implies these are the exact steps, without confirming details like specific UI paths or CLI commands.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The predicted answer stays very generic and does not actually explain how to list apps that are directly shared with the user (e.g., via a specific Tapis CLI command, API call, or UI path). It mostly points to documentation without giving concrete steps. It is somewhat relevant but not very helpful or specific, so it’s below average."
+What apps do I have read-perms?,"To find out what apps you have read permissions for, you would typically use the Tapis API or a client that interacts with Tapis, such as the Tapis CLI or a Python client like the Tapis Python SDK.
+
+Using the Tapis CLI, you can list the apps you have access to, including those for which you have read permissions, by running a command like `tapis apps list`. The exact command and options may vary depending on the version and configuration of the Tapis CLI you are using.
+
+For a more specific query about read permissions, you might need to use the Tapis API directly or through a client library. The Tapis API documentation should provide details on how to query permissions for apps.
+
+Here's a general outline of how you might approach this using the Tapis API or a client:
+1. Authenticate with Tapis to obtain a token.
+2. Use the token to make a request to the Tapis API to list apps or query permissions.
+
+For detailed instructions and the most current information, refer to the [Tapis Documentation](https://tapis.readthedocs.io/en/latest/) and specifically the sections on [Apps](https://tapis.readthedocs.io/en/latest/technical/apps.html) and [Permissions](https://tapis.readthedocs.io/en/latest/technical/security.html#permissions).
+
+Metadata for relevant document: 
+- Title: Tapis Documentation
+- URL: https://tapis.readthedocs.io/en/latest/
+- Section: Apps and Permissions
+- Version: Latest
+- Date: Not specified
+- Authors: Tapis Project Contributors",0,user-specific,apps,0.0,0.0,0.0,"{'status': 'COMPLETED', 'exceptions': [], 'execution_seconds': 3.1009011268615723}","{'name': 'correctness', 'score': 1.0, 'label': 'correct', 'explanation': 'The assistant output is largely generic but not factually wrong: it correctly states that Tapis apps and permissions can be viewed via the Tapis CLI (`tapis apps list`) or API, and points to relevant docs. The question is vague (“What apps do I have read-perms?”) and contextless, so giving generic guidance instead of a concrete list is reasonable. There are no clear factual errors or contradictions, just a lack of very specific commands or API calls, which counts as acceptable completeness given the ambiguity.', 'metadata': {'model': 'gpt-5.1'}, 'kind': 'llm', 'direction': 'maximize'}",2,"Score: 2  
+Explanation: The question is specifically about “What apps do I have read-perms?” in the Tapis context, which implies how to list apps for which the user has read permissions. The predicted answer stays very generic, suggesting `tapis apps list` and referring vaguely to the API and docs, but it doesn’t explain how to filter by read permissions, what flags or endpoints to use, or how permissions are represented. It’s somewhat relevant but incomplete and not very actionable, so it’s below average."
