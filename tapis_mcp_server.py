@@ -10,7 +10,8 @@ from fastmcp.server.dependencies import get_http_headers
 import logging
 logger = logging.getLogger(__name__)
 import time
-from phoenix.otel import register
+import jwt
+#from phoenix.otel import register
 
 path = "/".join(os.path.realpath(__file__).split("/")[0:-1])
 env_path = path + "/.env"
@@ -23,15 +24,15 @@ else:
 TAPIS_BASE_URL = os.getenv("TAPIS_BASE_URL","https://public.tapis.io")
 RAG_BASE_URL=os.getenv("RAG_BASE_URL")
 
-PROJECT_NAME="llama4-eval" #"user-specific-qa-eval" #"tapis-job-submit-eval"
-tracer_provider = register(
-  project_name=PROJECT_NAME,
-  auto_instrument=True,
-  batch=True,
- set_global_tracer_provider=False
-)
-# Get a tracer to add additional instrumentattion
-tracer = tracer_provider.get_tracer(__name__)
+# PROJECT_NAME="llama4-eval" #"user-specific-qa-eval" #"tapis-job-submit-eval"
+# tracer_provider = register(
+#   project_name=PROJECT_NAME,
+#   auto_instrument=True,
+#   batch=True,
+#  set_global_tracer_provider=False
+# )
+# # Get a tracer to add additional instrumentattion
+# tracer = tracer_provider.get_tracer(__name__)
 
 
 # Initialize tapipy object
@@ -41,17 +42,17 @@ def get_tapis_tapipy_object(tapis_base_url:str, access_token:str) -> Any:
     return t
 
 mcp = FastMCP(
-    name="TapisMCP",    
-    log_level="ERROR"
+    name="TapisMCP"    
+    #log_level="ERROR"
 )
 
 @mcp.tool
-@tracer.tool(name="MCP.get_tapis_help")
+#@tracer.tool(name="MCP.get_tapis_help")
 async def get_tapis_help(question: str) -> Any:
     # """
-    # This tool uses Tapis documentation to answer questions on Tapis v3 Service and Frameworks, SDKs and its usage
+    # This tool uses Tapis documentation to answer questions on Tapis v3 Services and Frameworks, SDKs and its usage
     # Args:
-    # question: question/message from the user
+    # question: question or message from the user
 
     # """
 
@@ -60,6 +61,11 @@ async def get_tapis_help(question: str) -> Any:
     # Get authorization header
     auth_header = headers.get("x-tapis-token", "")
     logger.info(auth_header)
+    token_payload = jwt.decode(auth_header, options={"verify_signature": False})
+    tenant = token_payload.get("tapis/tenant_id")
+    print(f"Tenant: {tenant}")
+    TAPIS_BASE_URL="https://"+tenant+".tapis.io"
+    print(f"Setting TAPIS_BASE_URL: {TAPIS_BASE_URL}")
     jsonobj = {"question": question}
     tapis_headers = {'Content-type': 'application/json', 'x-tapis-token': auth_header}
     response = requests.post(url, json=jsonobj, headers=tapis_headers)
@@ -75,13 +81,18 @@ async def get_tapis_help(question: str) -> Any:
         return json.loads(response.text)
 
 @mcp.tool
-@tracer.tool(name="MCP.get_system")
+#@tracer.tool(name="MCP.get_system")
 async def get_system(systemId:str) -> TapisResult:   
     headers = get_http_headers()
     # Get authorization header
     auth_header = headers.get("x-tapis-token", "") 
     logger.debug("auth_header: ---")
     logger.debug(auth_header)
+    token_payload = jwt.decode(auth_header, options={"verify_signature": False})
+    tenant = token_payload.get("tapis/tenant_id")
+    print(f"Tenant: {tenant}")
+    TAPIS_BASE_URL="https://"+tenant+".tapis.io"
+    print(f"Setting TAPIS_BASE_URL: {TAPIS_BASE_URL}")
     tapis_headers = {'x-tapis-token':auth_header}
     #t = Tapis(base_url=tapis_base_url, username=tapis_user_name, password=tapis_password)
     #t.get_tokens()
@@ -93,7 +104,7 @@ async def get_system(systemId:str) -> TapisResult:
 
      
 @mcp.tool
-@tracer.tool(name="MCP.get_systems_list")
+#@tracer.tool(name="MCP.get_systems_list")
 async def get_systems_list(listType: str = "OWNED", 
                            computeTotal: bool = False, 
                            systemType: str = None,
@@ -143,6 +154,11 @@ async def get_systems_list(listType: str = "OWNED",
     # Get authorization header
     auth_header = headers.get("x-tapis-token", "") 
     logger.info(auth_header)
+    token_payload = jwt.decode(auth_header, options={"verify_signature": False})
+    tenant = token_payload.get("tapis/tenant_id")
+    print(f"Tenant: {tenant}")
+    TAPIS_BASE_URL="https://"+tenant+".tapis.io"
+    print(f"Setting TAPIS_BASE_URL: {TAPIS_BASE_URL}")
     tapis_headers = {'x-tapis-token':auth_header}
     response = requests.get(url, headers=tapis_headers)
     print("\n")
@@ -157,7 +173,7 @@ async def get_systems_list(listType: str = "OWNED",
     return (response.json())
 
 @mcp.tool
-@tracer.tool(name="MCP.get_app_info")
+#@tracer.tool(name="MCP.get_app_info")
 async def get_app_info(appId: str, appVersion:str) -> TapisResult:
     """
      Get application(apps) information or details given appId and appVersion
@@ -183,7 +199,7 @@ async def get_app_info(appId: str, appVersion:str) -> TapisResult:
     
      
 @mcp.tool
-@tracer.tool(name="MCP.get_apps_list")
+#@tracer.tool(name="MCP.get_apps_list")
 async def get_apps_list(listType: str = "OWNED",
                         computeTotal: bool = False,
                         appId: str = None,
@@ -254,7 +270,7 @@ async def get_apps_list(listType: str = "OWNED",
 #     return f"System {system_id} is {'Enabled' if sys_info.enabled else 'Disabled'}"
 
 @mcp.tool()
-@tracer.tool(name="MCP.list_files")
+#@tracer.tool(name="MCP.list_files")
 def list_files(system_id: str, path: str):
     """
     Step 1/2 in Workflow: List files in a specific Tapis system and path.
@@ -268,7 +284,7 @@ def list_files(system_id: str, path: str):
 
 
 @mcp.tool()
-@tracer.tool(name="MCP.submit_job")
+#@tracer.tool(name="MCP.submit_job")
 def submit_job(
         name: str,
         description: str,
@@ -307,7 +323,7 @@ def submit_job(
 
 
 @mcp.tool
-@tracer.tool(name="MCP.read_tapis_file")
+#@tracer.tool(name="MCP.read_tapis_file")
 def read_tapis_file(system_id: str, path: str):
     """
     Reads the text content of a Tapis file and returns it to the terminal.
@@ -334,7 +350,7 @@ def read_tapis_file(system_id: str, path: str):
     except Exception as e:
         return f"Error reading file content: {str(e)}"
 @mcp.tool
-@tracer.tool(name="MCP.get_job_output_listing")
+#@tracer.tool(name="MCP.get_job_output_listing")
 def get_job_output_listing(job_uuid:str, path:str):
     headers = get_http_headers()
     # Get authorization header
@@ -344,10 +360,11 @@ def get_job_output_listing(job_uuid:str, path:str):
     output = t.jobs.getJobOutputList(jobUuid=job_uuid, outputPath= path)
     return f"Job {job_uuid} output listing is: str({output})"
 @mcp.tool
-@tracer.tool(name="MCP.get_job_status")
+#@tracer.tool(name="MCP.get_job_status")
 def get_job_status(job_uuid: str):
     """
-    Step 5 in Workflow: Poll the status of a submitted job.
+    Get the status of a submitted job.
+    Args: job's uuid
     """
     headers = get_http_headers()
     # Get authorization header
@@ -357,7 +374,7 @@ def get_job_status(job_uuid: str):
     status = t.jobs.getJobStatus(jobUuid=job_uuid)
     return f"Job {job_uuid} is currently: {status.status}"
 @mcp.tool
-@tracer.tool(name="MCP.wait_for_few_seconds")
+#@tracer.tool(name="MCP.wait_for_few_seconds")
 def wait_for_few_seconds(secs: int):
     print(f"waiting for {secs} secs before checking the job status....")
     time.sleep(secs)

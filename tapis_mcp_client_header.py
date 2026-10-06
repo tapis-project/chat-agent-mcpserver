@@ -105,19 +105,19 @@ class SafetyGuardrailMiddleware(AgentMiddleware):
 
         return None
 
-#### Change the project_name in phoenix for benchmark dataset
-#### project name in phoenix
-PROJECT_NAME="llama4-eval"   #"user-specific-qa-eval"    #"tapis-job-submit-eval" #"tapis-eval"
-client_tracer_provider= register(
-    project_name=PROJECT_NAME,
-    auto_instrument=True,
-    batch=True,
-    set_global_tracer_provider=False)
+# #### Change the project_name in phoenix for benchmark dataset
+# #### project name in phoenix
+# PROJECT_NAME="llama4-eval"   #"user-specific-qa-eval"    #"tapis-job-submit-eval" #"tapis-eval"
+# client_tracer_provider= register(
+#     project_name=PROJECT_NAME,
+#     auto_instrument=True,
+#     batch=True,
+#     set_global_tracer_provider=False)
 
-# Get a tracer to add additional instrumentattion
-tracer = client_tracer_provider.get_tracer(__name__)
+# # Get a tracer to add additional instrumentattion
+# tracer = client_tracer_provider.get_tracer(__name__)
 
-LangChainInstrumentor(tracer_provider=client_tracer_provider).instrument(skip_dep_check=True)
+# LangChainInstrumentor(tracer_provider=client_tracer_provider).instrument(skip_dep_check=True)
 
 path = "/".join(os.path.realpath(__file__).split("/")[0:-1])
 env_path = path + "/.env"
@@ -166,9 +166,9 @@ elif provider == "samba_nova":
         print(f"Using SambaNova with api key {api_key[:5]}...{api_key[-5:]}")
         basic_model = ChatSambaNova(
             model=config["llm_name"],
-            sambanova_url=config["llm_base_url"],
+            #sambanova_url=config["llm_base_url"],
             temperature=0,
-            sambanova_api_key=api_key,
+            #sambanova_api_key=api_key,
         )
 else:
         api_key = config["ollama_api_key"]
@@ -213,7 +213,7 @@ def user_role_prompt(request: ModelRequest) -> str:
     return base_prompt
 
 
-guard_middleware= ContentFilterMiddleware(banned_keywords=["hack", "exploit","malware","Sing","email","api_key"])  # Layer 1: Deterministic input filter (before agent)
+guard_middleware= ContentFilterMiddleware(banned_keywords=["hack", "exploit","malware","Sing","email"])  # Layer 1: Deterministic input filter (before agent)
 
 
 

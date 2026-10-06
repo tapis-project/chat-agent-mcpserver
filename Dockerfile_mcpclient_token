@@ -5,16 +5,21 @@ RUN apt-get -y update; apt-get -y install curl
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
-ENV SAMBANOVA_BASE_URL=https://tejas.tacc.utexas.edu/v1/<modelid>
+ENV SAMBANOVA_BASE_URL=https://ai.tejas.tacc.utexas.edu/v1/<modelid>
 ENV SAMBANOVA_API_KEY=xyz
+ENV SAMBANOVA_API_BASE=https://ai.tejas.tacc.utexas.edu/v1/<modelid>
 ENV OPENAI_API_KEY=apikey
 ENV TAPIS_MCP_SERVER_BASE_URL=http://127.0.0.1:8000/mcp
+
 
 
 # Set the working directory inside the container
 WORKDIR /app
 COPY pyproject.toml ./
-RUN uv sync 
+### comment this for production
+# COPY .env .env
+
+RUN uv sync
 ENV PATH="/app/.venv/bin:$PATH"
 
 
@@ -27,6 +32,6 @@ COPY app_config.py app_config.py
 EXPOSE 8001
 
 # Command to run the server when the container starts (replace 'your_server_script.py' and 'main_function' with your details)
-#CMD ["uv", "run", "tapis_mcp_server.py", "--factory", "tapis_mcp_server.py:main"]
+# CMD ["uv", "run", "tapis_mcp_server.py", "--factory", "tapis_mcp_server.py:main"]
 ENTRYPOINT ["python"]
 CMD ["tapis_mcp_client_header.py"]

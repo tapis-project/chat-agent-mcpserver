@@ -1,22 +1,20 @@
-#FROM python:3.11-buster
 FROM python:3.13-slim
 
 RUN apt-get -y update; apt-get -y install curl
 
-# Install system dependencies if required by your application (example: curl for specific tools)
-#RUN apt-get update && apt-get install -y curl ca-certificates --no-install-recommends && rm -rf /var/lib/apt/lists/*
-#RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-
-
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
-ENV TAPIS_BASE_URL=https://dev.develop.tapis.io
-ENV TAPIS_TACC_SPADHY_TOKEN=xyz
+ENV TAPIS_BASE_URL=https://tacc.tapis.io
+ENV RAG_BASE_URL=https://rag.pods.tacc.tapis.io/chat
+ENV FASTMCP_LOG_LEVEL=ERROR
+
 # Set the working directory inside the container
 WORKDIR /app
 COPY pyproject.toml ./
-#COPY .env .env
+### comment this for production
+# COPY .env .env
+
 RUN uv sync 
 ENV PATH="/app/.venv/bin:$PATH"
 
@@ -28,6 +26,6 @@ COPY tapis_mcp_server.py tapis_mcp_server.py
 EXPOSE 9001
 
 # Command to run the server when the container starts (replace 'your_server_script.py' and 'main_function' with your details)
-#CMD ["uv", "run", "tapis_mcp_server.py", "--factory", "tapis_mcp_server.py:main"]
+# CMD ["uv", "run", "tapis_mcp_server.py", "--factory", "tapis_mcp_server.py:main"]
 ENTRYPOINT ["python"]
 CMD ["tapis_mcp_server.py"]
