@@ -84,19 +84,25 @@ def invoke_chat_with_mcp(qa_sets, now):
         jsonobj = {"message":question}
         tapis_headers = {'Content-type': 'application/json','x-tapis-token':tapis_token}
         response = requests.post(url, json = jsonobj, headers=tapis_headers)
-        logger.info(response.text)
-        logger.info(response.status_code)
-        if response.status_code == 500:
-            response = questions_answers.append({"status":"Internal Error"})
-        elif response.status_code==502:
-            response = questions_answers.append({"status":"Bad Gateway"})
-        elif response.status_code==400:
-            response = questions_answers.append({"status": "Bad Request"})
-        else:
-            response = json.loads(response.text)
-        #answer = response["answer"]
-        qa["answer"] = response["answer"]
-        print("\n answer: " + response['answer'])
+        # logger.info(response.text)
+        # logger.info(response.status_code)
+        # if response.status_code == 500:
+        #     response = questions_answers.append({"status":"Internal Error"})
+        # elif response.status_code==502:
+        #     response = questions_answers.append({"status":"Bad Gateway"})
+        # elif response.status_code==400:
+        #     response = questions_answers.append({"status": "Bad Request"})
+        # else:
+        #     response = json.loads(response.text)
+        # #answer = response["answer"]
+        # qa["answer"] = response["answer"]
+        # print("\n answer: " + response['answer'])
+        # questions_answers.append(qa)
+        response.raise_for_status()
+        structured = ChatResponse.model_validate(response.json())
+        qa["answer"] = structured.answer
+        qa["agent_response"] = structured.model_dump(mode="json")
+        print("\n answer: " + structured.answer)
         questions_answers.append(qa)
     # write the outputs to a file
     # get the output path for MCP LLM generated answers which will be provided as input to benchmark evaluation

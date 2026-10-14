@@ -21,8 +21,8 @@ RUN uv sync
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy the rest of your project's source code into the container
-COPY tapis_mcp_server.py tapis_mcp_server.py
-
+#COPY tapis_mcp_server.py tapis_mcp_server.py
+COPY tapis_mcp_server.py tapis_service.py tapis_tools.py response_schemas.py ./
 
 # Expose the port your server listens on (adjust if needed, default might be 8000)
 EXPOSE 9001

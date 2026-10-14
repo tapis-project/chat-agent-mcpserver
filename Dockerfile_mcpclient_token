@@ -21,7 +21,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Copy the rest of your project's source code into the container
 COPY tapis_mcp_client_header.py tapis_mcp_client_header.py
 COPY app_config.py app_config.py
-
+COPY response_schemas.py tool_observations.py ./
 
 # Expose the port your server listens on (adjust if needed, default might be 8000)
 EXPOSE 8001

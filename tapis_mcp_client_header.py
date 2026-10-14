@@ -20,8 +20,12 @@ from langchain_mcp_adapters.interceptors import MCPToolCallRequest
 import os
 from dotenv import load_dotenv
 
-from fastapi import FastAPI, Request
-from pydantic import BaseModel
+#from fastapi import FastAPI, Request
+#from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel, ValidationError
+from response_schemas import AgentResponse, ChatResponse, TraceEvent, blocked_response
+from tool_observation import observation_interceptor
 import uvicorn
 
 from openinference.instrumentation.langchain import LangChainInstrumentor
@@ -64,7 +68,10 @@ class ContentFilterMiddleware(AgentMiddleware):
                         "role": "assistant",
                         "content": "I cannot process requests containing inappropriate content. Please rephrase your request."
                     }],
-                    "jump_to": "end"
+                    "jump_to": "end",
+                    "structured_response": blocked_response(
+                        "I cannot process requests containing inappropriate content. Please rephrase your request."
+                    ),
                 }
 
         return None
@@ -85,23 +92,26 @@ class SafetyGuardrailMiddleware(AgentMiddleware):
     @hook_config(can_jump_to=["end"])
     def after_agent(self, state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
         # Get the final AI response
-        if not state["messages"]:
+        structured = state.get("structured_response")
+        if structured is None:
             return None
-
-        last_message = state["messages"][-1]
-        if not isinstance(last_message, AIMessage):
-            return None
+        structured = AgentResponse.model_validate(structured)
 
         # Use a model to evaluate safety
         safety_prompt = f"""Evaluate if this response is related to TACC Tapis services and appropriate for response. Any other response should considered unsafe. 
         Respond with only 'SAFE' or 'UNSAFE'.
 
-        Response: {last_message.content}"""
+        Response: {structured.answer}"""
 
         result = self.safety_model.invoke([{"role": "user", "content": safety_prompt}])
 
         if "UNSAFE" in result.content:
-            last_message.content = "I cannot provide that response. It is either not relevant to Tapis or not appropriate. Please rephrase your request."
+            blocked = blocked_response("I cannot provide that response. It is either not relevant to Tapis or not appropriate. Please rephrase your request.")
+            return {
+                "structured_response": blocked,
+                "messages": [AIMessage(content=blocked.answer)],
+                "jump_to": "end",
+            }
 
         return None
 
@@ -139,17 +149,17 @@ async def on_logging_message(
     """Handle log messages from MCP servers."""
     print(f"[{context.server_name}] {params.level}: {params.data}")
 
-async def logging_interceptor(
-    request: MCPToolCallRequest,
-    handler,
-):
-    """Logs the tool call request details."""
-    logger.info(f"[Tool Call Request] Tool: {request.name}, Args: {request.args}")
-    # Proceed with the actual tool call
-    response = await handler(request)
-    logger.info(f"[Tool Call Response] Tool: {request.name}, Response: {response}")
-    print("\n --------")
-    return response
+# async def logging_interceptor(
+#     request: MCPToolCallRequest,
+#     handler,
+# ):
+#     """Logs the tool call request details."""
+#     logger.info(f"[Tool Call Request] Tool: {request.name}, Args: {request.args}")
+#     # Proceed with the actual tool call
+#     response = await handler(request)
+#     logger.info(f"[Tool Call Response] Tool: {request.name}, Response: {response}")
+#     print("\n --------")
+#     return response
 
 ### Models
 provider = config["llm_provider"]
@@ -204,7 +214,16 @@ def user_role_prompt(request: ModelRequest) -> str:
     " For security service, the count on the records can be found in the message field of the result. " \
     " In summary, give tool call name, arguments, and give steps taken to reach that total count and which field of datastructure. " \
     " If the user query require specific information from the result json, extract the field and the corresponding field value."
-
+    base_prompt += (
+        " Tool results are observations with ok, data, error_code, and message fields."
+        " Treat ok=false as a failed attempt, never as a completed action."
+        " Populate the structured final response from actual observations."
+        " completed_actions must contain only names of successful mutating tools."
+        " Successful submit_job means submission, not completion of the remote job."
+        " Set total_count to null unless observations establish the requested count."
+        " When required information is missing, use clarification_required and list missing_fields."
+        " Keep steps to brief summaries of tool actions and evidence."
+    )
     if user_role == "expert":
         return f"{base_prompt} Provide detailed technical responses."
     elif user_role == "beginner":
@@ -219,7 +238,7 @@ guard_middleware= ContentFilterMiddleware(banned_keywords=["hack", "exploit","ma
 
 
 
-async def get_client(tapis_token):
+async def get_client(tapis_token,tool_trace: list[TraceEvent]):
     logger.debug("---token ---")
     logger.debug(print(tapis_token))
     client = MultiServerMCPClient(
@@ -232,30 +251,31 @@ async def get_client(tapis_token):
             }
     },
     callbacks=Callbacks(on_logging_message=on_logging_message),
-    tool_interceptors=[logging_interceptor]
+    #tool_interceptors=[logging_interceptor]
+    tool_interceptors=[observation_interceptor(tool_trace)]
    )
     return client
     
 
-def printAImessage(result):
-    for msg in result["messages"]:
-        if isinstance(msg,AIMessage):
-            if msg.content=="":
-                logger.info("printAImessage: tool_call msg:" + str(msg.tool_calls))
-            else:
-                print(msg.content)
-                return msg.content
-            print("\n")
+# def printAImessage(result):
+#     for msg in result["messages"]:
+#         if isinstance(msg,AIMessage):
+#             if msg.content=="":
+#                 logger.info("printAImessage: tool_call msg:" + str(msg.tool_calls))
+#             else:
+#                 print(msg.content)
+#                 return msg.content
+#             print("\n")
 
-def returnAImessage(result):
-    for msg in result["messages"]:
-        if isinstance(msg, AIMessage):
-            if msg.content == "":
-                logger.info("printAImessage: tool_call msg:" + str(msg.tool_calls))
-            else:
-                #print(msg.content)
-                return msg.content
-            print("\n")
+# def returnAImessage(result):
+#     for msg in result["messages"]:
+#         if isinstance(msg, AIMessage):
+#             if msg.content == "":
+#                 logger.info("printAImessage: tool_call msg:" + str(msg.tool_calls))
+#             else:
+#                 #print(msg.content)
+#                 return msg.content
+#             print("\n")
 
                 #async def main():
 #@tracer.agent
@@ -274,7 +294,8 @@ async def create_tapis_agent(client):
     model= basic_model,  # Default model
     tools = tools,
     middleware=[user_role_prompt,guard_middleware],#SafetyGuardrailMiddleware()],
-    context_schema = Context
+    context_schema = Context,
+    response_format = AgentResponse,
     )
     return agent
 
@@ -292,15 +313,19 @@ def root(request: Request):
 
 
 
-@app.post("/chat")
+#@app.post("/chat")
+@app.post("/chat", response_model=ChatResponse)
 #@tracer.agent
-async def chat(request: Request, chatrequest: ChatRequest):
+async def chat(request: Request, chatrequest: ChatRequest) -> ChatResponse:
     logger.debug(f"request:{request} \n")
     logger.info(f"request:{chatrequest} \n")
     tapis_token= request.headers.get('x-tapis-token')
     logger.debug(f"Tapis token: {tapis_token}")
+    tool_trace: list[TraceEvent] = []
     messages=[{"role": "user", "content": chatrequest.message}]
-    client = await get_client(tapis_token)
+    tool_trace: list[TraceEvent] = []
+
+    client = await get_client(tapis_token, tool_trace)
 
     agent = await create_tapis_agent(client);
     #with tracer.start_as_current_span(
@@ -318,7 +343,22 @@ async def chat(request: Request, chatrequest: ChatRequest):
     #       span.set_status(Status(StatusCode.OK))
 
 
-    return {"answer":printAImessage(result) }
+    #return {"answer":printAImessage(result) }
+    structured = result.get("structured_response")
+    if structured is None:
+        raise HTTPException(status_code=502, detail="The agent did not produce a structured response")
+    try:
+        response = AgentResponse.model_validate(structured)
+    except ValidationError as exc:
+        raise HTTPException(status_code=502, detail="The agent returned an invalid structured response") from exc
+    successful_actions = {
+        event.tool for event in tool_trace
+        if event.mutating and event.observation.ok
+    }
+    if not set(response.completed_actions).issubset(successful_actions):
+        raise HTTPException(status_code=502, detail="The agent claimed an action without successful tool evidence")
+    return ChatResponse(**response.model_dump(), trace=tool_trace)
+
 
 def main():
     port = int(os.getenv("PORT", 8001))
