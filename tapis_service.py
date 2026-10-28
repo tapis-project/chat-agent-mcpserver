@@ -1,7 +1,5 @@
-"""Tapis transport, authentication, serialization, and error handling."""
+"""Tapis transport, authentication, serialization, and error handling (Synchronous)."""
 
-import asyncio
-from contextlib import asynccontextmanager, nullcontext
 import logging
 from typing import Any, Callable
 
@@ -16,16 +14,10 @@ logger = logging.getLogger(__name__)
 def json_data(value: Any) -> Any:
     """Convert SDK result objects into JSON-compatible data."""
     if isinstance(value, TapisResult):
-        return {
-            key: json_data(item)
-            for key, item in vars(value).items()
-        }
+        return {key: json_data(item) for key, item in vars(value).items()}
 
     if isinstance(value, dict):
-        return {
-            key: json_data(item)
-            for key, item in value.items()
-        }
+        return {key: json_data(item) for key, item in value.items()}
 
     if isinstance(value, (list, tuple)):
         return [json_data(item) for item in value]
@@ -44,39 +36,16 @@ class TapisService:
         *,
         timeout: float = 30,
         tapis_factory: Callable[..., Tapis] = Tapis,
-        transport: httpx.AsyncBaseTransport | None = None,
     ):
         self.base_url = base_url.rstrip("/")
         self.rag_url = rag_url
         self.timeout = timeout
         self.tapis_factory = tapis_factory
-        self.transport = transport
-        self.http: httpx.AsyncClient | None = None
-        self.tracer = None
-
-    @asynccontextmanager
-    async def lifespan(self):
-        async with httpx.AsyncClient(
-            timeout=self.timeout,
-            transport=self.transport,
-        ) as client:
-            self.http = client
-            try:
-                yield
-            finally:
-                self.http = None
-
-    def _span(self, tool: str):
-        if self.tracer:
-            return self.tracer.start_as_current_span(f"MCP.{tool}")
-        return nullcontext()
+        # Replaced httpx.AsyncClient with standard httpx.Client instantiated on init
+        self.http = httpx.Client(timeout=self.timeout)
 
     @staticmethod
-    def failure(
-        tool: str,
-        code: str,
-        message: str,
-    ) -> ToolObservation:
+    def failure(tool: str, code: str, message: str) -> ToolObservation:
         return ToolObservation(
             ok=False,
             tool=tool,
@@ -84,7 +53,7 @@ class TapisService:
             message=message,
         )
 
-    async def get(
+    def get(
         self,
         tool: str,
         path: str,
@@ -99,14 +68,14 @@ class TapisService:
                 "A Tapis access token is required",
             )
 
-        return await self._get_json(
+        return self._request_json(
             tool,
             f"{self.base_url}{path}",
             params=params,
             headers={"x-tapis-token": token},
         )
 
-    async def help(
+    def help(
         self,
         question: str,
         token: str = "",
@@ -118,7 +87,7 @@ class TapisService:
                 "RAG_BASE_URL is not configured",
             )
 
-        return await self._get_json(
+        return self._request_json(
             "get_tapis_help",
             self.rag_url,
             method="POST",
@@ -126,56 +95,47 @@ class TapisService:
             headers={"x-tapis-token": token},
         )
 
-    async def _get_json(
+    def _request_json(
         self,
-        tool,
-        url,
+        tool: str,
+        url: str,
         *,
-        method="GET",
+        method: str = "GET",
         params=None,
         headers=None,
         body=None,
     ) -> ToolObservation:
-        if self.http is None:
-            return self.failure(
-                tool,
-                "service_unavailable",
-                "The HTTP client has not been started",
-            )
-
         try:
-            with self._span(tool):
-                response = await self.http.request(
-                    method,
-                    url,
-                    params=params,
-                    headers=headers,
-                    json=body,
-                )
-                response.raise_for_status()
-                data = response.json()
+            response = self.http.request(
+                method,
+                url,
+                params=params,
+                headers=headers,
+                json=body,
+            )
+            response.raise_for_status()
+            data = response.json()
 
-                if isinstance(data, dict):
-                    status = str(data.get("status", "")).lower()
-                    if status in {"error", "failed", "failure"}:
-                        return self.failure(
-                            tool,
-                            "tapis_error",
-                            "The upstream service reported an error",
-                        )
+            if isinstance(data, dict):
+                status = str(data.get("status", "")).lower()
+                if status in {"error", "failed", "failure"}:
+                    return self.failure(
+                        tool,
+                        "tapis_error",
+                        "The upstream service reported an error",
+                    )
 
-                return ToolObservation(
-                    ok=True,
-                    tool=tool,
-                    data=data,
-                )
+            return ToolObservation(
+                ok=True,
+                tool=tool,
+                data=data,
+            )
 
         except httpx.HTTPStatusError as exc:
             return self.failure(
                 tool,
                 "http_error",
-                f"Upstream service returned HTTP "
-                f"{exc.response.status_code}",
+                f"Upstream service returned HTTP {exc.response.status_code}",
             )
         except httpx.TimeoutException:
             return self.failure(
@@ -196,7 +156,7 @@ class TapisService:
                 "The upstream service returned invalid JSON",
             )
 
-    async def sdk(
+    def sdk(
         self,
         tool: str,
         token: str,
@@ -209,26 +169,20 @@ class TapisService:
                 "A Tapis access token is required",
             )
 
-        def execute():
-            # Each operation gets its own token-bound SDK client.
+        try:
+            # Executes directly without asyncio.to_thread
             client = self.tapis_factory(
                 base_url=self.base_url,
                 access_token=token,
                 debug_prints=False,
             )
-            with self._span(tool):
-                return json_data(operation(client))
-
-        try:
-            # Blocking SDK calls run outside the event loop.
-            data = await asyncio.to_thread(execute)
+            data = json_data(operation(client))
             return ToolObservation(
                 ok=True,
                 tool=tool,
                 data=data,
             )
         except Exception:
-            # SDK exception text can contain credentials.
             logger.warning("Tapis SDK operation %s failed", tool)
             return self.failure(
                 tool,

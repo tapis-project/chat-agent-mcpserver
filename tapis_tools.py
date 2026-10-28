@@ -1,6 +1,6 @@
-"""Small MCP tool definitions."""
+"""Small MCP tool definitions (Synchronous)."""
 
-import asyncio
+import time
 from typing import Annotated, Any
 from urllib.parse import quote
 
@@ -10,6 +10,9 @@ from pydantic import Field
 
 from response_schemas import ToolObservation
 from tapis_service import TapisService
+
+# Export mutating tools for application tracking
+MUTATING_TOOLS = {"submit_job"}
 
 
 def access_token() -> str:
@@ -47,25 +50,25 @@ def register_tools(
 ) -> None:
 
     @mcp.tool
-    async def get_tapis_help(
+    def get_tapis_help(
         question: str,
     ) -> ToolObservation:
         """Answer a question using Tapis documentation."""
-        return await service.help(question, access_token())
+        return service.help(question, access_token())
 
     @mcp.tool
-    async def get_system(
+    def get_system(
         systemId: str,
     ) -> ToolObservation:
         """Get a Tapis system by ID."""
-        return await service.get(
+        return service.get(
             "get_system",
             f"/v3/systems/{quote(systemId, safe='')}",
             access_token(),
         )
 
     @mcp.tool
-    async def get_systems_list(
+    def get_systems_list(
         listType: str = "OWNED",
         computeTotal: bool = False,
         systemType: str | None = None,
@@ -87,7 +90,7 @@ def register_tools(
             },
         )
 
-        return await service.get(
+        return service.get(
             "get_systems_list",
             "/v3/systems/search",
             access_token(),
@@ -95,7 +98,7 @@ def register_tools(
         )
 
     @mcp.tool
-    async def get_app_info(
+    def get_app_info(
         appId: str,
         appVersion: str,
     ) -> ToolObservation:
@@ -104,14 +107,14 @@ def register_tools(
             f"/v3/apps/{quote(appId, safe='')}/"
             f"{quote(appVersion, safe='')}"
         )
-        return await service.get(
+        return service.get(
             "get_app_info",
             path,
             access_token(),
         )
 
     @mcp.tool
-    async def get_apps_list(
+    def get_apps_list(
         listType: str = "OWNED",
         computeTotal: bool = False,
         appId: str | None = None,
@@ -143,7 +146,7 @@ def register_tools(
             },
         )
 
-        return await service.get(
+        return service.get(
             "get_apps_list",
             "/v3/apps/search",
             access_token(),
@@ -151,12 +154,12 @@ def register_tools(
         )
 
     @mcp.tool
-    async def list_files(
+    def list_files(
         system_id: str,
         path: str,
     ) -> ToolObservation:
         """List file names at a path on a Tapis system."""
-        return await service.sdk(
+        return service.sdk(
             "list_files",
             access_token(),
             lambda client: [
@@ -169,7 +172,7 @@ def register_tools(
         )
 
     @mcp.tool
-    async def submit_job(
+    def submit_job(
         name: str,
         description: str,
         app_id: str,
@@ -203,7 +206,7 @@ def register_tools(
                 "job_status": result.status,
             }
 
-        observation = await service.sdk(
+        observation = service.sdk(
             "submit_job",
             access_token(),
             submit,
@@ -224,7 +227,7 @@ def register_tools(
         return observation
 
     @mcp.tool
-    async def read_tapis_file(
+    def read_tapis_file(
         system_id: str,
         path: str,
     ) -> ToolObservation:
@@ -241,19 +244,19 @@ def register_tools(
                 "truncated": len(text) > 10000,
             }
 
-        return await service.sdk(
+        return service.sdk(
             "read_tapis_file",
             access_token(),
             read,
         )
 
     @mcp.tool
-    async def get_job_output_listing(
+    def get_job_output_listing(
         job_uuid: str,
         path: str,
     ) -> ToolObservation:
         """List job output files at the requested output path."""
-        return await service.sdk(
+        return service.sdk(
             "get_job_output_listing",
             access_token(),
             lambda client: client.jobs.getJobOutputList(
@@ -263,11 +266,11 @@ def register_tools(
         )
 
     @mcp.tool
-    async def get_job_status(
+    def get_job_status(
         job_uuid: str,
     ) -> ToolObservation:
         """Get the current execution status of a Tapis job."""
-        return await service.sdk(
+        return service.sdk(
             "get_job_status",
             access_token(),
             lambda client: {
@@ -279,11 +282,11 @@ def register_tools(
         )
 
     @mcp.tool
-    async def wait_for_few_seconds(
+    def wait_for_few_seconds(
         secs: Annotated[int, Field(ge=0, le=60)],
     ) -> ToolObservation:
         """Wait between zero and 60 seconds before polling again."""
-        await asyncio.sleep(secs)
+        time.sleep(secs)
 
         return ToolObservation(
             ok=True,

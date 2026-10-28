@@ -8,6 +8,8 @@ from langchain.tools import tool
 from langchain.agents.middleware import ModelRequest, dynamic_prompt #wrap_model_call, wrap_tool_call, ModelResponse
 from typing import TypedDict
 from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
+import langchain
+import re
 
 from langchain_mcp_adapters.client import MultiServerMCPClient  
 import asyncio
@@ -29,15 +31,18 @@ from tool_observation import observation_interceptor
 import uvicorn
 
 from openinference.instrumentation.langchain import LangChainInstrumentor
-from phoenix.otel import register
-from opentelemetry import trace
-from opentelemetry.trace import Status, StatusCode
+#from phoenix.otel import register
+#from opentelemetry import trace
+#from opentelemetry.trace import Status, StatusCode
 
 from langchain.agents.middleware import AgentMiddleware, AgentState, hook_config
 from langgraph.runtime import Runtime
 #from langchain.agents.middleware import PIIMiddleware, HumanInTheLoopMiddleware
+
 import logging
+
 logger = logging.getLogger(__name__)
+langchain.verbose = True
 
 from typing import Any
 class ContentFilterMiddleware(AgentMiddleware):
@@ -58,10 +63,12 @@ class ContentFilterMiddleware(AgentMiddleware):
             return None
 
         content = first_message.content.lower()
+        # 1. Normalize by removing all non-alphanumeric characters (spaces, dots, underscores, etc.)
+        normalized_content = re.sub(r'[^a-z0-9]', '', content)
 
         # Check for banned keywords
         for keyword in self.banned_keywords:
-            if keyword in content:
+            if keyword in normalized_content:
                 # Block execution before any processing
                 return {
                     "messages": [{
@@ -117,17 +124,17 @@ class SafetyGuardrailMiddleware(AgentMiddleware):
 
 #### Change the project_name in phoenix for benchmark dataset
 #### project name in phoenix
-PROJECT_NAME="llama4-eval"   #"user-specific-qa-eval"    #"tapis-job-submit-eval" #"tapis-eval"
-client_tracer_provider= register(
-    project_name=PROJECT_NAME,
-    auto_instrument=True,
-    batch=True,
-    set_global_tracer_provider=False)
+# PROJECT_NAME="llama4-eval"   #"user-specific-qa-eval"    #"tapis-job-submit-eval" #"tapis-eval"
+# client_tracer_provider= register(
+#     project_name=PROJECT_NAME,
+#     auto_instrument=True,
+#     batch=True,
+#     set_global_tracer_provider=False)
 
-# Get a tracer to add additional instrumentattion
-tracer = client_tracer_provider.get_tracer(__name__)
+# # Get a tracer to add additional instrumentattion
+# tracer = client_tracer_provider.get_tracer(__name__)
 
-LangChainInstrumentor(tracer_provider=client_tracer_provider).instrument(skip_dep_check=True)
+# LangChainInstrumentor(tracer_provider=client_tracer_provider).instrument(skip_dep_check=True)
 
 path = "/".join(os.path.realpath(__file__).split("/")[0:-1])
 env_path = path + "/.env"
@@ -232,7 +239,7 @@ def user_role_prompt(request: ModelRequest) -> str:
     return base_prompt
 
 
-guard_middleware= ContentFilterMiddleware(banned_keywords=["hack", "exploit","malware","Sing","email","api_key"])  # Layer 1: Deterministic input filter (before agent)
+guard_middleware= ContentFilterMiddleware(banned_keywords=["hack", "delete","song","exploit","malware","Sing","email","api_key"])  # Layer 1: Deterministic input filter (before agent)
 
 
 
@@ -240,7 +247,7 @@ guard_middleware= ContentFilterMiddleware(banned_keywords=["hack", "exploit","ma
 
 async def get_client(tapis_token,tool_trace: list[TraceEvent]):
     logger.debug("---token ---")
-    logger.debug(print(tapis_token))
+    logger.debug(f"tapis_token: {tapis_token}")
     client = MultiServerMCPClient(
         {
             "tapis": {
@@ -305,6 +312,14 @@ app = FastAPI()
 class ChatRequest(BaseModel):
     message: str
 
+@app.on_event("startup")
+def list_routes():
+    print("\n--- Registered Routes ---")
+    for route in app.routes:
+        methods = getattr(route, "methods", None)
+        print(f"{methods} -> {route.path}")
+    print("-------------------------\n")
+
 @app.get("/")
 def root(request: Request):
     
@@ -365,5 +380,9 @@ def main():
     uvicorn.run(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s\t%(message)s")
+    #logging.basicConfig(level=logging.INFO, format="%(levelname)s\t%(message)s")
+    logging.basicConfig(
+        level=logging.INFO,  # Change to logging.DEBUG for more detail
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
     main()

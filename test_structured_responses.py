@@ -16,7 +16,7 @@ from mcp.types import CallToolResult, TextContent
 from pydantic import ValidationError
 
 from response_schemas import AgentResponse, ToolObservation, TraceEvent, blocked_response
-from tool_observations import normalize_observation, observation_interceptor
+from tool_observation import normalize_observation, observation_interceptor
 
 
 def response(**overrides):
