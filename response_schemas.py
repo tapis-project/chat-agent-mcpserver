@@ -9,6 +9,31 @@ class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ProposedToolCall(ContractModel):
+    """Schema for each individual tool invocation proposed by the LLM."""
+    tool: str = Field(
+        description="Exact name of the MCP tool to execute (e.g., 'list_systems')"
+    )
+    arguments: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Dictionary of parameters to pass into the tool"
+    )
+    mutating: bool = Field(
+        default=False,
+        description="Set to True if this tool call modifies server or database state"
+    )
+
+
+class ExecutionPlan(ContractModel):
+    """Top-level schema requested from the LLM by the Agent."""
+    thought_process: str = Field(
+        description="High-level reasoning explaining why these steps were chosen"
+    )
+    proposed_calls: list[ProposedToolCall] = Field(
+        default_factory=list,
+        description="Sequential list of proposed tool calls for validation"
+    )
+
 class AgentResponse(ContractModel):
     status: Literal[
         "completed",
@@ -44,6 +69,8 @@ class TraceEvent(ContractModel):
 class ChatResponse(AgentResponse):
     # Populated by application code, not by the model.
     trace: list[TraceEvent] = Field(default_factory=list)
+    execution_plan: ExecutionPlan | None = None
+    plan_validation_error: str | None = None
 
 
 def blocked_response(message: str) -> AgentResponse:
