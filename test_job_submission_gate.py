@@ -42,7 +42,7 @@ class SubmissionGateTests(unittest.IsolatedAsyncioTestCase):
             return [{'type':'text','text':result.content[0].text}]
         return SimpleNamespace(name=name, description='', args_schema={}, ainvoke=AsyncMock(side_effect=invoke))
 
-    async def chat(self, app, system=None, args=None):
+    async def chat(self, app, system=None, args=None, calls=None, final_response=None):
         submit = self.tool('submit_job', {'job_uuid':'job-test-123'})
         poll = self.tool('get_job_status', {'job_uuid':'job-test-123','status':'PENDING'})
         tools = [t for t in (app,system,submit,poll) if t is not None]
@@ -50,8 +50,8 @@ class SubmissionGateTests(unittest.IsolatedAsyncioTestCase):
         # establish that the selected application exists.
         listing = self.tool('get_systems_list', {'status':'success','result':[]})
         tools.append(listing)
-        plan = ExecutionPlan(thought_process='Test missing application gate', proposed_calls=[{'tool':'get_systems_list'}, {'tool':'submit_job','arguments':self.args if args is None else args}])
-        final = AgentResponse(status='completed',answer='Job submitted',steps=[],total_count=None,citations=[],completed_actions=['submit_job'],missing_fields=[])
+        plan = ExecutionPlan(thought_process='Test missing application gate', proposed_calls=calls if calls is not None else [{'tool':'get_systems_list'}, {'tool':'submit_job','arguments':self.args if args is None else args}])
+        final = final_response or AgentResponse(status='completed',answer='Job submitted',steps=[],total_count=None,citations=[],completed_actions=['submit_job'],missing_fields=[])
         planner = SimpleNamespace(ainvoke=AsyncMock(return_value=plan))
         summarizer = SimpleNamespace(ainvoke=AsyncMock(return_value=final))
         model = SimpleNamespace(with_structured_output=Mock(side_effect=lambda schema, **kwargs: planner if schema is ExecutionPlan else summarizer))
@@ -61,6 +61,7 @@ class SubmissionGateTests(unittest.IsolatedAsyncioTestCase):
         with patch.object(client,'basic_model',model), patch.object(client,'get_client',get_client), patch.object(client.asyncio,'sleep',AsyncMock()):
             result = await client.chat(SimpleNamespace(headers={'x-tapis-token':'test'}), SimpleNamespace(message='Submit HelloWorld'))
         self.assertEqual([e.step for e in result.trace],list(range(1,len(result.trace)+1)))
+        self.assertEqual(result.execution_plan, plan)
         return result, submit, poll, summarizer
 
     async def assert_blocked(self, app, system=None, args=None):
@@ -128,6 +129,35 @@ class SubmissionGateTests(unittest.IsolatedAsyncioTestCase):
         submit.ainvoke.assert_awaited_once_with(self.args)
         poll.ainvoke.assert_awaited_once_with({'job_uuid':'job-test-123'})
         self.assertTrue(result.trace[3].mutating)
+
+    async def test_static_denial_returns_plan_without_executing_tools(self):
+        app = self.tool('get_app_info', self.good_app)
+        result, submit, poll, summary = await self.chat(app, calls=[{'tool':'delete_system'}])
+        self.assertEqual(result.status, 'blocked')
+        self.assertIn('prohibited', result.plan_validation_error)
+        self.assertEqual(result.trace, [])
+        app.ainvoke.assert_not_awaited()
+        submit.ainvoke.assert_not_awaited()
+        summary.ainvoke.assert_not_awaited()
+
+    async def test_read_failure_is_preserved_without_duplicate_trace(self):
+        failed = AgentResponse(status='failed', answer='Lookup failed', steps=[], total_count=None, citations=[], completed_actions=[], missing_fields=[])
+        app = self.tool('get_app_info', ok=False)
+        result, submit, _, _ = await self.chat(app, calls=[{'tool':'get_app_info', 'arguments':{'appId':'missing','appVersion':'0.0.1'}}], final_response=failed)
+        self.assertEqual(len(result.trace), 1)
+        self.assertFalse(result.trace[0].observation.ok)
+        self.assertEqual(result.trace[0].observation.error_code, 'http_error')
+        submit.ainvoke.assert_not_awaited()
+
+    async def test_forged_completed_action_is_rejected(self):
+        with self.assertRaises(client.HTTPException) as exc:
+            await self.chat(None, calls=[{'tool':'get_systems_list'}])
+        self.assertEqual(exc.exception.status_code, 502)
+        self.assertIn('without successful tool evidence', exc.exception.detail)
+
+    def test_root_does_not_echo_credentials(self):
+        result = client.root(SimpleNamespace(headers={'x-tapis-token':'do-not-echo'}))
+        self.assertNotIn('do-not-echo', str(result))
 
 
 if __name__ == '__main__':
